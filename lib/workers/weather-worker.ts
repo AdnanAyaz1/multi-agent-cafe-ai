@@ -31,7 +31,7 @@ function createWorker(): Worker<WeatherJobData> {
         data: {
           businessId,
           source: 'weather',
-          data: weather,
+          data: JSON.parse(JSON.stringify(weather)) as object,
           collectedAt: new Date(),
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },

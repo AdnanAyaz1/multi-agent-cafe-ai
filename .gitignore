@@ -30,6 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local dev artifacts (detached `npm run dev` output)
+dev.log
+dev-err.log
+
 # env files: ignore real ones, keep .env.example (template) tracked
 .env
 .env.local

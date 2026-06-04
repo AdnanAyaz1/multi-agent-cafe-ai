@@ -6,14 +6,15 @@
 
 ## Two Parallel Flows
 
-The app has **two completely separate data paths** that share code at the `lib/services/weather` layer:
+The app has **three data paths** that share code at the `lib/services/weather` and `lib/menu` layers:
 
 | Path | Trigger | Purpose | BullMQ? |
 |---|---|---|---|
 | **A — On-demand (LLM)** | User clicks "Get Weather" in the browser | Returns weather to UI **right now** | No |
 | **B — Background (queue)** | Cron fires at 6am (or a job is enqueued) | Saves weather snapshot to DB for later AI analysis | **Yes** |
+| **C — Agent Pipeline** | User clicks "Run Analysis" OR cron fires at 9am | Runs the 5-agent reasoning chain and saves a Recommendation | **Yes** |
 
-Both paths end up calling the same `fetchWeather(city)` function — they just differ in **what's around it**.
+All three end up calling shared building blocks — they just differ in **what's around it**.
 
 ---
 
@@ -109,43 +110,81 @@ async function fetchWeatherApi(city: string): Promise<WeatherResult> {
 **File:** `app/api/weather/route.ts`
 ```ts
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 import { getWeatherData } from '@/lib/agents/weather-agent';
 import { weatherRequestSchema } from '@/lib/validators/weather';
-import { apiHandler } from '@/lib/api/handler';
-import { AgentError, ValidationError } from '@/lib/errors';
+import { AgentError, AppError, ValidationError } from '@/lib/errors';
 
-export const POST = apiHandler(async (request: NextRequest) => {
-  let body: unknown;
+export async function POST(request: NextRequest) {
   try {
-    body = await request.json();
-  } catch {
-    throw new ValidationError('Invalid JSON body');
-  }
-
-  const { city } = weatherRequestSchema.parse(body);
-
-  const result = await getWeatherData(city);
-
-  if (result.error) {
-    throw new AgentError(result.error);
-  }
-
-  return NextResponse.json(result);
-});
-```
-
-**What `apiHandler` does** — it's a higher-order function that wraps the handler in try/catch and converts any thrown error into a JSON response. **File:** `lib/api/handler.ts`
-```ts
-export function apiHandler<C>(handler: RouteHandler<C>): RouteHandler<C> {
-  return async (req, context) => {
+    let body: unknown;
     try {
-      return await handler(req, context);
-    } catch (error) {
-      return errorResponse(error);
+      body = await request.json();
+    } catch {
+      throw new ValidationError('Invalid JSON body');
     }
-  };
+
+    const { city } = weatherRequestSchema.parse(body);
+
+    const result = await getWeatherData(city);
+
+    if (result.error) {
+      throw new AgentError(result.error);
+    }
+
+    return NextResponse.json(result);
+  } catch (error) {
+    if (error instanceof AppError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          code: error.code,
+          ...(error.details !== undefined ? { details: error.details } : {}),
+        },
+        { status: error.statusCode }
+      );
+    }
+
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details: error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+
+    console.error('Unhandled API error:', error);
+    const message =
+      error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json(
+      { error: message, code: 'INTERNAL_ERROR' },
+      { status: 500 }
+    );
+  }
 }
 ```
+
+#### Why no `apiHandler` wrapper anymore?
+
+**The old setup (dukaan analogy):** We used to have a function in `lib/api/handler.ts` called `apiHandler` that wrapped every route. Think of it as a **chowkidar (gate guard)** at the dukaan's back door. Every package leaving the shop went through him — if a package was actually a bomb (a thrown error), the chowkidar quietly swapped it for a polite "sorry, try again" note (a JSON error response). The shopkeeper never had to worry about bombs.
+
+**Why we fired the chowkidar:** Next.js 16 added a typed `params` helper called `RouteContext<'/api/menu/[businessId]'>`. It tells TypeScript exactly which URL params each route gets. Our old `apiHandler` was written **generically** — it used `Record<string, unknown>` for the context — so the chowkidar didn't know what kind of package was coming through. TypeScript started complaining:
+
+```
+error TS2339: Property 'businessId' does not exist on type 'unknown'.
+```
+
+**The fix:** Removed `lib/api/handler.ts` entirely. Each route now has its own small try/catch at the top — the same logic the chowkidar used to run, just **inside** each route door instead of outside. Same JSON output, no type fight.
+
+**3-line summary:**
+1. `apiHandler` was a wrapper that caught errors and turned them into JSON — convenient but generic.
+2. Next.js 16's typed `RouteContext` clashed with that generic wrapper — TypeScript couldn't infer `params`.
+3. We deleted the wrapper and inlined the same try/catch in each route. **2 routes affected:** `app/api/weather/route.ts` and `app/api/menu/[businessId]/route.ts`.
+
+---
 
 **What `weatherRequestSchema` does** — Zod validates the body. **File:** `lib/validators/weather.ts`
 ```ts
@@ -157,7 +196,7 @@ export const weatherRequestSchema = z.object({
     .trim(),
 });
 ```
-- `.parse(body)` throws a `ZodError` if invalid (caught by `apiHandler` → 400 response).
+- `.parse(body)` throws a `ZodError` if invalid (caught by the route's own try/catch → 400 response).
 - On success, returns a typed `{ city: string }`.
 
 ### Step 5: The agent calls the LLM
@@ -257,7 +296,7 @@ export async function fetchWeather(city: string): Promise<WeatherData> {
 - SDK feeds it to the LLM
 - LLM responds (we don't even use the LLM's text — we read the raw tool result from `result.steps.at(-1).staticToolResults[0]`)
 - Agent returns `{ data: WeatherData }` to the route
-- `apiHandler` returns `NextResponse.json(result)` (200 OK)
+- Route returns `NextResponse.json(result)` (200 OK) — no wrapper, just the route's own return
 
 ### Step 8: Browser renders
 - `useWeather.fetch` receives the JSON
@@ -606,19 +645,348 @@ console.log(await job.returnvalue);
 
 ---
 
-## Where the two paths share code
+## PATH C — Agent Pipeline (Browser → BullMQ → 5 Agents → DB → Polling UI)
 
-Both paths call `lib/services/weather/client.ts:fetchWeather(city)`. That function is the **single source of truth** for "what is the current weather in this city".
+This is where the **agentic AI** part of the app actually lives. A user clicks "Run Analysis" (or the 9am cron fires) and a chain of five LLM agents reasons over the weather snapshot + the cafe menu and produces an owner-facing daily briefing.
 
-| Layer | Path A (on-demand) | Path B (queue) |
-|---|---|---|
-| Entry | `app/api/weather/route.ts` | `lib/scheduler.ts` cron → `lib/workers/weather-worker.ts` |
-| LLM? | ✅ Yes (Groq with `weather` tool) | ❌ No (calls `fetchWeather` directly) |
-| BullMQ? | ❌ No | ✅ Yes |
-| Calls | `getWeatherData` → `generateText` → `weatherTool.execute` → `fetchWeather` | `fetchWeather` directly |
-| Result | Returned to the browser | Saved to `DataSnapshot` in Postgres |
+### Mental model first — the dukaan analogy
 
-The reason the agent layer is separate is so the LLM can later **choose** which tool to use (e.g., for a Strategist agent that needs both weather AND sales data). For the simple "give me today's weather" worker, we skip the LLM entirely — the answer is deterministic.
+Imagine the cafe owner has **five consultants on a WhatsApp group**:
+
+1. **Menu Analyst** — knows every dish, classifies what's hot, cold, premium, signature.
+2. **Weather Analyst** — looks outside, says "it's going to rain at 3pm, expect cold-drink sales to drop."
+3. **Strategist** — reads both notes, says "today: push Karak Chai, discount Iced Latte 15%, hold the rest."
+4. **Critic** — re-reads the Strategist's plan, says "you can't discount the Iced Latte AND Cold Coffee on the same day — pick one."
+5. **Synthesizer** — takes the final plan + critic notes and writes the WhatsApp message the owner actually reads.
+
+The orchestrator (`lib/agents/orchestrator.ts`) is the **group admin** who pings each consultant in order, collects replies, and posts the final summary to the owner.
+
+### Step 1: User clicks "Run Analysis"
+**File:** `components/dashboard/AnalysisPanel.tsx`
+
+The component is thin (per coding-practices.md §3). It owns no logic — it calls the `useAnalysis()` hook.
+
+```tsx
+'use client';
+const { run, status, loading, error } = useAnalysis();
+// ... <button onClick={() => run(businessId)}>Run Analysis</button>
+```
+
+### Step 2: Hook posts to `/api/analysis/run`
+**File:** `hooks/useAnalysis.ts`
+
+```ts
+const res = await fetch('/api/analysis/run', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ businessId }),
+});
+const { pipelineId } = await res.json();
+startPolling(pipelineId);   // ← polls /api/analysis/[pipelineId] every 1.5s
+```
+
+The hook then polls the status endpoint every **1.5 seconds** until the pipeline reaches `complete` or `failed` (or hits the 5-minute timeout). No SSE / WebSocket — polling is simpler and works behind every proxy and CDN.
+
+### Step 3: API route enqueues the job (does NOT run agents)
+**File:** `app/api/analysis/run/route.ts`
+
+```ts
+const { businessId } = analysisRunRequestSchema.parse(body);
+// 1. Confirm the business exists (404 if not)
+await prisma.business.findUnique({ where: { id: businessId } });
+// 2. Generate a UUID for this pipeline cycle
+const pipelineId = randomUUID();
+// 3. Push a job onto the ai-analysis queue and return immediately (202 Accepted)
+await aiAnalysisQueue.add('full-pipeline', { businessId, pipelineId }, { priority: 2 });
+return NextResponse.json({ pipelineId, statusUrl: `/api/analysis/${pipelineId}` }, { status: 202 });
+```
+
+**Why 202, not 200?** HTTP 202 means "I accepted your request and will process it asynchronously." The client should poll the `statusUrl` to find out what happened. 200 would imply "done, here's your answer" — but the real answer takes ~10-30s of LLM time.
+
+**Why a UUID, not the BullMQ job ID?** BullMQ job IDs are incrementing numbers per queue. A UUID is globally unique, easy to look up in the DB, and survives BullMQ restarts. The `pipelineId` is the **business-level identifier** for one analysis cycle.
+
+### Step 4: Analysis worker picks up the job
+**File:** `lib/workers/analysis-worker.ts`
+
+```ts
+export const analysisWorker = new Worker<AnalysisJobData>(
+  'ai-analysis',
+  async (job) => {
+    const { businessId, pipelineId } = job.data;
+    return await runAnalysisPipeline({ businessId, pipelineId });
+  },
+  {
+    connection,
+    concurrency: 2,                              // up to 2 pipelines in parallel
+    limiter: { max: 8, duration: 60_000 },       // respect Groq rate limits
+  }
+);
+```
+
+This worker lives in the **same Node process** as the dev server (via `instrumentation.ts`). In production, you'd run it in a separate process — see `progress.md` issue #2.
+
+The worker just delegates to `runAnalysisPipeline()`. Everything interesting happens in the orchestrator.
+
+### Step 5: Orchestrator runs the 5 agents
+**File:** `lib/agents/orchestrator.ts`
+
+```ts
+export async function runAnalysisPipeline(context: PipelineContext) {
+  // 1. Load the inputs: latest weather snapshot + menu
+  const { weather, menu } = await loadInputs(context);
+
+  // 2. Menu + Weather Analysts run in PARALLEL (they don't depend on each other)
+  const [menuAnalysis, weatherAnalysis] = await Promise.all([
+    runMenuAnalyst({ menu }, context).then((r) => r.output),
+    runWeatherAnalyst({ weather }, context).then((r) => r.output),
+  ]);
+
+  // 3. Strategist proposes actions
+  let strategist = (await runStrategist({ menuAnalysis, weatherAnalysis, rawMenu: menu, revision: 0 }, context)).output;
+
+  // 4. Critic reviews; loop back to Strategist if blockers + revisions remain
+  let critic = (await runCritic({ menuAnalysis, weatherAnalysis, strategistOutput: strategist }, context)).output;
+  let revisions = 0;
+  while (criticHasBlockers(critic) && revisions < MAX_REVISIONS) {
+    revisions += 1;
+    strategist = (await runStrategist({ ..., criticFeedback: critic, revision: revisions }, context)).output;
+    critic = (await runCritic({ ..., strategistOutput: strategist }, context)).output;
+  }
+
+  // 5. Synthesizer writes the final briefing
+  const synthesizer = (await runSynthesizer({ menuAnalysis, weatherAnalysis, strategistOutput: strategist, criticOutput: critic }, context)).output;
+
+  // 6. Persist Recommendation + RecommendationAction[] rows
+  const recommendation = await persistRecommendation(context, { ... });
+
+  return { pipelineId, recommendationId: recommendation.id, revisions, durationMs };
+}
+```
+
+#### Why this shape?
+
+1. **Inputs are loaded once.** Re-reading the DB per agent would be wasteful and could give different agents different snapshots.
+2. **Independent agents run in parallel.** Menu and Weather Analysts don't read each other's output, so `Promise.all`. Saves ~2-3 seconds per pipeline.
+3. **Critic revision loop is bounded.** `MAX_REVISIONS` (default 1) caps the loop at 2 strategist runs + 2 critic runs. Without this, a stubborn critic + a generous strategist could ping-pong forever.
+4. **Strict input/output schemas.** Every agent's output is validated by Zod (`lib/agents/types.ts`). If the LLM returns garbage, `generateObject` throws and `withAgentRun` records the failure.
+5. **Each agent call is a row.** `withAgentRun` writes an `AgentRun` to Postgres for every invocation (including revision rounds). The pipeline timeline is queryable by `pipelineId`.
+
+### Step 6: `withAgentRun` — the per-agent wrapper
+**File:** `lib/agents/run.ts`
+
+This is the function that does the actual LLM call. It wraps `generateObject` with DB logging.
+
+```ts
+export async function withAgentRun<Output>(args: AgentRunArgs<Output>) {
+  // 1. Insert AgentRun row (status: 'running')
+  const run = await prisma.agentRun.create({
+    data: { pipelineId, agentName, status: 'running', startedAt, input: inputSnapshot },
+  });
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // 2. Call the LLM with a Zod schema — output is fully typed
+      const result = await generateObject({ model, system, prompt, schema, schemaName });
+
+      // 3. Mark complete with duration + tokens
+      await prisma.agentRun.update({
+        where: { id: run.id },
+        data: {
+          status: 'complete',
+          output: result.object,
+          durationMs: Date.now() - start,
+          tokenCount: result.usage?.totalTokens ?? 0,
+          completedAt: new Date(),
+        },
+      });
+      return { agentRunId: run.id, output: result.object, durationMs, tokenCount };
+
+    } catch (e) {
+      // 4. Retry with backoff
+      if (attempt < maxAttempts) await sleep(800 * attempt);
+    }
+  }
+
+  // 5. All attempts exhausted — mark failed and throw AgentError
+  await prisma.agentRun.update({ where: { id: run.id }, data: { status: 'failed', error: lastMessage } });
+  throw new AgentError(...);
+}
+```
+
+**Why one DB row per agent call** (vs. one row per pipeline)? Three reasons:
+1. **Granular timing.** You can see Strategist took 4s while Synthesizer took 1.2s, then optimize the slow one.
+2. **Independent failure.** If only the Critic fails, you still have the other 4 agent outputs in DB.
+3. **Revision visibility.** When the Critic forces a revision, you get a fresh `strategist` row for round 2 with its own input, output, and tokens — no need to overwrite the round-1 record.
+
+### Step 7: Result is persisted
+**File:** `lib/agents/orchestrator.ts` (function `persistRecommendation`)
+
+After the Synthesizer finishes, the orchestrator writes:
+- **1 `Recommendation` row** — `summary` (Synthesizer headline), `reasoning` (the markdown briefing), `confidence`, `category`, `priority`, `dataAnalysis` (menu + weather analyst outputs + `pipelineId`), `criticNotes` (full critic output).
+- **N `RecommendationAction` rows** — one per Strategist action. `actionType` is `promote`/`discount`/`hold`/`remove`, `item` is the dish name, `details` carries `{ itemId, priority, reason, discountPercent }`.
+
+The `pipelineId` lives inside `dataAnalysis.pipelineId` so the status endpoint can find this recommendation later.
+
+### Step 8: Client polling sees `status: 'complete'`
+**File:** `app/api/analysis/[pipelineId]/route.ts`
+
+The status endpoint reads from Postgres only — no Redis, no BullMQ peeking. The source of truth is the `AgentRun` rows + the `Recommendation` row.
+
+```ts
+const runs = await prisma.agentRun.findMany({
+  where: { pipelineId: validId },
+  orderBy: { createdAt: 'asc' },
+});
+// ... derive status from run statuses (any 'failed' → failed, any 'running' → running, all 5+ 'complete' → complete)
+// ... if synthesizer is complete, fetch Recommendation by dataAnalysis.pipelineId
+return NextResponse.json({ pipelineId, status, agentRuns, recommendation, ... });
+```
+
+The client polls this every 1.5s. When `status === 'complete'`, polling stops, and the UI renders the briefing.
+
+### Full ASCII diagram — Path C
+```
+Browser            Next.js API           Redis (BullMQ)        Worker process         Postgres        Groq
+   │                   │                       │                     │                   │             │
+   │  POST             │                       │                     │                   │             │
+   │  /api/analysis/run│                       │                     │                   │             │
+   ├──────────────────►│                       │                     │                   │             │
+   │                   │ validate body         │                     │                   │             │
+   │                   │ pipelineId = uuid()   │                     │                   │             │
+   │                   │ aiAnalysisQueue.add() │                     │                   │             │
+   │                   ├──────────────────────►│                     │                   │             │
+   │  202              │                       │                     │                   │             │
+   │  { pipelineId }   │                       │                     │                   │             │
+   │◄──────────────────┤                       │                     │                   │             │
+   │                   │                       │ BRPOPLPUSH wakes... │                   │             │
+   │                   │                       ├────────────────────►│                   │             │
+   │                   │                       │                     │ load weather snap │             │
+   │                   │                       │                     ├──────────────────►│             │
+   │                   │                       │                     │ load menu (JSON)  │             │
+   │                   │                       │                     │                   │             │
+   │                   │                       │                     │ ┌─ Promise.all ─┐ │             │
+   │                   │                       │                     │ │  Menu Analyst │ │             │
+   │                   │                       │                     │ │  Weather An.  │ │             │
+   │                   │                       │                     │ └───┬───────┬───┘ │             │
+   │                   │                       │                     ├─────│───────│─────────────────►│
+   │                   │                       │                     │     │       │     │ generateObj │
+   │                   │                       │                     │◄────┴───────┴────────────────  │
+   │                   │                       │                     │ INSERT agent_run x2             │
+   │                   │                       │                     ├──────────────────►│             │
+   │                   │                       │                     │                   │             │
+   │                   │                       │                     │ Strategist ──────────────────►│
+   │                   │                       │                     │◄─────────────────────────────  │
+   │                   │                       │                     │ INSERT agent_run                │
+   │                   │                       │                     ├──────────────────►│             │
+   │                   │                       │                     │                   │             │
+   │  GET /api/analysis│                       │                     │                   │             │
+   │  /[pipelineId]    │                       │                     │                   │             │
+   ├──────────────────►│                       │                     │                   │             │
+   │                   │ SELECT agent_run ─────────────────────────────────────────────►│             │
+   │                   │◄─────────────────────────────────────────────────────────────  │             │
+   │  200 (running)    │                       │                     │                   │             │
+   │◄──────────────────┤                       │                     │                   │             │
+   │  (poll again 1.5s)│                       │                     │                   │             │
+   │                   │                       │                     │                   │             │
+   │                   │                       │                     │ Critic ──────────────────────►│
+   │                   │                       │                     │◄─────────────────────────────  │
+   │                   │                       │                     │  (if blockers) loop strategist  │
+   │                   │                       │                     │                   │             │
+   │                   │                       │                     │ Synthesizer ─────────────────►│
+   │                   │                       │                     │◄─────────────────────────────  │
+   │                   │                       │                     │                   │             │
+   │                   │                       │                     │ INSERT Recommendation +         │
+   │                   │                       │                     │ RecommendationAction[] ────────►│
+   │                   │                       │                     │                   │             │
+   │  GET status       │                       │                     │                   │             │
+   ├──────────────────►│ SELECT agent_run, Recommendation────────────────────────────────►│             │
+   │  200 (complete)   │                       │                     │                   │             │
+   │  + briefing       │                       │                     │                   │             │
+   │◄──────────────────┤                       │                     │                   │             │
+```
+
+---
+
+## Production-grade touches in Path C
+
+| Concern | How it's handled |
+|---|---|
+| **Typed agent I/O** | Every agent uses `generateObject({ schema })` with a Zod schema. No string parsing. |
+| **Per-call observability** | `AgentRun` row per LLM call: status, input snapshot, output, duration, tokens, error. |
+| **Retries** | `withAgentRun({ retries: 1 })` — 2 attempts with 800ms backoff. Recorded as a single AgentRun row. |
+| **Rate limiting** | Worker `limiter: { max: 8, duration: 60_000 }` keeps Groq free-tier safe. |
+| **Concurrency** | `ANALYSIS_CONCURRENCY=2` lets two pipelines process in parallel (different businesses). |
+| **Bounded revision loop** | `MAX_REVISIONS` env var (default 1) caps Strategist ↔ Critic ping-pong. |
+| **Idempotency / dedup** | Every request gets a fresh UUID. If the user clicks twice, two pipelines run independently. |
+| **Failure isolation** | Each agent is wrapped — one failure marks its `AgentRun` as `failed` and bubbles up. Earlier agents' outputs are preserved in DB. |
+| **No agent secrets in client** | All agent files import `'server-only'` or are server-only by location (`lib/`, `app/api/`). |
+| **Polling, not SSE** | Status endpoint reads from DB. No connection state held server-side — survives restarts and load balancers. |
+| **Centralized prompts** | All system prompts live in `lib/agents/prompts.ts`. Easy to iterate or A/B test. |
+
+---
+
+## Cheat sheet — Path C files
+
+| File | Role |
+|---|---|
+| `app/api/analysis/run/route.ts` | `POST` — validate body, enqueue pipeline, return `pipelineId` |
+| `app/api/analysis/[pipelineId]/route.ts` | `GET` — read AgentRuns + Recommendation from DB, derive status |
+| `lib/workers/analysis-worker.ts` | BullMQ Worker on `ai-analysis` queue; calls orchestrator |
+| `lib/agents/orchestrator.ts` | The 5-agent state machine + revision loop + DB persistence |
+| `lib/agents/run.ts` | `withAgentRun()` — wraps every LLM call with AgentRun logging + retries |
+| `lib/agents/models.ts` | Per-agent model picker (env-overridable) |
+| `lib/agents/prompts.ts` | All system prompts and prompt builders, in one place |
+| `lib/agents/types.ts` | Zod schemas for every agent's typed output |
+| `lib/agents/menu-analyst.ts` | Menu Analyst agent (1 function) |
+| `lib/agents/weather-analyst.ts` | Weather Analyst agent |
+| `lib/agents/strategist.ts` | Strategist agent (accepts critic feedback for revisions) |
+| `lib/agents/critic.ts` | Critic agent + `criticHasBlockers/Warnings` helpers |
+| `lib/agents/synthesizer.ts` | Synthesizer agent + `deriveFinalConfidence` helper |
+| `lib/validators/analysis.ts` | Zod schemas for the API request body + pipelineId |
+| `hooks/useAnalysis.ts` | Client hook: run + poll + cancel |
+| `components/dashboard/AnalysisPanel.tsx` | Thin UI: input, button, agent timeline, briefing |
+| `scripts/test-pipeline.ts` | End-to-end test (seeds business, runs weather, runs pipeline, prints result) |
+
+---
+
+## Run it yourself
+
+```powershell
+# 1. Make sure Redis is up
+docker ps    # expect agentic-ai-redis-1
+
+# 2. Start dev server detached (boots both workers + scheduler)
+Start-Process cmd.exe /c "npm run dev" -WorkingDirectory "D:\Github\AGENTIC AI\agentic-ai"
+
+# 3. Tail logs
+Get-Content dev.log -Wait
+
+# 4. Run the end-to-end test (seeds business, fetches weather, runs pipeline, prints briefing)
+npx tsx scripts/test-pipeline.ts
+
+# 5. Or use the UI: visit http://localhost:3000, type a city in the weather box,
+#    then scroll down to "Daily AI Briefing" and click "Run Analysis".
+
+# 6. Inspect agent runs for a pipeline
+docker exec agentic-ai-redis-1 redis-cli LLEN bull:ai-analysis:completed
+```
+
+---
+
+## Where the three paths share code
+
+Path A and Path B both call `lib/services/weather/client.ts:fetchWeather(city)`. Path C reads the **persisted** snapshot Path B wrote — it never re-fetches.
+
+| Layer | Path A (on-demand) | Path B (queue) | Path C (pipeline) |
+|---|---|---|---|
+| Entry | `app/api/weather/route.ts` | `lib/scheduler.ts` cron → `lib/workers/weather-worker.ts` | `app/api/analysis/run/route.ts` → `lib/workers/analysis-worker.ts` |
+| LLM? | ✅ Yes (Groq with `weather` tool) | ❌ No (calls `fetchWeather` directly) | ✅ Yes (5 agents, `generateObject` with Zod schemas) |
+| BullMQ? | ❌ No | ✅ Yes (`data-collect` queue) | ✅ Yes (`ai-analysis` queue) |
+| Reads | — | Open-Meteo (live) | Latest `DataSnapshot` (weather) + `Menu` from JSON file |
+| Writes | — | `DataSnapshot` row | `AgentRun` rows (5+) + `Recommendation` + `RecommendationAction[]` |
+| Result | Returned to the browser | Saved for later analysis | Polled by the browser; persisted forever |
+
+Path B feeds Path C. Without a fresh weather snapshot, Path C throws `AgentError('No fresh weather snapshot...')`.
 
 ---
 
@@ -646,7 +1014,9 @@ The reason the agent layer is separate is so the LLM can later **choose** which 
 
 ## Mental model summary
 
-- **Path A** = the LLM brain. The agent is the boss. It decides what tool to call and assembles the final answer. Slow (~2-5s) because Groq is involved. User-facing.
-- **Path B** = the muscle. The cron is the clock. It triggers, the worker runs, data is saved. Fast (~500ms). Machine-facing, for later AI analysis.
-- Both end up at the same `fetchWeather` function. That's intentional — the data layer is shared.
-- BullMQ is what makes Path B reliable. Without it, a crashed server would lose the job. With it, the job sits in Redis until some worker picks it up, with retries, rate limits, and observability built in.
+- **Path A** = the LLM brain (small). Tool-calling agent that answers "what's the weather in X right now". Slow (~2-5s) because Groq is involved. User-facing.
+- **Path B** = the muscle. Cron triggers, worker runs, data is saved. Fast (~500ms). Machine-facing, feeds Path C.
+- **Path C** = the **agentic AI** part. Five LLM agents reason in sequence (with a critic revision loop) over the cached weather snapshot + the menu, and write a daily briefing the cafe owner reads on their phone.
+- All three end up touching the same `WeatherData` shape. Path B caches it for Path C to use later.
+- BullMQ makes Paths B and C reliable — a crashed server doesn't lose the work, retries are automatic, and rate limits prevent Groq throttling.
+- `AgentRun` rows are the **audit log**: every LLM call is one row. Open the DB and you can replay any pipeline.

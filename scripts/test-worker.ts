@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Queue } from 'bullmq';
+import { Queue, QueueEvents } from 'bullmq';
 import 'dotenv/config';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
@@ -19,19 +19,22 @@ async function main() {
   });
   console.log('Business ready:', biz.name);
 
-  const queue = new Queue('data-collect', {
-    connection: {
-      host: process.env.REDIS_HOST ?? 'localhost',
-      port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
-    },
-  });
+  const connection = {
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
+  };
+
+  const queue = new Queue('data-collect', { connection });
+  const queueEvents = new QueueEvents('data-collect', { connection });
+  await queueEvents.waitUntilReady();
+
   const job = await queue.add('weather-fetch', {
     businessId: 'test-biz-1',
     city: 'Tokyo',
   });
   console.log('Job enqueued:', job.id);
 
-  await job.waitUntilFinished(queue, 30000);
+  await job.waitUntilFinished(queueEvents, 30000);
   console.log('Job finished:', await job.returnvalue);
 
   const snap = await prisma.dataSnapshot.findFirst({
@@ -41,6 +44,7 @@ async function main() {
   console.log('Snapshot saved:', snap ? 'YES' : 'NO');
   if (snap) console.log('  temperature:', (snap.data as { temperature: number }).temperature);
 
+  await queueEvents.close();
   await queue.close();
   await prisma.$disconnect();
 }

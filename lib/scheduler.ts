@@ -1,6 +1,8 @@
 import cron from 'node-cron';
+import { randomUUID } from 'crypto';
 import { dataCollectQueue, aiAnalysisQueue } from './queues/data-queue';
 import { prisma } from './db';
+import { logger } from './logger';
 
 type JobHandler = () => Promise<void>;
 
@@ -10,13 +12,15 @@ interface ScheduledJob {
   run: JobHandler;
 }
 
+const log = logger.child('scheduler');
+
 const jobs: ScheduledJob[] = [
   {
     name: 'weather-fetch',
     cron: process.env.WEATHER_FETCH_CRON ?? '0 6 * * *',
     run: async () => {
       const businesses = await prisma.business.findMany();
-      console.log(`[scheduler] weather-fetch: ${businesses.length} business(es)`);
+      log.info('weather-fetch tick', { businesses: businesses.length });
       for (const biz of businesses) {
         await dataCollectQueue.add(
           'weather-fetch',
@@ -35,14 +39,7 @@ const jobs: ScheduledJob[] = [
     name: 'sales-pull',
     cron: process.env.SALES_PULL_CRON ?? '0 7 * * *',
     run: async () => {
-      console.log('[scheduler] sales-pull: not implemented yet');
-    },
-  },
-  {
-    name: 'competitor-scrape',
-    cron: process.env.COMPETITOR_SCRAPE_CRON ?? '0 8 * * *',
-    run: async () => {
-      console.log('[scheduler] competitor-scrape: not implemented yet');
+      log.info('sales-pull tick (not implemented)');
     },
   },
   {
@@ -50,10 +47,11 @@ const jobs: ScheduledJob[] = [
     cron: process.env.DAILY_ANALYSIS_CRON ?? '0 9 * * *',
     run: async () => {
       const businesses = await prisma.business.findMany();
+      log.info('daily-analysis tick', { businesses: businesses.length });
       for (const biz of businesses) {
         await aiAnalysisQueue.add(
-          'daily-analysis',
-          { businessId: biz.id },
+          'full-pipeline',
+          { businessId: biz.id, pipelineId: randomUUID() },
           { priority: 2 }
         );
       }
@@ -74,9 +72,9 @@ export function startScheduler(): void {
       try {
         await job.run();
       } catch (e) {
-        console.error(`[scheduler] ${job.name} crashed:`, e);
+        log.error(`${job.name} crashed`, e);
       }
     });
-    console.log(`[scheduler] registered ${job.name} (${job.cron})`);
+    log.info(`registered ${job.name} (${job.cron})`);
   }
 }
