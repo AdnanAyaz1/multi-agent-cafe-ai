@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWeatherData } from '@/lib/agents/weather-agent';
+import { weatherRequestSchema } from '@/lib/validators/weather';
+import { apiHandler } from '@/lib/api/handler';
+import { AgentError, ValidationError } from '@/lib/errors';
 
-export async function POST(request: NextRequest) {
-  const { city } = await request.json();
-
-  if (!city || typeof city !== 'string') {
-    return NextResponse.json({ error: 'City is required' }, { status: 400 });
+export const POST = apiHandler(async (request: NextRequest) => {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    throw new ValidationError('Invalid JSON body');
   }
 
-  const result = await getWeatherData(city.trim());
-  const status = result.error ? 500 : 200;
+  const { city } = weatherRequestSchema.parse(body);
 
-  return NextResponse.json(result, { status });
-}
+  const result = await getWeatherData(city);
+
+  if (result.error) {
+    throw new AgentError(result.error);
+  }
+
+  return NextResponse.json(result);
+});
