@@ -1,5 +1,9 @@
 # AI-Powered Business Intelligence Platform — Architecture
 
+> **Implementation note (2026-06-04):** The plan below is the target. What actually shipped so far is in `progress.md`. Two deviations from the spec worth flagging:
+> 1. **Prisma 7 driver adapter** is now required — the `datasource db { url = env(...) }` pattern still works for migrations, but `new PrismaClient()` in code must use `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })`. `lib/db.ts` shows the current shape.
+> 2. **Boot pattern is `instrumentation.ts`**, not a custom `lib/scheduler.ts` import in a layout. Next.js 16's `register()` runs once on server start and is the official way to kick off long-running workers.
+
 ## 1. Vision
 
 An AI operations dashboard for restaurants, cafes, and ecommerce businesses.
