@@ -1,5 +1,5 @@
 import 'server-only';
-import { prisma } from '@/lib/db';
+import { prisma, toPrismaJson } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { getMenuForBusiness } from '@/lib/menu';
 import { NotFoundError, AgentError } from '@/lib/errors';
@@ -188,26 +188,22 @@ async function persistRecommendation(
       category: 'marketing',
       priority: priorityFromActions(args.strategist),
       status: 'pending',
-      dataAnalysis: JSON.parse(
-        JSON.stringify({
-          pipelineId: context.pipelineId,
-          menuAnalysis: args.menuAnalysis,
-          weatherAnalysis: args.weatherAnalysis,
-        })
-      ) as object,
-      criticNotes: JSON.parse(JSON.stringify(args.critic)) as object,
+      dataAnalysis: toPrismaJson({
+        pipelineId: context.pipelineId,
+        menuAnalysis: args.menuAnalysis,
+        weatherAnalysis: args.weatherAnalysis,
+      }),
+      criticNotes: toPrismaJson(args.critic),
       actions: {
         create: args.strategist.actions.map((a) => ({
           actionType: a.action,
           item: a.itemName,
-          details: JSON.parse(
-            JSON.stringify({
-              itemId: a.itemId,
-              priority: a.priority,
-              reason: a.reason,
-              discountPercent: a.discountPercent,
-            })
-          ) as object,
+          details: toPrismaJson({
+            itemId: a.itemId,
+            priority: a.priority,
+            reason: a.reason,
+            discountPercent: a.discountPercent,
+          }),
         })),
       },
     },

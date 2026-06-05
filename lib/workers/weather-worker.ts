@@ -1,6 +1,8 @@
+import 'server-only';
 import { Worker, Job } from 'bullmq';
-import { prisma } from '@/lib/db';
+import { prisma, toPrismaJson } from '@/lib/db';
 import { fetchWeather } from '@/lib/services/weather/client';
+import { logger } from '@/lib/logger';
 
 interface WeatherJobData {
   businessId: string;
@@ -18,6 +20,8 @@ const globalForWorker = globalThis as unknown as {
   weatherWorker: Worker<WeatherJobData> | undefined;
 };
 
+const log = logger.child('weather-worker');
+
 function createWorker(): Worker<WeatherJobData> {
   const worker = new Worker<WeatherJobData>(
     'data-collect',
@@ -31,7 +35,7 @@ function createWorker(): Worker<WeatherJobData> {
         data: {
           businessId,
           source: 'weather',
-          data: JSON.parse(JSON.stringify(weather)) as object,
+          data: toPrismaJson(weather),
           collectedAt: new Date(),
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },
@@ -50,11 +54,14 @@ function createWorker(): Worker<WeatherJobData> {
   );
 
   worker.on('completed', (job) => {
-    console.log(`[weather-worker] job ${job.id} completed for ${job.data.city}`);
+    log.info('job completed', { jobId: job.id, city: job.data.city });
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[weather-worker] job ${job?.id} failed:`, err.message);
+    log.error('job failed', err, {
+      jobId: job?.id,
+      city: job?.data?.city,
+    });
   });
 
   return worker;

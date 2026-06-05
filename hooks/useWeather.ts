@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { WeatherData, WeatherResult } from '@/lib/types';
+import type { WeatherData } from '@/lib/types';
+import { fetchWeather } from '@/lib/api/weather';
 
 export function useWeather() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -14,7 +15,7 @@ export function useWeather() {
     setWeather(null);
 
     try {
-      const res = await fetchWeatherApi(city);
+      const res = await fetchWeather(city);
       if (res.error) setError(res.error);
       else setWeather(res.data ?? null);
     } catch (e) {
@@ -25,13 +26,4 @@ export function useWeather() {
   };
 
   return { weather, loading, error, fetch };
-}
-
-async function fetchWeatherApi(city: string): Promise<WeatherResult> {
-  const res = await fetch('/api/weather', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ city }),
-  });
-  return res.json();
 }
