@@ -33,6 +33,9 @@ yarn-error.log*
 # local dev artifacts (detached `npm run dev` output)
 dev.log
 dev-err.log
+dev-competitor.log
+dev.err.log
+dev.out.log
 
 # env files: ignore real ones, keep .env.example (template) tracked
 .env

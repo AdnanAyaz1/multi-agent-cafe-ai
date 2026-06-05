@@ -1,6 +1,10 @@
 import cron from 'node-cron';
 import { randomUUID } from 'crypto';
-import { dataCollectQueue, aiAnalysisQueue } from './queues/data-queue';
+import {
+  dataCollectQueue,
+  aiAnalysisQueue,
+  competitorCollectQueue,
+} from './queues/data-queue';
 import { prisma } from './db';
 import { logger } from './logger';
 
@@ -13,6 +17,13 @@ interface ScheduledJob {
 }
 
 const log = logger.child('scheduler');
+
+function extractCompetitorUrls(config: unknown): string[] {
+  if (!config || typeof config !== 'object') return [];
+  const raw = (config as Record<string, unknown>).competitorUrls;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((u): u is string => typeof u === 'string' && u.length > 0);
+}
 
 const jobs: ScheduledJob[] = [
   {
@@ -40,6 +51,31 @@ const jobs: ScheduledJob[] = [
     cron: process.env.SALES_PULL_CRON ?? '0 7 * * *',
     run: async () => {
       log.info('sales-pull tick (not implemented)');
+    },
+  },
+  {
+    name: 'competitor-scrape',
+    cron: process.env.COMPETITOR_SCRAPE_CRON ?? '0 8 * * *',
+    run: async () => {
+      const businesses = await prisma.business.findMany();
+      let totalUrls = 0;
+      for (const biz of businesses) {
+        const urls = extractCompetitorUrls(biz.config);
+        if (urls.length === 0) continue;
+        const pipelineId = randomUUID();
+        for (const url of urls) {
+          await competitorCollectQueue.add(
+            'competitor-scrape',
+            { businessId: biz.id, url, pipelineId },
+            { priority: 1 }
+          );
+          totalUrls++;
+        }
+      }
+      log.info('competitor-scrape tick', {
+        businesses: businesses.length,
+        urlsEnqueued: totalUrls,
+      });
     },
   },
   {

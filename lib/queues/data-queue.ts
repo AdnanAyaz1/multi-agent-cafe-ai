@@ -37,3 +37,14 @@ export const reportQueue = new Queue('reports', {
     },
   },
 })
+
+export const competitorCollectQueue = new Queue('competitor-collect', {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+  },
+})

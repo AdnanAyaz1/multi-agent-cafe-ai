@@ -82,6 +82,35 @@ Produce:
 
 Keep it tight. Owner reads on a phone before opening shop.`;
 
+export const COMPETITOR_PARSER_SYSTEM = `You extract menu and promotion data from a competitor cafe/restaurant website's raw text.
+
+The text comes from a scraped HTML page — it will be noisy. Headers, footers, navigation, cookie banners, and unrelated copy will be mixed with the actual menu. Your job is to pull out only the menu items and active promotions.
+
+For each menu item you find:
+- name: the dish or drink name, cleaned of pricing/extra punctuation (max 160 chars)
+- category: a short category if obvious from headings (e.g. "drinks", "breakfast", "desserts"). Omit if unclear.
+- price: numeric price only, no currency symbol. Omit if no price is visible next to the item.
+- currency: the symbol or ISO code if you can detect it (e.g. "PKR", "USD", "$", "£"). Omit if ambiguous.
+- description: at most one short sentence the menu itself provides. Omit if none.
+- isPromo: true if the listing itself mentions discount/offer/limited (e.g. "Today only", "20% off")
+
+For each promo you find (banners, callouts, "Limited Offer" sections):
+- text: the promo line as written (max 240 chars)
+- discountPercent: numeric percent if explicit (e.g. "20% off" → 20). Omit if not numeric.
+- validUntil: any date or "today"/"this week" phrase mentioned
+
+Also produce:
+- brand: the cafe/restaurant name if you can identify it from the page (often in the title or hero)
+- notes: 1-4 short observations about pricing tier, menu focus, or anything strategically useful (e.g. "Specializes in cold brew", "Heavy on bakery items"). No fluff.
+
+Rules:
+- If the page does not look like a menu page (404, login, generic homepage with no items), return an empty items array and a single note explaining what the page contained.
+- Maximum 60 items. If there are more, pick the most prominent.
+- Never invent items, prices, or promos. If unsure, omit.
+- Do not include navigation links, social media handles, addresses, or phone numbers as items.
+
+Return only the structured object.`;
+
 export interface MenuAnalystInput {
   menu: {
     businessId: string;
@@ -109,6 +138,16 @@ export interface WeatherAnalystInput {
   };
 }
 
+export interface CompetitorParserInput {
+  scrape: {
+    url: string;
+    finalUrl: string;
+    title: string;
+    text: string;
+    scrapedAt: string;
+  };
+}
+
 export function buildMenuAnalystPrompt(input: MenuAnalystInput): string {
   return `Analyze this menu (${input.menu.items.length} items):\n\n${JSON.stringify(
     input.menu.items,
@@ -119,6 +158,21 @@ export function buildMenuAnalystPrompt(input: MenuAnalystInput): string {
 
 export function buildWeatherAnalystPrompt(input: WeatherAnalystInput): string {
   return `Analyze today's weather:\n\n${JSON.stringify(input.weather, null, 2)}`;
+}
+
+export function buildCompetitorParserPrompt(input: CompetitorParserInput): string {
+  return [
+    `Source URL: ${input.scrape.url}`,
+    `Final URL after redirects: ${input.scrape.finalUrl}`,
+    `Page title: ${input.scrape.title || '(none)'}`,
+    `Scraped at: ${input.scrape.scrapedAt}`,
+    '',
+    'Raw page text (truncated, noisy — extract only menu items + promos):',
+    '---',
+    input.scrape.text,
+    '---',
+    'Return only the structured object.',
+  ].join('\n');
 }
 
 export function buildStrategistPrompt(args: {

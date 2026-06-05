@@ -92,6 +92,32 @@ export const synthesizerOutputSchema = z.object({
 });
 export type SynthesizerOutput = z.infer<typeof synthesizerOutputSchema>;
 
+// ─── Competitor Parser output ───────────────────────────────────
+export const competitorMenuItemSchema = z.object({
+  name: z.string().min(1).max(160),
+  category: z.string().max(60).optional(),
+  price: z.number().nonnegative().optional(),
+  currency: z.string().max(8).optional(),
+  description: z.string().max(240).optional(),
+  isPromo: z.boolean(),
+});
+export type CompetitorMenuItemParsed = z.infer<typeof competitorMenuItemSchema>;
+
+export const competitorPromoSchema = z.object({
+  text: z.string().min(1).max(240),
+  discountPercent: z.number().int().min(1).max(99).optional(),
+  validUntil: z.string().max(40).optional(),
+});
+export type CompetitorPromoParsed = z.infer<typeof competitorPromoSchema>;
+
+export const competitorParserOutputSchema = z.object({
+  brand: z.string().max(120).optional(),
+  items: z.array(competitorMenuItemSchema).max(60),
+  promos: z.array(competitorPromoSchema).max(15),
+  notes: z.array(z.string().max(200)).max(6),
+});
+export type CompetitorParserOutput = z.infer<typeof competitorParserOutputSchema>;
+
 // ─── Pipeline-level types ───────────────────────────────────────
 export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed'] as const;
 export type PipelineStatus = (typeof PIPELINE_STATUSES)[number];
@@ -102,6 +128,7 @@ export const AGENT_NAMES = [
   'strategist',
   'critic',
   'synthesizer',
+  'competitor-parser',
 ] as const;
 export type AgentName = (typeof AGENT_NAMES)[number];
 
@@ -110,4 +137,11 @@ export interface PipelineContext {
   businessId: string;
 }
 
-export type { WeatherData, WeatherResult } from '@/lib/types';
+export type {
+  WeatherData,
+  WeatherResult,
+  CompetitorScrapeResult,
+  CompetitorData,
+  CompetitorMenuItem,
+  CompetitorPromo,
+} from '@/lib/types';
