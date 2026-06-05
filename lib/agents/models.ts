@@ -5,7 +5,7 @@ import type { AgentName } from './types';
 
 const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
 
-const DEFAULT_MODEL = 'llama-3.1-8b-instant';
+const DEFAULT_MODEL = 'openai/gpt-oss-120b';
 
 const PER_AGENT_MODEL: Record<AgentName, string> = {
   'menu-analyst': process.env.MODEL_MENU_ANALYST ?? DEFAULT_MODEL,
@@ -13,6 +13,7 @@ const PER_AGENT_MODEL: Record<AgentName, string> = {
   strategist: process.env.MODEL_STRATEGIST ?? DEFAULT_MODEL,
   critic: process.env.MODEL_CRITIC ?? DEFAULT_MODEL,
   synthesizer: process.env.MODEL_SYNTHESIZER ?? DEFAULT_MODEL,
+  'competitor-parser': process.env.MODEL_COMPETITOR_PARSER ?? DEFAULT_MODEL,
 };
 
 export function getModel(agentName: AgentName): LanguageModel {

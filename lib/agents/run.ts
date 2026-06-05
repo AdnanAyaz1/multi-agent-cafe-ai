@@ -65,6 +65,9 @@ export async function withAgentRun<Output>(
         prompt: args.prompt,
         schema: args.schema,
         schemaName: args.schemaName,
+        providerOptions: {
+          groq: { structuredOutputs: true, strictJsonSchema: false },
+        },
       });
 
       const durationMs = Date.now() - start;
