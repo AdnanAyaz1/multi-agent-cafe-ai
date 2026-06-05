@@ -1,7 +1,7 @@
 # Cheatsheet — Background Jobs & Agentic AI
 
 > Distilled mental models + minimal code patterns. Carry these, ignore the rest.
-> Last updated 2026-06-04.
+> Last updated 2026-06-05.
 
 ---
 
@@ -162,10 +162,11 @@ const getWeather = tool({
 });
 
 const { object } = await generateObject({
-  model: groq('llama-3.1-8b-instant'),
+  model: groq('openai/gpt-oss-120b'),
   schema: WeatherSchema,
   prompt: 'Get the weather for London.',
   tools: { getWeather },
+  providerOptions: { groq: { structuredOutputs: true, strictJsonSchema: false } },
 });
 
 console.log(object);  // typed! { city, temperature, condition }
@@ -267,17 +268,12 @@ Server is ready. Workers live in memory. They wake on jobs.
 // instrumentation.ts
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
-  await import('./lib/worker');           // Worker lives here
+  await import('./lib/workers/weather-worker');
+  await import('./lib/workers/analysis-worker');
+  await import('./lib/workers/competitor-worker');  // <-- new
   const { startScheduler } = await import('./lib/scheduler');
   startScheduler();
 }
-
-// lib/worker.ts
-const g = globalThis as unknown as { worker?: Worker };
-export const worker = g.worker ?? new Worker('my-queue', async (job) => {
-  // ...
-});
-if (process.env.NODE_ENV !== 'production') g.worker = worker;
 ```
 
 ### The rule

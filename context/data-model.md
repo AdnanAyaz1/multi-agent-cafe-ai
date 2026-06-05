@@ -7,12 +7,12 @@
 
 | Model | Purpose |
 |---|---|
-| `Business` | A subscribed cafe/restaurant/ecommerce store. Holds location + flexible `config` JSON. |
-| `DataSnapshot` | Time-stamped payload from any data source (weather, sales, competitors, trends). 24h TTL on weather. |
+| `Business` | A subscribed cafe/restaurant/ecommerce store. Holds location + flexible `config` JSON (`config.competitorUrls: string[]` for the competitor pipeline). |
+| `DataSnapshot` | Time-stamped payload from any data source. `source` values used so far: `weather` (24h TTL), `competitors` (24h TTL). Future: `sales`, `trends`. |
 | `Recommendation` | AI-generated action for a business on a given day. Tracks status (pending → applied → outcome). |
 | `RecommendationAction` | One concrete action within a recommendation (e.g. "discount Hot Chocolate 15%"). |
 | `Alert` | First-class notification (anomaly, competitor, weather, sales). Has severity + read state. |
-| `AgentRun` | Log entry for a single agent invocation. `pipelineId` groups all 4 agents of one analysis cycle. |
+| `AgentRun` | Log entry for a single agent invocation. `agentName` values: `menu-analyst`, `weather-analyst`, `strategist`, `critic`, `synthesizer`, `competitor-parser`. `pipelineId` groups all agents of one analysis cycle or all competitor jobs for one batch. |
 | `JobSchedule` | Cron config (expression, enabled flag, last/next run, job-specific config). |
 
 ## Relationships

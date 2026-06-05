@@ -71,4 +71,13 @@
 - Q1: One cafe or many? — **Confirmed: one cafe**
 - Q2: JSON file mock of the menu? — **Confirmed: yes**
 - Q3: Weather provider? — **Confirmed: Open-Meteo**
-- Q4: LLM provider? — **Confirmed: Groq (cloud), default `llama-3.1-8b-instant`**
+- Q4: LLM provider? — **Confirmed: Groq (cloud)**. Default model migrated from `llama-3.1-8b-instant` to `openai/gpt-oss-120b` on 2026-06-05 after Groq decommissioned `json_schema` support for the Llama-3 lineup. `providerOptions.groq = { structuredOutputs: true, strictJsonSchema: false }` is set on every `generateObject` call to use best-effort validation mode.
+
+## New in v2 (2026-06-05)
+
+- **F7. Competitor monitoring**
+  - F7.1 For each business, store a list of competitor URLs (`Business.config.competitorUrls`)
+  - F7.2 Scrape each URL (Playwright + Crawlee, headless Chromium), strip scripts/styles, return visible text
+  - F7.3 Send the text to the `competitor-parser` agent → Zod-typed `{ brand?, items, promos, notes }`
+  - F7.4 Persist a `DataSnapshot{source: 'competitors', expiresAt: +24h}`
+  - F7.5 Cron `competitor-scrape` (default 8am) enqueues per-URL jobs sharing one `pipelineId`

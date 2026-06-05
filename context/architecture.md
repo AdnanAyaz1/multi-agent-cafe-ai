@@ -1,8 +1,9 @@
 # AI-Powered Business Intelligence Platform — Architecture
 
-> **Implementation note (2026-06-04):** The plan below is the target. What actually shipped so far is in `progress.md`. Two deviations from the spec worth flagging:
+> **Implementation note (2026-06-05):** The plan below is the target. What actually shipped is in `progress.md`. Three deviations from the spec worth flagging:
 > 1. **Prisma 7 driver adapter** is now required — the `datasource db { url = env(...) }` pattern still works for migrations, but `new PrismaClient()` in code must use `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })`. `lib/db.ts` shows the current shape.
 > 2. **Boot pattern is `instrumentation.ts`**, not a custom `lib/scheduler.ts` import in a layout. Next.js 16's `register()` runs once on server start and is the official way to kick off long-running workers.
+> 3. **Groq model**: `llama-3.1-8b-instant` and `llama-3.3-70b-versatile` no longer support `json_schema` on Groq (decommissioned 2026-06). Default is now `openai/gpt-oss-120b` with best-effort mode (`strictJsonSchema: false`). See `progress.md` issue #1.
 
 ## 1. Vision
 
@@ -31,17 +32,20 @@ system** that learns your business and proactively recommends actions.
 ## 3. Core Features
 
 ### 3.1 Data Collection (Background Jobs)
-- **Weather service**: Fetch daily forecast for each business location
-- **Sales ingestion**: Pull yesterday's sales data from business DB
-- **Competitor monitoring**: Track competitor pricing/promotions (scraping or API)
-- **Customer trends**: Analyze order patterns, popular items, time-of-day trends
-- **Market events**: Holidays, local events, seasonal patterns
+- **Weather service**: Fetch daily forecast for each business location *(shipped)*
+- **Competitor monitoring**: Scrape competitor pages (Playwright + Crawlee) and extract menu/promos via LLM *(shipped 2026-06-05)*
+- **Sales ingestion**: Pull yesterday's sales data from business DB *(deferred)*
+- **Customer trends**: Analyze order patterns, popular items, time-of-day trends *(deferred)*
+- **Market events**: Holidays, local events, seasonal patterns *(not started)*
 
 ### 3.2 AI Analysis Pipeline
-- **Data Analyzer Agent**: Processes raw data, finds patterns
-- **Recommendation Engine**: Generates specific, actionable suggestions
-- **Critic Agent**: Validates recommendations against business rules
-- **Briefing Writer**: Produces a daily executive summary
+- **Data Analyzer Agent** → built as **Menu Analyst** + **Weather Analyst** (two parallel analysis agents)
+- **Recommendation Engine** → built as **Strategist** (accepts critic feedback, re-runs in the orchestrator's revision loop)
+- **Critic Agent** → built as **Critic** (exports `criticHasBlockers/Warnings` for the orchestrator to decide whether to loop)
+- **Briefing Writer** → built as **Synthesizer** (final brief + action list)
+- **Standalone agents** (not part of the orchestrator's pipeline):
+  - **Weather Agent** (Path A) — single LLM call + tool, returns typed weather
+  - **Competitor Parser** — takes a raw scraped page and returns `{ brand?, items, promos, notes }` (Zod-typed)
 
 ### 3.3 Dashboard
 - Daily briefing with top recommendations
@@ -58,14 +62,14 @@ system** that learns your business and proactively recommends actions.
 |---|---|---|
 | Frontend | Next.js 16 (App Router) | SSR dashboard, streaming |
 | UI | shadcn/ui + Tailwind v4 | Already configured |
-| AI/Agents | Vercel AI SDK + Groq | Already configured, fast inference |
-| ORM | Prisma | Type-safe DB access |
-| Database | PostgreSQL | Historical data, recommendations, audit trail |
+| AI/Agents | Vercel AI SDK + Groq (`openai/gpt-oss-120b`, best-effort `json_schema`) | Already configured, fast inference |
+| ORM | Prisma 7 + `@prisma/adapter-pg` | Type-safe DB access; v7 requires driver adapter |
+| Database | PostgreSQL (Neon) | Historical data, recommendations, audit trail |
 | Queue | BullMQ + Redis | Scheduled jobs, retries, cron |
 | Cache/Scheduler | Redis + node-cron | Cron scheduling + caching |
-| PDF Reports | @react-pdf/renderer | Daily briefing PDF export |
-| Web Scraping | Cheerio | Competitor monitoring |
-| Deployment | Docker Compose | All services in containers |
+| PDF Reports | @react-pdf/renderer | Daily briefing PDF export *(not yet integrated)* |
+| Web Scraping | Crawlee + Playwright (headless Chromium) | Competitor monitoring *(Cheerio was the original plan; switched to Playwright because competitor sites need JS rendering)* |
+| Deployment | Docker Compose (Redis container) | Redis is in Docker; app runs locally with `next dev` |
 
 ### New Dependencies
 
@@ -95,44 +99,53 @@ npm install -D @types/uuid
 ┌──────────────────────────────────────────────────────────────────┐
 │                       Next.js App                                │
 │                                                                   │
-│  ┌────────────┐  ┌─────────────┐  ┌──────────────────────────┐  │
-│  │  Dashboard  │  │ API Routes  │  │   Background Services     │  │
-│  │  (RSC)     │  │             │  │                            │  │
-│  │            │  │ /api/daily  │  │  ┌──────────────────────┐ │  │
-│  │  • Briefing│  │ /api/data   │  │  │ Cron Scheduler       │ │  │
-│  │  • History │  │ /api/alerts │  │  │ (node-cron)          │ │  │
-│  │  • Alerts  │  │ /api/config │  │  │                      │ │  │
-│  └────┬───────┘  └──────┬──────┘  │  │ • 6am: Fetch weather │ │  │
-│       │                 │         │  │ • 7am: Pull sales     │ │  │
-│       │                 │         │  │ • 8am: Scrape comp.   │ │  │
-│       │                 │         │  │ • 9am: Run AI analysis│ │  │
-│       │                 │         │  └──────────┬───────────┘ │  │
-│       │                 │         │             │              │  │
-│       │                 │         │  ┌──────────▼───────────┐ │  │
-│       │                 │         │  │ BullMQ Workers       │ │  │
-│       │                 │         │  │                      │ │  │
-│       │                 │         │  │ • Weather Worker     │ │  │
-│       │                 │         │  │ • Sales Worker       │ │  │
-│       │                 │         │  │ • Competitor Worker  │ │  │
-│       │                 │         │  │ • Analysis Worker    │ │  │
-│       │                 │         │  │ • Report Worker      │ │  │
-│       │                 │         │  └──────────┬───────────┘ │  │
-│       │                 │         └─────────────┼────────────┘  │
-│       │                 │                       │                │
-│  ┌────▼─────────────────▼───────────────────────▼────────────┐  │
-│  │                    Agent Pipeline                          │  │
-│  │                                                            │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │  │
-│  │  │  Data    │  │ Recommend│  │  Critic  │  │ Briefing │ │  │
-│  │  │ Analyzer │→ │  Engine  │→ │  Agent   │→ │  Writer  │ │  │
-│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘ │  │
-│  └────────────────────────────────────────────────────────────┘  │
+│  ┌────────────┐  ┌─────────────────┐  ┌────────────────────────┐ │
+│  │  Dashboard  │  │  API Routes     │  │  Background Services    │ │
+│  │  (RSC)     │  │                 │  │                         │ │
+│  │            │  │ /api/weather    │  │  ┌──────────────────┐  │ │
+│  │  • Briefing│  │ /api/analysis/* │  │  │ Cron Scheduler   │  │ │
+│  │  • History │  │ /api/competitor/*│ │  │ (node-cron)      │  │ │
+│  │  • Alerts  │  │                 │  │  │                  │  │ │
+│  └────┬───────┘  └──────┬──────────┘  │  │ • 6am: weather   │  │ │
+│       │                 │             │  │ • 7am: sales      │  │ │
+│       │                 │             │  │ • 8am: competitor │  │ │
+│       │                 │             │  │ • 9am: AI analysis│  │ │
+│       │                 │             │  └─────────┬─────────┘  │ │
+│       │                 │             │            │            │ │
+│       │                 │             │  ┌─────────▼─────────┐  │ │
+│       │                 │             │  │ BullMQ Workers    │  │ │
+│       │                 │             │  │                   │  │ │
+│       │                 │             │  │ • Weather Worker  │  │ │
+│       │                 │             │  │ • Competitor Wk.  │  │ │
+│       │                 │             │  │ • Analysis Worker │  │ │
+│       │                 │             │  └─────────┬─────────┘  │ │
+│       │                 │             └────────────┼────────────┘ │
+│       │                 │                          │              │
+│  ┌────▼─────────────────▼──────────────────────────▼─────────┐   │
+│  │              Agent Pipeline + Standalone Agents            │   │
+│  │                                                            │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐     │   │
+│  │  │   Menu   │ │ Weather  │ │Strate-   │ │  Critic  │     │   │
+│  │  │  Analyst │→│ Analyst  │→│ gist     │→│  Agent   │     │   │
+│  │  └──────────┘ └──────────┘ └────┬─────┘ └────┬─────┘     │   │
+│  │                                  │            │            │   │
+│  │                                  │ (revisions)│            │   │
+│  │                                  │            │            │   │
+│  │                                  ▼            ▼            │   │
+│  │                          ┌──────────┐  ┌──────────┐       │   │
+│  │                          │  Synth-  │  │Competitor│       │   │
+│  │                          │  esizer  │  │ Parser   │       │   │
+│  │                          └──────────┘  └──────────┘       │   │
+│  │  (orchestrator)           (in pipeline) (standalone)      │   │
+│  └────────────────────────────────────────────────────────────┘   │
 │       │              │              │              │              │
 │  ┌────▼──────┐  ┌────▼──────┐  ┌───▼───────┐  ┌─▼──────────┐  │
-│  │ PostgreSQL │  │   Redis   │  │  Groq API │  │ Weather API │  │
-│  │ (Prisma)  │  │ (Queue/   │  │  (LLM)    │  │ (Open-Meteo)│  │
-│  │           │  │  Cache)   │  │           │  │             │  │
-│  └───────────┘  └───────────┘  └───────────┘  └─────────────┘  │
+│  │ PostgreSQL │  │   Redis   │  │  Groq API │  │ External   │  │
+│  │ (Prisma 7) │  │ (BullMQ/  │  │  (LLM)    │  │ APIs:      │  │
+│  │           │  │  cache)   │  │           │  │ • Open-Meteo│ │
+│  └───────────┘  └───────────┘  └───────────┘  │ • Competitor│ │
+│                                                │   sites     │  │
+│                                                └─────────────┘  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -296,26 +309,27 @@ model JobSchedule {
 ┌─────────────────────────────────────────────────────┐
 │                  BullMQ Queues                       │
 │                                                       │
-│  ┌──────────────┐  Priority: 1 (highest)             │
-│  │ data-collect │  ── weather-fetch                  │
-│  │              │  ── sales-pull                     │
-│  │              │  ── competitor-scrape              │
-│  └──────────────┘  ── trend-analysis                │
+│  ┌──────────────────┐  Priority: 1 (highest)         │
+│  │ data-collect     │  ── weather-fetch              │
+│  │                  │  ── sales-pull                 │
+│  │                  │  ── trend-analysis (TBD)       │
+│  └──────────────────┘                                 │
 │                                                       │
-│  ┌──────────────┐  Priority: 2                       │
-│  │ ai-analysis  │  ── daily-analysis                │
-│  │              │  ── on-demand-analysis             │
-│  └──────────────┘                                    │
+│  ┌──────────────────┐  Priority: 1                   │
+│  │ competitor-collect│  ── competitor-scrape (1 URL) │
+│  │                  │  ── (per-URL job, share a      │
+│  │                  │     pipelineId for grouping)    │
+│  └──────────────────┘                                 │
 │                                                       │
-│  ┌──────────────┐  Priority: 3                       │
-│  │ reports      │  ── briefing-send                 │
-│  │              │  ── pdf-generation                 │
-│  └──────────────┘                                    │
+│  ┌──────────────────┐  Priority: 2                   │
+│  │ ai-analysis      │  ── full-pipeline (5 agents)   │
+│  │                  │  ── on-demand-analysis         │
+│  └──────────────────┘                                 │
 │                                                       │
-│  ┌──────────────┐  Priority: 4 (lowest)              │
-│  │ maintenance  │  ── cleanup                        │
-│  │              │  ── cache-warm                     │
-│  └──────────────┘                                    │
+│  ┌──────────────────┐  Priority: 3                   │
+│  │ reports          │  ── briefing-send (TBD)        │
+│  │                  │  ── pdf-generation (TBD)       │
+│  └──────────────────┘                                 │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -359,6 +373,45 @@ export const weatherWorker = new Worker<WeatherJobData>(
     connection: { host: 'localhost', port: 6379 },
     limiter: { max: 10, duration: 60_000 }, // Rate limit: 10 jobs per minute
   }
+);
+```
+
+```typescript
+// lib/workers/competitor-worker.ts — the new pattern (scrape + LLM parse)
+import { Worker, type Job } from 'bullmq';
+import { prisma } from '@/lib/db';
+import { scrapeCompetitorUrl } from '@/lib/services/competitor/client';
+import { runCompetitorParser } from '@/lib/agents/competitor-parser';
+
+export const competitorWorker = new Worker(
+  'competitor-collect',
+  async (job: Job<{ businessId: string; url: string; pipelineId?: string }>) => {
+    const { businessId, url } = job.data;
+    const pipelineId = job.data.pipelineId ?? randomUUID();
+
+    // 1. Scrape with Crawlee + Playwright (returns cleaned visible text)
+    const scrape = await scrapeCompetitorUrl(url, { timeoutMs: 30_000, maxTextLength: 60_000 });
+
+    // 2. Parse with the competitor-parser agent (LLM extraction, Zod-typed)
+    const parsed = await runCompetitorParser({ scrape }, { pipelineId, businessId });
+
+    // 3. Persist
+    const snapshot = await prisma.dataSnapshot.create({
+      data: {
+        businessId,
+        source: 'competitors',
+        data: { url: scrape.url, finalUrl: scrape.finalUrl,
+                brand: parsed.output.brand, items: parsed.output.items,
+                promos: parsed.output.promos, notes: parsed.output.notes,
+                scrapedAt: scrape.scrapedAt },
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    return { success: true, url, itemCount: parsed.output.items.length,
+             promoCount: parsed.output.promos.length, snapshotId: snapshot.id };
+  },
+  { connection, concurrency: 2, limiter: { max: 6, duration: 60_000 } }
 );
 ```
 
@@ -500,21 +553,26 @@ Customer Trends ─┘   │ DATA ANALYZER│
 
 ## 9. API Routes
 
-| Method | Route | Purpose |
-|---|---|---|
-| `GET` | `/api/dashboard` | Dashboard overview (today's briefing, alerts, stats) |
-| `GET` | `/api/recommendations` | List recommendations (filterable by date, status) |
-| `GET` | `/api/recommendations/[id]` | Single recommendation with full reasoning |
-| `PATCH` | `/api/recommendations/[id]` | Update status (apply/dismiss) |
-| `GET` | `/api/alerts` | List alerts |
-| `PATCH` | `/api/alerts/[id]` | Mark as read |
-| `GET` | `/api/data/[businessId]/[source]` | Get latest data snapshot |
-| `GET` | `/api/data/[businessId]/history` | Historical data for charts |
-| `POST` | `/api/analysis/run` | Trigger on-demand analysis |
-| `GET` | `/api/analysis/[pipelineId]/stream` | SSE stream of analysis progress |
-| `GET` | `/api/config/schedules` | View job schedules |
-| `PATCH` | `/api/config/schedules/[id]` | Update schedule |
-| `POST` | `/api/reports/[id]/pdf` | Generate PDF briefing |
+| Method | Route | Status | Purpose |
+|---|---|---|---|
+| `POST` | `/api/weather` | ✅ shipped | Path A — single-shot LLM weather (uses tool) |
+| `POST` | `/api/analysis/run` | ✅ shipped | Path C — enqueue 5-agent pipeline → 202 + `pipelineId` |
+| `GET` | `/api/analysis/[pipelineId]` | ✅ shipped | Poll for pipeline status (status + AgentRun timeline + Recommendation) |
+| `POST` | `/api/competitor/refresh` | ✅ shipped | Enqueue competitor scrape (1 URL or all `Business.config.competitorUrls`) → 202 + `pipelineId` |
+| `GET` | `/api/competitor/[businessId]` | ✅ shipped | List `DataSnapshot{source: 'competitors'}` for a business (most recent first, `?limit=N`) |
+| `GET` | `/api/menu/[businessId]` | ✅ shipped | Read menu from `MenuSource` |
+| `GET` | `/api/dashboard` | ⏳ planned | Dashboard overview (today's briefing, alerts, stats) |
+| `GET` | `/api/recommendations` | ⏳ planned | List recommendations (filterable by date, status) |
+| `GET` | `/api/recommendations/[id]` | ⏳ planned | Single recommendation with full reasoning |
+| `PATCH` | `/api/recommendations/[id]` | ⏳ planned | Update status (apply/dismiss) |
+| `GET` | `/api/alerts` | ⏳ planned | List alerts |
+| `PATCH` | `/api/alerts/[id]` | ⏳ planned | Mark as read |
+| `GET` | `/api/data/[businessId]/[source]` | ⏳ planned | Get latest data snapshot |
+| `GET` | `/api/data/[businessId]/history` | ⏳ planned | Historical data for charts |
+| `GET` | `/api/analysis/[pipelineId]/stream` | ⏳ planned | SSE stream of analysis progress |
+| `GET` | `/api/config/schedules` | ⏳ planned | View job schedules |
+| `PATCH` | `/api/config/schedules/[id]` | ⏳ planned | Update schedule |
+| `POST` | `/api/reports/[id]/pdf` | ⏳ planned | Generate PDF briefing |
 
 ---
 
