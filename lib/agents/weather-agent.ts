@@ -1,4 +1,3 @@
-import 'server-only';
 import { generateText, stepCountIs } from 'ai';
 import { createGroq } from '@ai-sdk/groq';
 import { weatherTool } from '@/lib/agents/tools/weatherTool';

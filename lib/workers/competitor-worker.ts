@@ -1,7 +1,7 @@
 import 'server-only';
 import { randomUUID } from 'crypto';
 import { Worker, type Job } from 'bullmq';
-import { prisma, toPrismaJson } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { scrapeCompetitorUrl } from '@/lib/services/competitor/client';
 import { runCompetitorParser } from '@/lib/agents/competitor-parser';
@@ -78,7 +78,7 @@ function createWorker(): Worker<CompetitorJobData, CompetitorJobResult> {
         data: {
           businessId,
           source: 'competitors',
-          data: toPrismaJson(data),
+          data: JSON.parse(JSON.stringify(data)) as object,
           collectedAt: new Date(),
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },

@@ -1,4 +1,3 @@
-import 'server-only';
 import cron from 'node-cron';
 import { randomUUID } from 'crypto';
 import {
@@ -8,8 +7,6 @@ import {
 } from './queues/data-queue';
 import { prisma } from './db';
 import { logger } from './logger';
-import { QUEUE_PRIORITY } from '@/constants/queues';
-import { extractCompetitorUrls } from '@/lib/competitor/extractUrls';
 
 type JobHandler = () => Promise<void>;
 
@@ -20,6 +17,13 @@ interface ScheduledJob {
 }
 
 const log = logger.child('scheduler');
+
+function extractCompetitorUrls(config: unknown): string[] {
+  if (!config || typeof config !== 'object') return [];
+  const raw = (config as Record<string, unknown>).competitorUrls;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((u): u is string => typeof u === 'string' && u.length > 0);
+}
 
 const jobs: ScheduledJob[] = [
   {
@@ -37,7 +41,7 @@ const jobs: ScheduledJob[] = [
             latitude: biz.latitude ?? undefined,
             longitude: biz.longitude ?? undefined,
           },
-          { priority: QUEUE_PRIORITY.DATA_COLLECT }
+          { priority: 1 }
         );
       }
     },
@@ -63,7 +67,7 @@ const jobs: ScheduledJob[] = [
           await competitorCollectQueue.add(
             'competitor-scrape',
             { businessId: biz.id, url, pipelineId },
-            { priority: QUEUE_PRIORITY.DATA_COLLECT }
+            { priority: 1 }
           );
           totalUrls++;
         }
@@ -84,7 +88,7 @@ const jobs: ScheduledJob[] = [
         await aiAnalysisQueue.add(
           'full-pipeline',
           { businessId: biz.id, pipelineId: randomUUID() },
-          { priority: QUEUE_PRIORITY.AI_ANALYSIS }
+          { priority: 2 }
         );
       }
     },

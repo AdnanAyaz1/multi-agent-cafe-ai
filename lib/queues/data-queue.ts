@@ -1,4 +1,3 @@
-import 'server-only';
 import { Queue } from 'bullmq'
 
 const connection = {

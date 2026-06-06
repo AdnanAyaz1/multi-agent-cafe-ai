@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 import { prisma } from '@/lib/db';
 import { competitorSnapshotQuerySchema } from '@/lib/validators/competitor';
-import { NotFoundError } from '@/lib/errors';
-import { withApiHandler } from '@/lib/api/handler';
-import { COMPETITOR_SNAPSHOT_DEFAULT_LIMIT } from '@/constants/queues';
+import { AppError, NotFoundError } from '@/lib/errors';
 
-export const GET = withApiHandler(
-  async (
-    request: NextRequest,
-    ctx: RouteContext<'/api/competitor/[businessId]'>
-  ) => {
+export async function GET(
+  request: NextRequest,
+  ctx: RouteContext<'/api/competitor/[businessId]'>
+) {
+  try {
     const { businessId } = await ctx.params;
     const url = new URL(request.url);
     const { limit } = competitorSnapshotQuerySchema.parse({
@@ -26,7 +25,7 @@ export const GET = withApiHandler(
     const snapshots = await prisma.dataSnapshot.findMany({
       where: { businessId, source: 'competitors' },
       orderBy: { collectedAt: 'desc' },
-      take: limit ?? COMPETITOR_SNAPSHOT_DEFAULT_LIMIT,
+      take: limit ?? 10,
       select: {
         id: true,
         collectedAt: true,
@@ -41,5 +40,33 @@ export const GET = withApiHandler(
       count: snapshots.length,
       snapshots,
     });
+  } catch (error) {
+    if (error instanceof AppError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          code: error.code,
+          ...(error.details !== undefined ? { details: error.details } : {}),
+        },
+        { status: error.statusCode }
+      );
+    }
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details: error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+    console.error('Unhandled API error:', error);
+    const message =
+      error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json(
+      { error: message, code: 'INTERNAL_ERROR' },
+      { status: 500 }
+    );
   }
-);
+}

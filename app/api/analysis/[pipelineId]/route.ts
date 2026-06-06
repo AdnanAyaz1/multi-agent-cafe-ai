@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 import { prisma } from '@/lib/db';
 import { pipelineIdSchema } from '@/lib/validators/analysis';
+import { AppError, NotFoundError } from '@/lib/errors';
 import type {
   AgentName,
   PipelineStatus,
 } from '@/lib/agents/types';
 import { AGENT_NAMES } from '@/lib/agents/types';
-import { withApiHandler } from '@/lib/api/handler';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('api:analysis/status');
 
 interface AgentRunSummary {
   id: string;
@@ -47,11 +51,11 @@ interface PipelineStatusResponse {
   recommendation: RecommendationSummary | null;
 }
 
-export const GET = withApiHandler(
-  async (
-    _request: NextRequest,
-    ctx: RouteContext<'/api/analysis/[pipelineId]'>
-  ) => {
+export async function GET(
+  _request: NextRequest,
+  ctx: RouteContext<'/api/analysis/[pipelineId]'>
+) {
+  try {
     const { pipelineId } = await ctx.params;
     const validId = pipelineIdSchema.parse(pipelineId);
 
@@ -60,17 +64,7 @@ export const GET = withApiHandler(
       orderBy: { createdAt: 'asc' },
     });
 
-    if (runs.length === 0) {
-      const body: PipelineStatusResponse = {
-        pipelineId: validId,
-        status: 'pending',
-        startedAt: null,
-        completedAt: null,
-        agentRuns: [],
-        recommendation: null,
-      };
-      return NextResponse.json(body);
-    }
+    if (runs.length === 0) throw new NotFoundError('Pipeline');
 
     const agentRuns: AgentRunSummary[] = runs.map((r) => ({
       id: r.id,
@@ -111,10 +105,7 @@ export const GET = withApiHandler(
       }
     }
 
-    const status: PipelineStatus = derivePipelineStatus(
-      runs.map((r) => r.status),
-      AGENT_NAMES.length
-    );
+    const status = derivePipelineStatus(runs.map((r) => r.status), AGENT_NAMES.length);
     const startedAt = runs[0]?.startedAt?.toISOString() ?? null;
     const completedAt =
       status === 'complete'
@@ -130,8 +121,10 @@ export const GET = withApiHandler(
       recommendation,
     };
     return NextResponse.json(body);
+  } catch (error) {
+    return errorResponse(error);
   }
-);
+}
 
 function derivePipelineStatus(
   runStatuses: string[],
@@ -153,4 +146,34 @@ async function findRecommendationForPipeline(pipelineId: string) {
     orderBy: { date: 'desc' },
   });
   return rec;
+}
+
+function errorResponse(error: unknown): NextResponse {
+  if (error instanceof AppError) {
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+        ...(error.details !== undefined ? { details: error.details } : {}),
+      },
+      { status: error.statusCode }
+    );
+  }
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      {
+        error: 'Validation failed',
+        code: 'VALIDATION_ERROR',
+        details: error.flatten(),
+      },
+      { status: 400 }
+    );
+  }
+  log.error('unhandled', error);
+  const message =
+    error instanceof Error ? error.message : 'Internal server error';
+  return NextResponse.json(
+    { error: message, code: 'INTERNAL_ERROR' },
+    { status: 500 }
+  );
 }

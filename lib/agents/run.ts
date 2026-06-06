@@ -1,8 +1,7 @@
-import 'server-only';
 import { generateObject } from 'ai';
 import type { LanguageModel } from 'ai';
 import type { ZodType } from 'zod';
-import { prisma, toPrismaJson } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { AgentError } from '@/lib/errors';
 import type { AgentName, PipelineContext } from './types';
@@ -48,7 +47,9 @@ export async function withAgentRun<Output>(
       pipelineId: args.context.pipelineId,
       agentName: args.agentName,
       status: 'running',
-      input: args.inputSnapshot ? toPrismaJson(args.inputSnapshot) : undefined,
+      input: args.inputSnapshot
+        ? (JSON.parse(JSON.stringify(args.inputSnapshot)) as object)
+        : undefined,
       startedAt,
     },
   });
@@ -76,7 +77,7 @@ export async function withAgentRun<Output>(
         where: { id: run.id },
         data: {
           status: 'complete',
-          output: toPrismaJson(result.object),
+          output: JSON.parse(JSON.stringify(result.object)) as object,
           durationMs,
           tokenCount,
           completedAt: new Date(),

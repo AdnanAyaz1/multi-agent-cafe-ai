@@ -122,10 +122,15 @@ export type CompetitorParserOutput = z.infer<typeof competitorParserOutputSchema
 export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed'] as const;
 export type PipelineStatus = (typeof PIPELINE_STATUSES)[number];
 
-// Re-export AgentName from its canonical location so existing
-// `import { AgentName } from '@/lib/agents/types'` keeps working.
-export { AGENT_NAMES } from '@/constants/agents';
-export type { AgentName } from '@/constants/agents';
+export const AGENT_NAMES = [
+  'menu-analyst',
+  'weather-analyst',
+  'strategist',
+  'critic',
+  'synthesizer',
+  'competitor-parser',
+] as const;
+export type AgentName = (typeof AGENT_NAMES)[number];
 
 export interface PipelineContext {
   pipelineId: string;
