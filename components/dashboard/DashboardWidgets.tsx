@@ -17,6 +17,19 @@ const widgetLoading = (
   </Card>
 );
 
+const competitorLoading = (
+  <Card className="h-full">
+    <CardHeader>
+      <Skeleton className="h-4 w-32" />
+      <Skeleton className="h-5 w-56" />
+    </CardHeader>
+    <CardContent className="space-y-3">
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </CardContent>
+  </Card>
+);
+
 const WeatherDisplay = dynamic(
   () => import('@/components/dashboard/WeatherDisplay'),
   { loading: () => widgetLoading }
@@ -27,15 +40,23 @@ const AnalysisPanel = dynamic(
   { loading: () => widgetLoading }
 );
 
+const CompetitorPanel = dynamic(
+  () => import('@/components/dashboard/CompetitorPanel'),
+  { loading: () => competitorLoading }
+);
+
 export function DashboardWidgets() {
   return (
-    <section className="grid gap-6 lg:grid-cols-5">
-      <div className="lg:col-span-2">
-        <WeatherDisplay />
-      </div>
-      <div className="lg:col-span-3">
-        <AnalysisPanel />
-      </div>
-    </section>
+    <div className="space-y-6">
+      <section className="grid gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-2">
+          <WeatherDisplay />
+        </div>
+        <div className="lg:col-span-3">
+          <AnalysisPanel />
+        </div>
+      </section>
+      <CompetitorPanel />
+    </div>
   );
 }
