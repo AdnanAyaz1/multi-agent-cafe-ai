@@ -4,11 +4,11 @@ import {
   Sun,
   Thermometer,
   Wind,
-  type LucideIcon,
 } from 'lucide-react';
 import type { WeatherData } from '@/lib/types';
 import { formatWeatherUnit } from '@/lib/format';
 import { renderWeatherConditionIcon } from './weather-condition-icon';
+import { WeatherStat } from './weather/WeatherStat';
 
 export function WeatherCard({ data }: { data: WeatherData }) {
   return (
@@ -38,35 +38,15 @@ export function WeatherCard({ data }: { data: WeatherData }) {
       </div>
 
       <dl className="grid grid-cols-2 gap-px bg-border/60 sm:grid-cols-4">
-        <Stat icon={Thermometer} label="Feels like" value={`${data.feelsLike}°${formatWeatherUnit(data.units)}`} />
-        <Stat icon={Droplets} label="Humidity" value={`${data.humidity}%`} />
-        <Stat icon={Wind} label="Wind" value={`${data.windSpeed} m/s`} />
-        <Stat
+        <WeatherStat icon={Thermometer} label="Feels like" value={`${data.feelsLike}°${formatWeatherUnit(data.units)}`} />
+        <WeatherStat icon={Droplets} label="Humidity" value={`${data.humidity}%`} />
+        <WeatherStat icon={Wind} label="Wind" value={`${data.windSpeed} m/s`} />
+        <WeatherStat
           icon={Sun}
           label="Units"
           value={data.units === 'metric' ? 'Metric' : 'Imperial'}
         />
       </dl>
-    </div>
-  );
-}
-
-function Stat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1 bg-card/80 p-3">
-      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        <Icon className="size-3" aria-hidden />
-        {label}
-      </div>
-      <dd className="text-sm font-medium">{value}</dd>
     </div>
   );
 }

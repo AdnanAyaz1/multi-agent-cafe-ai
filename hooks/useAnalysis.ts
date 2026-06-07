@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from '@/constants/pipeline';
+import { POLL_INTERVAL_MS, POLL_TIMEOUT_MS, type PipelineRunStatus } from '@/constants/pipeline';
 
 export interface PipelineAgentRun {
   id: string;
   agentName: string;
-  status: 'pending' | 'running' | 'complete' | 'failed';
+  status: PipelineRunStatus;
   durationMs: number | null;
   tokenCount: number | null;
   startedAt: string | null;

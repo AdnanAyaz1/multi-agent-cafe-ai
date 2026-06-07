@@ -5,9 +5,8 @@ import {
   XCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { type PipelineRunStatus } from '@/constants/pipeline';
 import { cn } from '@/lib/utils';
-
-export type PipelineRunStatus = 'pending' | 'running' | 'complete' | 'failed';
 
 const STATUS_CLASS: Record<PipelineRunStatus, string> = {
   complete:

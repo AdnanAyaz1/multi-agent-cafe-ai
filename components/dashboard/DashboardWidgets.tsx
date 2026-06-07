@@ -1,48 +1,22 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-
-const widgetLoading = (
-  <Card className="h-full">
-    <CardHeader>
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-5 w-40" />
-    </CardHeader>
-    <CardContent className="space-y-3">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-24 w-full" />
-    </CardContent>
-  </Card>
-);
-
-const competitorLoading = (
-  <Card className="h-full">
-    <CardHeader>
-      <Skeleton className="h-4 w-32" />
-      <Skeleton className="h-5 w-56" />
-    </CardHeader>
-    <CardContent className="space-y-3">
-      <Skeleton className="h-24 w-full" />
-      <Skeleton className="h-32 w-full" />
-    </CardContent>
-  </Card>
-);
+import { WidgetSkeleton } from './WidgetSkeleton';
+import { CompetitorWidgetSkeleton } from './CompetitorWidgetSkeleton';
 
 const WeatherDisplay = dynamic(
   () => import('@/components/dashboard/WeatherDisplay'),
-  { loading: () => widgetLoading }
+  { loading: () => <WidgetSkeleton /> }
 );
 
 const AnalysisPanel = dynamic(
   () => import('@/components/dashboard/AnalysisPanel'),
-  { loading: () => widgetLoading }
+  { loading: () => <WidgetSkeleton /> }
 );
 
 const CompetitorPanel = dynamic(
   () => import('@/components/dashboard/CompetitorPanel'),
-  { loading: () => competitorLoading }
+  { loading: () => <CompetitorWidgetSkeleton /> }
 );
 
 export function DashboardWidgets() {

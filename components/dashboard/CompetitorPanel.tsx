@@ -1,14 +1,14 @@
 'use client';
 
-import { AlertCircle, Globe, Inbox, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, Globe, Loader2, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { DEFAULT_BUSINESS_ID } from '@/constants/pipeline';
-import { COMPETITOR_DEFAULT_LIMIT } from '@/constants/competitor';
 import { useCompetitorSnapshots } from '@/hooks/useCompetitorSnapshots';
 import { CompetitorScrapeForm } from './competitor/CompetitorScrapeForm';
 import { CompetitorSnapshotCard } from './competitor/CompetitorSnapshotCard';
+import { CompetitorSnapshotSkeletonList } from './competitor/CompetitorSnapshotSkeletonList';
+import { CompetitorEmptyState } from './competitor/CompetitorEmptyState';
 
 export default function CompetitorPanel() {
   const {
@@ -78,9 +78,9 @@ export default function CompetitorPanel() {
         ) : null}
 
         {loading ? (
-          <SnapshotSkeletonList />
+          <CompetitorSnapshotSkeletonList />
         ) : snapshots.length === 0 ? (
-          <EmptyState />
+          <CompetitorEmptyState />
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -120,32 +120,5 @@ export default function CompetitorPanel() {
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function SnapshotSkeletonList() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: COMPETITOR_DEFAULT_LIMIT }).map((_, index) => (
-        <Skeleton
-          key={index}
-          className="h-32 w-full rounded-2xl"
-          aria-label="Loading snapshot"
-        />
-      ))}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border/60 bg-muted/20 p-8 text-center">
-      <Inbox className="size-8 text-muted-foreground" aria-hidden />
-      <p className="text-sm font-medium text-foreground/80">No snapshots yet</p>
-      <p className="max-w-sm text-xs text-muted-foreground">
-        Run a scrape above. New <span className="font-mono">DataSnapshot</span>{' '}
-        rows appear here once the worker finishes (typically 5–30 seconds).
-      </p>
-    </div>
   );
 }
