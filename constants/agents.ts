@@ -35,3 +35,28 @@ export const AGENT_CONFIG = {
     description: 'Produces the final recommendation',
   },
 } as const
+
+export const AGENT_DISPLAY: Record<AgentRole, { label: string; description: string }> = {
+  'menu-analyst': {
+    label: AGENT_CONFIG['menu-analyst'].name,
+    description: 'Inventory & menu mix',
+  },
+  'weather-analyst': {
+    label: AGENT_CONFIG['weather-analyst'].name,
+    description: 'Conditions impact',
+  },
+  strategist: {
+    label: AGENT_CONFIG.strategist.name,
+    description: 'Opportunity mapping',
+  },
+  critic: {
+    label: AGENT_CONFIG.critic.name,
+    description: 'Risk review',
+  },
+  synthesizer: {
+    label: AGENT_CONFIG.synthesizer.name,
+    description: 'Final recommendation',
+  },
+}
+
+export const AGENT_DISPLAY_ORDER: readonly AgentRole[] = AGENT_ROLES

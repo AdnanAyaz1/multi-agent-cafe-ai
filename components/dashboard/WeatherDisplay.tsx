@@ -1,46 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { Loader2, MapPin, Search, Sun } from 'lucide-react';
 import { useWeather } from '@/hooks/useWeather';
+import { useWeatherForm } from '@/hooks/useWeatherForm';
 import { WeatherCard } from './WeatherCard';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { DEFAULT_CITY_PLACEHOLDER } from '@/constants/pipeline';
 
 export default function WeatherDisplay() {
-  const [city, setCity] = useState('');
   const { weather, loading, error, fetch: fetchWeather } = useWeather();
-
-  const handleSubmit = () => {
-    if (city.trim()) fetchWeather(city.trim());
-  };
+  const form = useWeatherForm(fetchWeather);
 
   return (
-    <div className="mx-auto max-w-md p-6">
-      <h1 className="mb-6 text-center text-2xl font-bold">Weather Agent</h1>
-
-      <div className="mb-6 flex gap-2">
-        <input
-          type="text"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Enter city name"
-          className="flex-1 rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={loading || !city.trim()}
-          className="rounded-lg bg-blue-500 px-6 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
-        >
-          {loading ? 'Loading...' : 'Get Weather'}
-        </button>
-      </div>
-
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-400 bg-red-100 p-4 text-red-700">
-          {error}
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex items-center gap-2 text-primary">
+          <Sun className="size-4" aria-hidden />
+          <span className="text-xs font-medium uppercase tracking-[0.18em]">
+            Weather
+          </span>
         </div>
-      )}
+        <CardTitle className="text-lg">Live snapshot</CardTitle>
+        <CardDescription>
+          Fetch current conditions for any city to feed the agent pipeline.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <form
+          className="flex flex-col gap-2 sm:flex-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.submit();
+          }}
+        >
+          <div className="relative flex-1">
+            <MapPin
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              type="text"
+              value={form.city}
+              onChange={(e) => form.setCity(e.target.value)}
+              placeholder={DEFAULT_CITY_PLACEHOLDER}
+              className="pl-9"
+              disabled={loading}
+            />
+          </div>
+          <Button
+            type="submit"
+            disabled={loading || !form.canSubmit}
+            className="cursor-pointer gap-1.5"
+          >
+            {loading ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <Search className="size-4" aria-hidden />
+            )}
+            {loading ? 'Loading' : 'Get Weather'}
+          </Button>
+        </form>
 
-      {weather && <WeatherCard data={weather} />}
-    </div>
+        {error && (
+          <div
+            role="alert"
+            className={cn(
+              'rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive'
+            )}
+          >
+            {error}
+          </div>
+        )}
+
+        {weather && <WeatherCard data={weather} />}
+      </CardContent>
+    </Card>
   );
 }

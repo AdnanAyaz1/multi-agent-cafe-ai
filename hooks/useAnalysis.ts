@@ -1,11 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from '@/constants/pipeline';
 
 export interface PipelineAgentRun {
   id: string;
   agentName: string;
-  status: string;
+  status: 'pending' | 'running' | 'complete' | 'failed';
   durationMs: number | null;
   tokenCount: number | null;
   startedAt: string | null;
@@ -41,117 +42,139 @@ export interface PipelineStatusResponse {
   recommendation: PipelineRecommendation | null;
 }
 
-interface UseAnalysisState {
+export interface UseAnalysisState {
   pipelineId: string | null;
   status: PipelineStatusResponse | null;
   loading: boolean;
   error: string | null;
 }
 
-const POLL_MS = 1500;
-const POLL_LIMIT_MS = 5 * 60_000;
+export type UseAnalysisResult = UseAnalysisState & {
+  run: (businessId: string) => Promise<void>;
+  cancel: () => void;
+};
 
-export function useAnalysis() {
+export function useAnalysis(): UseAnalysisResult {
   const [state, setState] = useState<UseAnalysisState>({
     pipelineId: null,
     status: null,
     loading: false,
     error: null,
   });
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startedAtRef = useRef<number>(0);
 
-  const stopPolling = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollingStartedAtRef = useRef<number>(0);
+
+  const stopStatusPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
     }
   }, []);
 
-  useEffect(() => stopPolling, [stopPolling]);
+  useEffect(() => stopStatusPolling, [stopStatusPolling]);
 
-  const fetchStatus = useCallback(
+  const fetchPipelineStatus = useCallback(
     async (pipelineId: string): Promise<PipelineStatusResponse> => {
       const res = await fetch(`/api/analysis/${pipelineId}`);
+
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(body.error ?? `status fetch failed (${res.status})`);
       }
+
       return (await res.json()) as PipelineStatusResponse;
     },
     []
   );
 
-  const startPolling = useCallback(
+  const startStatusPolling = useCallback(
     (pipelineId: string) => {
-      stopPolling();
-      startedAtRef.current = Date.now();
+      stopStatusPolling();
 
-      const tick = async () => {
+      pollingStartedAtRef.current = Date.now();
+
+      const pollPipelineStatus = async () => {
         try {
-          const status = await fetchStatus(pipelineId);
-          setState((s) => ({ ...s, status, error: null }));
+          const status = await fetchPipelineStatus(pipelineId);
+
+          setState((current) => ({ ...current, status, error: null }));
+
           if (status.status === 'complete' || status.status === 'failed') {
-            stopPolling();
-            setState((s) => ({ ...s, loading: false }));
+            stopStatusPolling();
+            setState((current) => ({ ...current, loading: false }));
             return;
           }
-          if (Date.now() - startedAtRef.current > POLL_LIMIT_MS) {
-            stopPolling();
-            setState((s) => ({
-              ...s,
+
+          if (Date.now() - pollingStartedAtRef.current > POLL_TIMEOUT_MS) {
+            stopStatusPolling();
+            setState((current) => ({
+              ...current,
               loading: false,
               error: 'Pipeline timed out after 5 minutes',
             }));
           }
-        } catch (e) {
-          stopPolling();
-          setState((s) => ({
-            ...s,
+        } catch (error) {
+          stopStatusPolling();
+          setState((current) => ({
+            ...current,
             loading: false,
-            error: e instanceof Error ? e.message : 'Polling failed',
+            error: error instanceof Error ? error.message : 'Polling failed',
           }));
         }
       };
 
-      void tick();
-      pollRef.current = setInterval(() => void tick(), POLL_MS);
+      void pollPipelineStatus();
+
+      pollingIntervalRef.current = setInterval(
+        () => void pollPipelineStatus(),
+        POLL_INTERVAL_MS
+      );
     },
-    [fetchStatus, stopPolling]
+    [fetchPipelineStatus, stopStatusPolling]
   );
 
   const run = useCallback(
     async (businessId: string) => {
-      setState({ pipelineId: null, status: null, loading: true, error: null });
+      setState({
+        pipelineId: null,
+        status: null,
+        loading: true,
+        error: null,
+      });
+
       try {
         const res = await fetch('/api/analysis/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ businessId }),
         });
+
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as { error?: string };
           throw new Error(body.error ?? `enqueue failed (${res.status})`);
         }
+
         const { pipelineId } = (await res.json()) as { pipelineId: string };
-        setState((s) => ({ ...s, pipelineId }));
-        startPolling(pipelineId);
-      } catch (e) {
+
+        setState((current) => ({ ...current, pipelineId }));
+        startStatusPolling(pipelineId);
+      } catch (error) {
         setState({
           pipelineId: null,
           status: null,
           loading: false,
-          error: e instanceof Error ? e.message : 'Failed to start pipeline',
+          error: error instanceof Error ? error.message : 'Failed to start pipeline',
         });
       }
     },
-    [startPolling]
+    [startStatusPolling]
   );
 
   const cancel = useCallback(() => {
-    stopPolling();
-    setState((s) => ({ ...s, loading: false }));
-  }, [stopPolling]);
+    stopStatusPolling();
+    setState((current) => ({ ...current, loading: false }));
+  }, [stopStatusPolling]);
 
   return { ...state, run, cancel };
 }
