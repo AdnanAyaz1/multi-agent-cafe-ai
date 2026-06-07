@@ -1,5 +1,6 @@
 import { Header } from '@/components/dashboard/Header';
 import { DashboardWidgets } from '@/components/dashboard/DashboardWidgets';
+import { FeatureCard } from '@/components/dashboard/FeatureCard';
 
 export default function Home() {
   return (
@@ -19,6 +20,27 @@ export default function Home() {
             prioritised set of actions, and trigger a Crawlee + Playwright scrape
             of a competitor URL — all from one place.
           </p>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-3">
+          <FeatureCard
+            href="/weather"
+            eyebrow="Weather"
+            title="Live snapshot"
+            description="Fetch current conditions for any city to feed the agent pipeline."
+          />
+          <FeatureCard
+            href="/analysis"
+            eyebrow="Analysis"
+            title="Daily AI briefing"
+            description="Run the 5-agent pipeline against the latest weather snapshot and menu."
+          />
+          <FeatureCard
+            href="/competitors"
+            eyebrow="Competitors"
+            title="Scrape & parse"
+            description="Enqueue a Crawlee + Playwright scrape and watch snapshots land."
+          />
         </section>
 
         <DashboardWidgets />

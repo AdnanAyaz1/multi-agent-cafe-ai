@@ -1,4 +1,5 @@
-import { Sparkles, Activity, Globe } from 'lucide-react';
+import Link from 'next/link';
+import { Sparkles, Activity, Cloud, BarChart3, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export function Header() {
@@ -6,11 +7,7 @@ export function Header() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 glass">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-2.5">
-          <a
-            href="#top"
-            className="flex items-center gap-2.5"
-            aria-label="Agentic AI — back to top"
-          >
+          <Link href="/" className="flex items-center gap-2.5" aria-label="Agentic AI — home">
             <div className="relative flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-info text-primary-foreground shadow-sm shadow-primary/20">
               <Sparkles className="size-4" aria-hidden />
               <span className="absolute -inset-px rounded-xl ring-1 ring-white/20" />
@@ -21,16 +18,30 @@ export function Header() {
                 Multi-agent briefing
               </span>
             </div>
-          </a>
+          </Link>
         </div>
-        <nav className="flex items-center gap-2">
-          <a
-            href="#competitor"
-            className="hidden items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs font-medium text-foreground/80 transition hover:border-primary/40 hover:text-foreground sm:inline-flex"
+        <nav className="flex items-center gap-1">
+          <Link
+            href="/weather"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs font-medium text-foreground/80 transition hover:border-primary/40 hover:text-foreground"
+          >
+            <Cloud className="size-3.5" aria-hidden />
+            <span className="hidden sm:inline">Weather</span>
+          </Link>
+          <Link
+            href="/analysis"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs font-medium text-foreground/80 transition hover:border-primary/40 hover:text-foreground"
+          >
+            <BarChart3 className="size-3.5" aria-hidden />
+            <span className="hidden sm:inline">Analysis</span>
+          </Link>
+          <Link
+            href="/competitors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs font-medium text-foreground/80 transition hover:border-primary/40 hover:text-foreground"
           >
             <Globe className="size-3.5" aria-hidden />
-            Competitor scraping
-          </a>
+            <span className="hidden sm:inline">Competitors</span>
+          </Link>
           <Badge variant="outline" className="gap-1.5 font-normal">
             <Activity className="size-3 text-success" aria-hidden />
             <span className="hidden sm:inline">Pipeline online</span>
