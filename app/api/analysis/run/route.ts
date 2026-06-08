@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ZodError } from 'zod';
 import { randomUUID } from 'crypto';
 import { Queue, QueueEvents } from 'bullmq';
 import { aiAnalysisQueue } from '@/lib/queues/data-queue';
 import { prisma } from '@/lib/db';
 import { analysisRunRequestSchema } from '@/lib/validators/analysis';
-import {
-  AppError,
-  NotFoundError,
-  UpstreamError,
-  ValidationError,
-} from '@/lib/errors';
+import { NotFoundError, ValidationError, UpstreamError } from '@/lib/errors';
+import handleError from '@/lib/handlers/errors';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('api:analysis/run');
@@ -71,7 +66,7 @@ export async function POST(request: NextRequest) {
       { status: 202 }
     );
   } catch (error) {
-    return errorResponse(error);
+    return handleError(error) as NextResponse;
   }
 }
 
@@ -123,34 +118,4 @@ async function ensureWeatherSnapshot(
     await events.close();
     await queue.close();
   }
-}
-
-function errorResponse(error: unknown): NextResponse {
-  if (error instanceof AppError) {
-    return NextResponse.json(
-      {
-        error: error.message,
-        code: error.code,
-        ...(error.details !== undefined ? { details: error.details } : {}),
-      },
-      { status: error.statusCode }
-    );
-  }
-  if (error instanceof ZodError) {
-    return NextResponse.json(
-      {
-        error: 'Validation failed',
-        code: 'VALIDATION_ERROR',
-        details: error.flatten(),
-      },
-      { status: 400 }
-    );
-  }
-  log.error('unhandled', error);
-  const message =
-    error instanceof Error ? error.message : 'Internal server error';
-  return NextResponse.json(
-    { error: message, code: 'INTERNAL_ERROR' },
-    { status: 500 }
-  );
 }

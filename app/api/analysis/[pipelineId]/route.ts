@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ZodError } from 'zod';
 import { prisma } from '@/lib/db';
 import { pipelineIdSchema } from '@/lib/validators/analysis';
-import { AppError, NotFoundError } from '@/lib/errors';
+import { NotFoundError } from '@/lib/errors';
+import handleError from '@/lib/handlers/errors';
 import type {
   AgentName,
   PipelineStatus,
@@ -122,7 +122,7 @@ export async function GET(
     };
     return NextResponse.json(body);
   } catch (error) {
-    return errorResponse(error);
+    return handleError(error) as NextResponse;
   }
 }
 
@@ -146,34 +146,4 @@ async function findRecommendationForPipeline(pipelineId: string) {
     orderBy: { date: 'desc' },
   });
   return rec;
-}
-
-function errorResponse(error: unknown): NextResponse {
-  if (error instanceof AppError) {
-    return NextResponse.json(
-      {
-        error: error.message,
-        code: error.code,
-        ...(error.details !== undefined ? { details: error.details } : {}),
-      },
-      { status: error.statusCode }
-    );
-  }
-  if (error instanceof ZodError) {
-    return NextResponse.json(
-      {
-        error: 'Validation failed',
-        code: 'VALIDATION_ERROR',
-        details: error.flatten(),
-      },
-      { status: 400 }
-    );
-  }
-  log.error('unhandled', error);
-  const message =
-    error instanceof Error ? error.message : 'Internal server error';
-  return NextResponse.json(
-    { error: message, code: 'INTERNAL_ERROR' },
-    { status: 500 }
-  );
 }

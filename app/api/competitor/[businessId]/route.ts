@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ZodError } from 'zod';
 import { prisma } from '@/lib/db';
 import { competitorSnapshotQuerySchema } from '@/lib/validators/competitor';
-import { AppError, NotFoundError } from '@/lib/errors';
+import { NotFoundError } from '@/lib/errors';
+import handleError from '@/lib/handlers/errors';
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +11,7 @@ export async function GET(
   try {
     const { businessId } = await ctx.params;
     const url = new URL(request.url);
+
     const { limit } = competitorSnapshotQuerySchema.parse({
       businessId,
       limit: url.searchParams.get('limit') ?? undefined,
@@ -41,32 +42,6 @@ export async function GET(
       snapshots,
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        {
-          error: error.message,
-          code: error.code,
-          ...(error.details !== undefined ? { details: error.details } : {}),
-        },
-        { status: error.statusCode }
-      );
-    }
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details: error.flatten(),
-        },
-        { status: 400 }
-      );
-    }
-    console.error('Unhandled API error:', error);
-    const message =
-      error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json(
-      { error: message, code: 'INTERNAL_ERROR' },
-      { status: 500 }
-    );
+    return handleError(error) as NextResponse;
   }
 }

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ZodError } from 'zod';
 import { getWeatherData } from '@/lib/agents/weather-agent';
 import { weatherRequestSchema } from '@/lib/validators/weather';
-import { AgentError, AppError, ValidationError } from '@/lib/errors';
+import { AgentError, ValidationError } from '@/lib/errors';
+import handleError from '@/lib/handlers/errors';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,34 +23,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        {
-          error: error.message,
-          code: error.code,
-          ...(error.details !== undefined ? { details: error.details } : {}),
-        },
-        { status: error.statusCode }
-      );
-    }
-
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          code: 'VALIDATION_ERROR',
-          details: error.flatten(),
-        },
-        { status: 400 }
-      );
-    }
-
-    console.error('Unhandled API error:', error);
-    const message =
-      error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json(
-      { error: message, code: 'INTERNAL_ERROR' },
-      { status: 500 }
-    );
+    return handleError(error) as NextResponse;
   }
 }
