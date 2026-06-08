@@ -74,7 +74,7 @@ export default function WeatherDisplay() {
           <div
             role="alert"
             className={cn(
-              'rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive'
+              'rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive'
             )}
           >
             {error}

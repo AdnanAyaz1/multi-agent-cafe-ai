@@ -19,7 +19,7 @@ export function RecommendationActionItem({
   details,
 }: RecommendationActionItemProps) {
   return (
-    <li className="group flex items-start gap-2 rounded-xl border border-border/60 bg-background/60 p-2.5 transition-colors hover:border-primary/30 hover:bg-primary/5">
+    <li className="group flex items-start gap-2 rounded-lg border border-border bg-background p-2.5 transition-colors hover:border-primary/30 hover:bg-primary/5">
       <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
         <ChevronRight className="size-3.5" aria-hidden />
       </div>

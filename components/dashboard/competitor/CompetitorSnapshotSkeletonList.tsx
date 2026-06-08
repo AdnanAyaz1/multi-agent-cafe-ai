@@ -7,7 +7,7 @@ export function CompetitorSnapshotSkeletonList() {
       {Array.from({ length: COMPETITOR_DEFAULT_LIMIT }).map((_, index) => (
         <Skeleton
           key={index}
-          className="h-32 w-full rounded-2xl"
+          className="h-32 w-full rounded-lg"
           aria-label="Loading snapshot"
         />
       ))}

@@ -12,7 +12,7 @@ import { WeatherStat } from './weather/WeatherStat';
 
 export function WeatherCard({ data }: { data: WeatherData }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/8 via-card to-info/8">
+    <div className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-start justify-between gap-3 p-4">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -32,7 +32,7 @@ export function WeatherCard({ data }: { data: WeatherData }) {
             {data.condition}
           </div>
         </div>
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           {renderWeatherConditionIcon(data.condition, 'size-6')}
         </div>
       </div>

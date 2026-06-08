@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 export interface WeatherFormState {
   city: string;
@@ -12,10 +12,10 @@ export interface WeatherFormState {
 export function useWeatherForm(onSubmit: (city: string) => void): WeatherFormState {
   const [city, setCity] = useState('');
 
-  const submit = useCallback(() => {
+  const submit = () => {
     const trimmed = city.trim();
     if (trimmed) onSubmit(trimmed);
-  }, [city, onSubmit]);
+  };
 
   return {
     city,

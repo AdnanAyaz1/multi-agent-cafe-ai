@@ -34,7 +34,7 @@ export function CompetitorScrapeForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 rounded-2xl border border-border/60 bg-muted/30 p-4"
+      className="space-y-3 rounded-lg border border-border bg-muted/30 p-4"
     >
       <div className="flex flex-col gap-1.5">
         <label
