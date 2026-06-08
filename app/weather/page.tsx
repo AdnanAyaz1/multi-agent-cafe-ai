@@ -13,7 +13,7 @@ export default function WeatherPage() {
   const { weather, loading, error, fetch: fetchWeather } = useWeather();
 
   return (
-    <div>
+    <div className='space-y-12'>
       <PageHeader
         title="Weather & Menu Management"
         subtitle="Weather-driven menu optimization powered by AI agents."
@@ -27,7 +27,7 @@ export default function WeatherPage() {
             temperature={weather.temperature}
             condition={weather.condition}
           />
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 mb-8 gap-6">
             <div className="lg:col-span-4 space-y-6">
               <WeatherSearchCard
                 city={city}
@@ -43,7 +43,7 @@ export default function WeatherPage() {
           </div>
         </>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 mt-6  gap-6">
           <div className="lg:col-span-4 space-y-6">
             <WeatherSearchCard
               city={city}

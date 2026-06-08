@@ -7,7 +7,7 @@ import type {
   AgentName,
   PipelineStatus,
 } from '@/lib/agents/types';
-import { AGENT_NAMES } from '@/lib/agents/types';
+import { PIPELINE_AGENT_COUNT } from '@/lib/agents/types';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('api:analysis/status');
@@ -105,7 +105,7 @@ export async function GET(
       }
     }
 
-    const status = derivePipelineStatus(runs.map((r) => r.status), AGENT_NAMES.length);
+    const status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT);
     const startedAt = runs[0]?.startedAt?.toISOString() ?? null;
     const completedAt =
       status === 'complete'

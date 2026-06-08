@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface PipelineAgentRun {
   id: string;
@@ -40,21 +40,22 @@ export function useAnalysis() {
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const stopPolling = () => {
+  const stopPolling = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     return () => stopPolling();
   }, [stopPolling]);
 
-  const run = async (businessId: string) => {
+  const run = useCallback(async (businessId: string) => {
     try {
       setLoading(true);
       setError(null);
+      setStatus(null);
       stopPolling();
 
       const res = await fetch('/api/analysis/run', {
@@ -66,15 +67,15 @@ export function useAnalysis() {
       if (!res.ok) throw new Error('Failed to start analysis');
 
       const data = await res.json();
-      setPipelineId(data.id);
-      setStatus(data);
+      setPipelineId(data.pipelineId);
 
       const interval = setInterval(async () => {
         try {
-          const statusRes = await fetch(`/api/analysis/${data.id}`);
+          const statusRes = await fetch(`/api/analysis/${data.pipelineId}`);
+          if (!statusRes.ok) return;
           const statusData = await statusRes.json();
           setStatus(statusData);
-
+          console.log("This is Status Data i",statusData);
           if (statusData.status === 'complete' || statusData.status === 'failed') {
             clearInterval(interval);
             setLoading(false);
@@ -90,13 +91,13 @@ export function useAnalysis() {
       setLoading(false);
       setError(err instanceof Error ? err.message : 'Analysis failed');
     }
-  };
+  }, [stopPolling]);
 
-  const cancel = () => {
+  const cancel = useCallback(() => {
     stopPolling();
     setLoading(false);
     setStatus((prev) => (prev ? { ...prev, status: 'cancelled' } : null));
-  };
+  }, [stopPolling]);
 
   return {
     pipelineId,

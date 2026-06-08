@@ -122,15 +122,23 @@ export type CompetitorParserOutput = z.infer<typeof competitorParserOutputSchema
 export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed'] as const;
 export type PipelineStatus = (typeof PIPELINE_STATUSES)[number];
 
-export const AGENT_NAMES = [
+export const PIPELINE_AGENT_NAMES = [
   'menu-analyst',
   'weather-analyst',
   'strategist',
   'critic',
   'synthesizer',
-  'competitor-parser',
+] as const;
+
+export const STANDALONE_AGENT_NAMES = ['competitor-parser'] as const;
+
+export const AGENT_NAMES = [
+  ...PIPELINE_AGENT_NAMES,
+  ...STANDALONE_AGENT_NAMES,
 ] as const;
 export type AgentName = (typeof AGENT_NAMES)[number];
+
+export const PIPELINE_AGENT_COUNT = PIPELINE_AGENT_NAMES.length;
 
 export interface PipelineContext {
   pipelineId: string;
