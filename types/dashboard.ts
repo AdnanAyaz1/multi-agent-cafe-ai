@@ -2,6 +2,8 @@ import type { LucideIcon } from 'lucide-react';
 import type { PipelineRunStatus } from '@/constants/pipeline';
 import type { PipelineAgentRun, PipelineRecommendation, PipelineStatus } from '@/hooks/useAnalysis';
 import type { CompetitorData } from '@/lib/types';
+import type { WeatherData } from '@/lib/types';
+import type { StatCardData } from './dashboard';
 
 // Card
 export interface CardProps {
@@ -125,6 +127,10 @@ export interface WeatherDisplayCardProps {
   data: WeatherData;
 }
 
+export interface WeatherDetailCardProps {
+  data: WeatherData;
+}
+
 export interface WeatherStatsOverviewProps {
   city: string;
   country: string;
@@ -145,7 +151,8 @@ export interface PipelineTimelineProps {
 }
 
 export interface AgentTimelineProps {
-  steps: TimelineStepData[];
+  steps?: TimelineStepData[];
+  title?: string;
 }
 
 export interface RecentRun {
@@ -157,6 +164,20 @@ export interface RecentRun {
 
 export interface RecentRunsProps {
   runs: RecentRun[];
+}
+
+export interface OverviewCardsProps {
+  cards: StatCardData[];
+}
+
+export interface CategorizationInsight {
+  name: string;
+  trend: string;
+  color: string;
+}
+
+export interface CategorizationInsightsProps {
+  insights: CategorizationInsight[];
 }
 
 // ConfidenceBadge
@@ -249,4 +270,31 @@ export interface FeatureCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
+}
+
+// Home dashboard data
+export interface HomeDashboardData {
+  weather: WeatherData | null;
+  recommendation: {
+    summary: string;
+    confidence: number;
+    actions: string[];
+  };
+  priorityActions: string[];
+  recentRuns: RecentRun[];
+  categorizationInsights: CategorizationInsight[];
+}
+
+// Competitor history
+export interface CompetitorHistoryItem {
+  name: string;
+  time: string;
+}
+
+export interface CompetitorTableRow {
+  name: string;
+  price: string;
+  category: string;
+  promo: string | null;
+  score: number;
 }

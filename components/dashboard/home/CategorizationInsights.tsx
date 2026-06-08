@@ -1,13 +1,13 @@
 import { Card } from '../ui/Card';
 import { CardHeading } from '../ui/CardHeading';
-import { CATEGORIZATION_INSIGHTS } from '@/constants/categorization';
+import type { CategorizationInsightsProps } from '@/types/dashboard';
 
-export function CategorizationInsights() {
+export function CategorizationInsights({ insights }: CategorizationInsightsProps) {
   return (
     <Card padding="lg">
       <CardHeading className="mb-6">Categorization Insights</CardHeading>
       <div className="grid grid-cols-2 gap-4">
-        {CATEGORIZATION_INSIGHTS.map((cat) => (
+        {insights.map((cat) => (
           <div
             key={cat.name}
             className="bg-white/40 p-3 rounded-lg border border-white/50"

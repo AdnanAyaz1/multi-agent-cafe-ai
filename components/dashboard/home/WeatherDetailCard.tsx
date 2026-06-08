@@ -1,7 +1,8 @@
 import { Cloud, AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { CardHeading } from '../ui/CardHeading';
-import { getImpactLevel } from '@/utils/weather';
+import { getImpactLevel, IMPACT_MESSAGES } from '@/utils/weather';
+import type { WeatherDetailCardProps } from '@/types/dashboard';
 
 function getImpactTitle(impact: string) {
   if (impact === 'high') return 'High Business Impact';
@@ -9,8 +10,8 @@ function getImpactTitle(impact: string) {
   return 'Low Business Impact';
 }
 
-export function WeatherDetailCard() {
-  const impact = getImpactLevel('rain');
+export function WeatherDetailCard({ data }: WeatherDetailCardProps) {
+  const impact = getImpactLevel(data.condition);
 
   return (
     <Card overflow className="p-0">
@@ -18,24 +19,24 @@ export function WeatherDetailCard() {
         <div className="flex justify-between items-start mb-6">
           <div>
             <CardHeading>Local Climate</CardHeading>
-            <p className="text-sm text-muted-foreground">Seattle Central</p>
+            <p className="text-sm text-muted-foreground">{data.city}</p>
           </div>
           <Cloud className="size-10 text-info" />
         </div>
 
         <div className="flex items-baseline gap-2 mb-6">
-          <span className="text-5xl font-bold text-card-foreground">18°C</span>
-          <span className="text-muted-foreground">Rainy</span>
+          <span className="text-5xl font-bold text-card-foreground">{data.temperature}°C</span>
+          <span className="text-muted-foreground">{data.condition}</span>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white/40 p-3 rounded-lg border border-white/50">
             <p className="text-xs text-muted-foreground font-bold uppercase">Humidity</p>
-            <p className="text-lg font-semibold text-card-foreground">85%</p>
+            <p className="text-lg font-semibold text-card-foreground">{data.humidity}%</p>
           </div>
           <div className="bg-white/40 p-3 rounded-lg border border-white/50">
             <p className="text-xs text-muted-foreground font-bold uppercase">Wind</p>
-            <p className="text-lg font-semibold text-card-foreground">12 km/h</p>
+            <p className="text-lg font-semibold text-card-foreground">{data.windSpeed} m/s</p>
           </div>
         </div>
       </div>
@@ -45,9 +46,7 @@ export function WeatherDetailCard() {
           <AlertTriangle className="size-[18px]" />
           {getImpactTitle(impact)}
         </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          Rain forecast until 2 PM. Prioritize warm drink availability and indoor seating management.
-        </p>
+        <p className="text-xs text-muted-foreground mt-2">{IMPACT_MESSAGES[impact]}</p>
       </div>
     </Card>
   );

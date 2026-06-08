@@ -1,6 +1,6 @@
-import { OVERVIEW_CARDS } from '@/constants/overview-cards';
 import { StatCardGrid } from '../ui/StatCardGrid';
+import type { OverviewCardsProps } from '@/types/dashboard';
 
-export function OverviewCards() {
-  return <StatCardGrid cards={OVERVIEW_CARDS} />;
+export function OverviewCards({ cards }: OverviewCardsProps) {
+  return <StatCardGrid cards={cards} />;
 }
