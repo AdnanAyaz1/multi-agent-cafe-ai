@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CompetitorData } from '@/lib/types';
 
 export interface RefreshOptions {
@@ -25,18 +25,18 @@ export function useCompetitorSnapshots(businessId: string) {
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const stopPolling = () => {
+  const stopPolling = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     return () => stopPolling();
   }, [stopPolling]);
 
-  const loadSnapshots = async () => {
+  const loadSnapshots = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/competitor/${businessId}`);
@@ -49,13 +49,13 @@ export function useCompetitorSnapshots(businessId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [businessId]);
 
   useEffect(() => {
     loadSnapshots();
   }, [loadSnapshots]);
 
-  const refresh = async (options?: RefreshOptions) => {
+  const refresh = useCallback(async (options?: RefreshOptions) => {
     try {
       setRefreshing(true);
       setError(null);
@@ -95,7 +95,7 @@ export function useCompetitorSnapshots(businessId: string) {
       setPolling(false);
       setError(err instanceof Error ? err.message : 'Refresh failed');
     }
-  };
+  }, [businessId, snapshots.length, stopPolling]);
 
   return {
     businessId,

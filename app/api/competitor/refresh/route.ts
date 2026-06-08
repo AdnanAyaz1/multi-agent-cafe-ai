@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/db';
 import { competitorCollectQueue } from '@/lib/queues/data-queue';
 import { competitorRefreshRequestSchema } from '@/lib/validators/competitor';
+import { parseBody } from '@/lib/validators';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
 
@@ -20,15 +21,10 @@ function extractCompetitorUrls(config: unknown): string[] {
 
 export async function POST(request: NextRequest) {
   try {
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      throw new ValidationError('Invalid JSON body');
-    }
-
-    const { businessId, url, timeoutMs, maxTextLength } =
-      competitorRefreshRequestSchema.parse(body);
+    const { businessId, url, timeoutMs, maxTextLength } = await parseBody(
+      request,
+      competitorRefreshRequestSchema
+    );
 
     const business = await prisma.business.findUnique({
       where: { id: businessId },

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
+import { Montserrat, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta-sans",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
   display: "swap",
 });
@@ -22,9 +23,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agentic AI — Daily Briefing",
+  title: "CafePromo AI — Dashboard",
   description:
-    "Multi-agent AI pipeline that turns live weather and menu data into prioritised cafe actions.",
+    "AI-powered cafe management dashboard with menu analysis, weather insights, and promotional recommendations.",
 };
 
 export default function RootLayout({
@@ -38,12 +39,14 @@ export default function RootLayout({
       className={cn(
         "h-full",
         "antialiased",
-        plusJakartaSans.variable,
+        montserrat.variable,
         inter.variable,
         jetbrainsMono.variable
       )}
     >
-      <body className="min-h-full font-sans">{children}</body>
+      <body className="min-h-full font-sans">
+        <DashboardLayout>{children}</DashboardLayout>
+      </body>
     </html>
   );
 }

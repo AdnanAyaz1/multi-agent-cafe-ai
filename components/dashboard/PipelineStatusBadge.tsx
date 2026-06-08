@@ -5,27 +5,11 @@ import {
   XCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { type PipelineRunStatus } from '@/constants/pipeline';
 import { cn } from '@/lib/utils';
+import { STATUS_CLASS, STATUS_LABEL } from '@/constants/pipeline-status';
+import type { PipelineStatusBadgeProps } from '@/types/dashboard';
 
-const STATUS_CLASS: Record<PipelineRunStatus, string> = {
-  complete:
-    'gap-1 bg-success/15 text-success-foreground ring-1 ring-success/30 hover:bg-success/15',
-  failed:
-    'gap-1 bg-destructive/15 text-destructive ring-1 ring-destructive/30 hover:bg-destructive/15',
-  running:
-    'gap-1 bg-info/15 text-info-foreground ring-1 ring-info/30 hover:bg-info/15',
-  pending: 'gap-1 text-muted-foreground',
-};
-
-const STATUS_LABEL: Record<PipelineRunStatus, string> = {
-  complete: 'Complete',
-  failed: 'Failed',
-  running: 'Running',
-  pending: 'Pending',
-};
-
-export function PipelineStatusBadge({ status }: { status: PipelineRunStatus }) {
+export function PipelineStatusBadge({ status }: PipelineStatusBadgeProps) {
   const className = cn(STATUS_CLASS[status] ?? STATUS_CLASS.pending);
 
   if (status === 'complete') {

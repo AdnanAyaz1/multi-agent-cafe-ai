@@ -1,49 +1,46 @@
-import { Header } from '@/components/dashboard/Header';
-import { DashboardWidgets } from '@/components/dashboard/DashboardWidgets';
-import { FeatureCard } from '@/components/dashboard/FeatureCard';
+import { PageHeader } from '@/components/dashboard/ui/PageHeader';
+import { OverviewCards } from '@/components/dashboard/home/OverviewCards';
+import { RecommendationPanel } from '@/components/dashboard/home/RecommendationPanel';
+import { AgentTimeline } from '@/components/dashboard/home/AgentTimeline';
+import { CategorizationInsights } from '@/components/dashboard/home/CategorizationInsights';
+import { WeatherDetailCard } from '@/components/dashboard/home/WeatherDetailCard';
+import { PriorityActions } from '@/components/dashboard/home/PriorityActions';
+import { RecentRuns } from '@/components/dashboard/home/RecentRuns';
+import {
+  MOCK_RECOMMENDATION,
+  MOCK_PRIORITY_ACTIONS,
+  MOCK_RECENT_RUNS,
+} from '@/constants/home-page-data';
 
-export default function Home() {
+export default function DashboardPage() {
   return (
-    <div className="relative min-h-screen">
-      <Header />
-      <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
-        <section id="top" className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Dashboard
-          </p>
-          <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl font-heading">
-            Weather, briefing &amp; competitor scraping
-          </h1>
-          <p className="max-w-2xl text-sm text-muted-foreground">
-            Pull a live weather snapshot, run the five-agent pipeline for a
-            prioritised set of actions, and trigger a Crawlee + Playwright scrape
-            of a competitor URL — all from one place.
-          </p>
-        </section>
+    <div>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Welcome back! Here's your cafe intelligence overview."
+      />
 
-        <section className="grid gap-4 sm:grid-cols-3">
-          <FeatureCard
-            href="/weather"
-            eyebrow="Weather"
-            title="Live snapshot"
-            description="Fetch current conditions for any city to feed the agent pipeline."
-          />
-          <FeatureCard
-            href="/analysis"
-            eyebrow="Analysis"
-            title="Daily AI briefing"
-            description="Run the 5-agent pipeline against the latest weather snapshot and menu."
-          />
-          <FeatureCard
-            href="/competitors"
-            eyebrow="Competitors"
-            title="Scrape & parse"
-            description="Enqueue a Crawlee + Playwright scrape and watch snapshots land."
-          />
-        </section>
+      <OverviewCards />
 
-        <DashboardWidgets />
-      </main>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4 space-y-6">
+          <RecommendationPanel
+            summary={MOCK_RECOMMENDATION.summary}
+            confidence={MOCK_RECOMMENDATION.confidence}
+            actions={MOCK_RECOMMENDATION.actions}
+          />
+          <PriorityActions actions={MOCK_PRIORITY_ACTIONS} />
+        </div>
+
+        <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <WeatherDetailCard />
+            <CategorizationInsights />
+          </div>
+          <AgentTimeline />
+          <RecentRuns runs={MOCK_RECENT_RUNS} />
+        </div>
+      </div>
     </div>
   );
 }

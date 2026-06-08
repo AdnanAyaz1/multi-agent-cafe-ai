@@ -1,26 +1,76 @@
-import { Header } from '@/components/dashboard/Header';
-import AnalysisPanel from '@/components/dashboard/AnalysisPanel';
+'use client';
+
+import { useState } from 'react';
+import { PageHeader } from '@/components/dashboard/ui/PageHeader';
+import { EmptyState } from '@/components/dashboard/ui/EmptyState';
+import { AnalysisStats } from '@/components/dashboard/home/AnalysisStats';
+import { RunAnalysisCard } from '@/components/dashboard/home/RunAnalysisCard';
+import { PipelineTimeline } from '@/components/dashboard/home/PipelineTimeline';
+import { AnalysisRecommendation } from '@/components/dashboard/home/AnalysisRecommendation';
+import { useAnalysis } from '@/hooks/useAnalysis';
 
 export default function AnalysisPage() {
+  const [businessId, setBusinessId] = useState('');
+  const { pipelineId, status, loading, error, run, cancel } = useAnalysis();
+
+  const handleRun = () => {
+    if (businessId.trim()) {
+      run(businessId.trim());
+    }
+  };
+
   return (
-    <div className="relative min-h-screen">
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-60" aria-hidden />
-      <Header />
-      <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
-        <section className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
-            Analysis
-          </p>
-          <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
-            Five-agent daily briefing
-          </h1>
-          <p className="max-w-2xl text-sm text-muted-foreground">
-            Run the full pipeline (Menu → Weather → Strategist → Critic → Synthesizer)
-            against the latest weather snapshot and the cafe&apos;s menu.
-          </p>
-        </section>
-        <AnalysisPanel />
-      </main>
+    <div>
+      <PageHeader
+        title="Agent Pipeline"
+        subtitle="Watch the AI agent chain of thought optimize your menu strategy."
+      />
+
+      {status ? (
+        <>
+          <AnalysisStats status={status} />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-4 space-y-6">
+              <RunAnalysisCard
+                businessId={businessId}
+                onBusinessIdChange={setBusinessId}
+                onRun={handleRun}
+                onCancel={cancel}
+                loading={loading}
+                running={status.status === 'running'}
+                error={error}
+              />
+              {status.recommendation && (
+                <AnalysisRecommendation recommendation={status.recommendation} />
+              )}
+            </div>
+            <div className="lg:col-span-8">
+              <PipelineTimeline runs={status.agentRuns} />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-4 space-y-6">
+            <RunAnalysisCard
+              businessId={businessId}
+              onBusinessIdChange={setBusinessId}
+              onRun={handleRun}
+              onCancel={cancel}
+              loading={loading}
+              running={false}
+              error={error}
+            />
+          </div>
+          <div className="lg:col-span-8">
+            <EmptyState
+              icon="🤖"
+              title="No Analysis Running"
+              description="Enter a business ID and run an analysis to see the AI agent pipeline in action."
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

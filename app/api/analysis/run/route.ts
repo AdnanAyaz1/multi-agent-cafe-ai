@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/db';
 import { aiAnalysisQueue } from '@/lib/queues/data-queue';
 import { analysisRunRequestSchema } from '@/lib/validators/analysis';
+import { parseBody } from '@/lib/validators';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
 import { logger } from '@/lib/logger';
@@ -11,14 +12,7 @@ const log = logger.child('api:analysis/run');
 
 export async function POST(request: NextRequest) {
   try {
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      throw new ValidationError('Invalid JSON body');
-    }
-
-    const { businessId } = analysisRunRequestSchema.parse(body);
+    const { businessId } = await parseBody(request, analysisRunRequestSchema);
 
     const business = await prisma.business.findUnique({
       where: { id: businessId },
