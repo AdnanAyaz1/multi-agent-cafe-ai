@@ -2,7 +2,8 @@ import 'server-only';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { getMenuForBusiness } from '@/lib/menu';
-import { NotFoundError, AgentError } from '@/lib/errors';
+import { NotFoundError } from '@/lib/errors';
+import { ensureWeatherSnapshot } from '@/lib/services/weather/snapshot';
 import type { WeatherData } from '@/lib/types';
 import { runMenuAnalyst } from './menu-analyst';
 import { runWeatherAnalyst } from './weather-analyst';
@@ -146,22 +147,13 @@ async function loadInputs(context: PipelineContext): Promise<PipelineInputs> {
   });
   if (!business) throw new NotFoundError('Business');
 
-  const snap = await prisma.dataSnapshot.findFirst({
-    where: {
-      businessId: context.businessId,
-      source: 'weather',
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
-    orderBy: { collectedAt: 'desc' },
+  const weather = await ensureWeatherSnapshot({
+    businessId: context.businessId,
+    city: business.city,
+    latitude: business.latitude,
+    longitude: business.longitude,
   });
-  if (!snap) {
-    throw new AgentError(
-      'No fresh weather snapshot for this business. Run the weather worker first.',
-      { businessId: context.businessId }
-    );
-  }
 
-  const weather = snap.data as unknown as WeatherData;
   const menu = await getMenuForBusiness(context.businessId);
   return { weather, menu };
 }
