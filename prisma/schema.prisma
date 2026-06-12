@@ -127,6 +127,26 @@ model RecommendationAction {
   item             String
   details          Json
   recommendation   Recommendation @relation(fields: [recommendationId], references: [id])
+  decisions        Decision[]
+}
+
+model Decision {
+  id               String             @id @default(uuid())
+  businessId       String
+  actionId         String
+  actionType       String
+  item             String
+  details          Json?
+  status           String             @default("pending") // pending | auto-approved | approved | rejected
+  confidence       String?
+  summary          String?
+  decidedAt        DateTime?
+  reason           String?
+  createdAt        DateTime           @default(now())
+  action           RecommendationAction @relation(fields: [actionId], references: [id])
+
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
 }
 
 model Alert {

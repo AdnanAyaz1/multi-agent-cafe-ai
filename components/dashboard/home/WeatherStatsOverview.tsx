@@ -1,5 +1,6 @@
 import { CloudRain, CloudSnow, Cloud, Sun, AlertTriangle } from 'lucide-react';
-import { StatCardGrid, type StatCardData } from '../ui/StatCardGrid';
+import { StatCardGrid } from '../ui/StatCardGrid';
+import type { StatCardData } from '@/types/dashboard';
 import { Card } from '../ui/Card';
 import { CardHeading } from '../ui/CardHeading';
 import { getImpactLevel, IMPACT_MESSAGES } from '@/utils/weather';

@@ -12,6 +12,7 @@ export interface PipelineAgentRun {
 }
 
 export interface PipelineRecommendation {
+  id: string;
   summary: string;
   reasoning: string;
   confidence: string;
@@ -55,7 +56,6 @@ export function useAnalysis() {
     try {
       setLoading(true);
       setError(null);
-      setStatus(null);
       stopPolling();
 
       const res = await fetch('/api/analysis/run', {
@@ -69,13 +69,22 @@ export function useAnalysis() {
       const data = await res.json();
       setPipelineId(data.pipelineId);
 
+      // Show pipeline immediately with running status
+      setStatus({
+        status: 'running',
+        agentRuns: [],
+      });
+
       const interval = setInterval(async () => {
         try {
           const statusRes = await fetch(`/api/analysis/${data.pipelineId}`);
           if (!statusRes.ok) return;
           const statusData = await statusRes.json();
-          setStatus(statusData);
-          console.log("This is Status Data i",statusData);
+          setStatus({
+            status: statusData.status,
+            agentRuns: statusData.agentRuns ?? [],
+            recommendation: statusData.recommendation ?? undefined,
+          });
           if (statusData.status === 'complete' || statusData.status === 'failed') {
             clearInterval(interval);
             setLoading(false);
@@ -84,7 +93,7 @@ export function useAnalysis() {
           clearInterval(interval);
           setLoading(false);
         }
-      }, 3000);
+      }, 2000);
 
       intervalRef.current = interval;
     } catch (err) {

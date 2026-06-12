@@ -1,5 +1,6 @@
 import { Activity, CheckCircle2, XCircle, Zap } from 'lucide-react';
-import { StatCardGrid, type StatCardData } from '../ui/StatCardGrid';
+import { StatCardGrid } from '../ui/StatCardGrid';
+import type { StatCardData } from '@/types/dashboard';
 import type { AnalysisStatsProps } from '@/types/dashboard';
 
 export function AnalysisStats({ status }: AnalysisStatsProps) {

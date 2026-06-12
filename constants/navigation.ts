@@ -5,7 +5,8 @@ import {
   TrendingUp,
   Settings,
   HelpCircle,
-  LogOut,
+  UtensilsCrossed,
+  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -17,13 +18,14 @@ export interface NavItem {
 
 export const MAIN_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Weather', href: '/weather', icon: Cloud },
-  { label: 'Agent Pipeline', href: '/analysis', icon: Cpu },
-  { label: 'Competitor Insights', href: '/competitors', icon: TrendingUp },
-  { label: 'Settings', href: '/settings', icon: Settings },
+  { label: 'Weather', href: '/dashboard/weather', icon: Cloud },
+  { label: 'Agent Pipeline', href: '/dashboard/analysis', icon: Cpu },
+  { label: 'Decisions', href: '/dashboard/decisions', icon: ShieldCheck },
+  { label: 'Menu Items', href: '/dashboard/menu', icon: UtensilsCrossed },
+  { label: 'Competitor Insights', href: '/dashboard/competitors', icon: TrendingUp },
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
 export const BOTTOM_NAV: NavItem[] = [
   { label: 'Help', href: '/help', icon: HelpCircle },
-  { label: 'Logout', href: '/logout', icon: LogOut },
 ];

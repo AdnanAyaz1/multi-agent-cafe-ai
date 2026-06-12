@@ -3,7 +3,6 @@ import type { PipelineRunStatus } from '@/constants/pipeline';
 import type { PipelineAgentRun, PipelineRecommendation, PipelineStatus } from '@/hooks/useAnalysis';
 import type { CompetitorData } from '@/lib/types';
 import type { WeatherData } from '@/lib/types';
-import type { StatCardData } from './dashboard';
 
 // Card
 export interface CardProps {
