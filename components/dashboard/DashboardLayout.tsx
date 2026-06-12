@@ -1,5 +1,6 @@
 import { Sidebar } from './Sidebar';
-import { Sun, Bell, User } from 'lucide-react';
+import { Sun, Bell } from 'lucide-react';
+import { UserNav } from './UserNav';
 import type { DashboardLayoutProps } from '@/types/dashboard';
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -34,9 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <button className="text-muted-foreground p-2 cursor-pointer hover:bg-muted rounded-full transition-colors">
               <Bell className="size-5" />
             </button>
-            <button className="text-muted-foreground p-2 cursor-pointer hover:bg-muted rounded-full transition-colors">
-              <User className="size-5" />
-            </button>
+            <UserNav />
           </div>
         </div>
       </nav>

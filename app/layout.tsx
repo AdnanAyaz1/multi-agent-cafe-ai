@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Montserrat, Inter, JetBrains_Mono } from "next/font/google";
+import { Montserrat, Inter, JetBrains_Mono, Sora } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Providers } from "@/components/Providers";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -22,10 +22,17 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["600", "700", "800"],
+});
+
 export const metadata: Metadata = {
-  title: "CafePromo AI — Dashboard",
+  title: "CafePromo AI",
   description:
-    "AI-powered cafe management dashboard with menu analysis, weather insights, and promotional recommendations.",
+    "AI-powered business intelligence platform for cafes. Daily recommendations on what to promote and discount.",
 };
 
 export default function RootLayout({
@@ -41,11 +48,12 @@ export default function RootLayout({
         "antialiased",
         montserrat.variable,
         inter.variable,
-        jetbrainsMono.variable
+        jetbrainsMono.variable,
+        sora.variable
       )}
     >
       <body className="min-h-full font-sans">
-        <DashboardLayout>{children}</DashboardLayout>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

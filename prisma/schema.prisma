@@ -6,123 +6,169 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─── Business Configuration ───────────────────────────────────
-
-model Business {
-  id            String   @id @default(uuid())
-  name          String
-  type          String   // restaurant | cafe | ecommerce
-  city          String
-  latitude      Float?
-  longitude     Float?
-  timezone      String   @default("UTC")
-  config        Json?    // Flexible config (menu source, POS settings, etc.)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  dataSnapshots     DataSnapshot[]
-  recommendations   Recommendation[]
-  alerts            Alert[]
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String        @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  accounts      Account[]
+  businesses    Business[]
+  sessions      Session[]
+  subscription  Subscription?
 }
 
-// ─── Data Collection ──────────────────────────────────────────
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subscription {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  plan        String    @default("free")
+  status      String    @default("active")
+  stripeId    String?   @unique
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  trialEndsAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Business {
+  id              String           @id @default(uuid())
+  name            String
+  type            String
+  city            String
+  latitude        Float?
+  longitude       Float?
+  timezone        String           @default("UTC")
+  config          Json?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  userId          String?
+  alerts          Alert[]
+  user            User?            @relation(fields: [userId], references: [id])
+  dataSnapshots   DataSnapshot[]
+  recommendations Recommendation[]
+}
 
 model DataSnapshot {
   id          String    @id @default(uuid())
   businessId  String
-  source      String    // weather | sales | competitors | trends
-  data        Json      // The actual data payload
+  source      String
+  data        Json
   collectedAt DateTime  @default(now())
-  expiresAt   DateTime? // Cache expiry
-
-  business Business @relation(fields: [businessId], references: [id])
+  expiresAt   DateTime?
+  business    Business  @relation(fields: [businessId], references: [id])
 
   @@index([businessId, source, collectedAt])
 }
 
-// ─── AI Recommendations ───────────────────────────────────────
-
 model Recommendation {
-  id            String   @id @default(uuid())
-  businessId    String
-  date          DateTime @default(now())
-  summary       String   // "Increase hot drinks by 15% tomorrow"
-  reasoning     String   // Full reasoning from AI
-  confidence    String   // low | medium | high
-  category      String   // pricing | inventory | marketing | operations
-  priority      Int      @default(0) // Higher = more important
-  status        String   @default("pending") // pending | applied | dismissed | expired
-  appliedAt     DateTime?
-  outcome       String?  // What actually happened (for learning)
-
-  // Agent outputs for explainability
-  dataAnalysis  Json?    // What the Data Analyzer found
-  criticNotes   Json?    // What the Critic challenged
-
-  business  Business              @relation(fields: [businessId], references: [id])
-  actions   RecommendationAction[]
+  id           String                 @id @default(uuid())
+  businessId   String
+  date         DateTime               @default(now())
+  summary      String
+  reasoning    String
+  confidence   String
+  category     String
+  priority     Int                    @default(0)
+  status       String                 @default("pending")
+  appliedAt    DateTime?
+  outcome      String?
+  dataAnalysis Json?
+  criticNotes  Json?
+  business     Business               @relation(fields: [businessId], references: [id])
+  actions      RecommendationAction[]
 
   @@index([businessId, date])
   @@index([businessId, status])
 }
 
 model RecommendationAction {
-  id              String         @id @default(uuid())
+  id               String         @id @default(uuid())
   recommendationId String
-  actionType      String         // promote | discount | hold | alert
-  item            String         // Item name or "general"
-  details         Json           // { discountPercent: 15, reason: "..." }
-
-  recommendation Recommendation @relation(fields: [recommendationId], references: [id])
+  actionType       String
+  item             String
+  details          Json
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id])
 }
 
-// ─── Alerts ───────────────────────────────────────────────────
-
 model Alert {
-  id            String   @id @default(uuid())
-  businessId    String
-  type          String   // anomaly | competitor | weather | sales
-  severity      String   // info | warning | critical
-  title         String
-  message       String
-  data          Json?    // Supporting data
-  read          Boolean  @default(false)
-  createdAt     DateTime @default(now())
-
-  business Business @relation(fields: [businessId], references: [id])
+  id         String   @id @default(uuid())
+  businessId String
+  type       String
+  severity   String
+  title      String
+  message    String
+  data       Json?
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  business   Business @relation(fields: [businessId], references: [id])
 
   @@index([businessId, read, createdAt])
 }
 
-// ─── Agent Run Log ────────────────────────────────────────────
-
 model AgentRun {
-  id            String   @id @default(uuid())
-  pipelineId    String   // Groups runs for one analysis cycle
-  agentName     String   // data-analyzer | recommender | critic | briefing-writer
-  status        String   @default("pending") // pending | running | complete | failed
-  input         Json?
-  output        Json?
-  error         String?
-  durationMs    Int?
-  tokenCount    Int?
-  startedAt     DateTime?
-  completedAt   DateTime?
-  createdAt     DateTime @default(now())
+  id          String    @id @default(uuid())
+  pipelineId  String
+  agentName   String
+  status      String    @default("pending")
+  input       Json?
+  output      Json?
+  error       String?
+  durationMs  Int?
+  tokenCount  Int?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
 
   @@index([pipelineId])
   @@index([agentName, createdAt])
 }
 
-// ─── Scheduled Jobs Config ────────────────────────────────────
-
 model JobSchedule {
-  id             String   @id @default(uuid())
-  name           String   @unique // weather-fetch | sales-pull | competitor-scrape | daily-analysis
-  cronExpression String   // "0 6 * * *" = 6am daily
-  enabled        Boolean  @default(true)
+  id             String    @id @default(uuid())
+  name           String    @unique
+  cronExpression String
+  enabled        Boolean   @default(true)
   lastRunAt      DateTime?
   nextRunAt      DateTime?
-  config         Json?    // Job-specific config
-  updatedAt      DateTime @updatedAt
+  config         Json?
+  updatedAt      DateTime  @updatedAt
 }
