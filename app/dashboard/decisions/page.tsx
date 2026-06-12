@@ -11,22 +11,13 @@ import { DecisionDetailsModal } from '@/components/dashboard/decisions/DecisionD
 import type { Decision } from '@/types/decisions';
 
 export default function DecisionsPage() {
-  const { pending, decisions, loading, page, totalPages, total, setPage, approveDecision, rejectDecision, bulkApprove } = useDecisions(DEFAULT_BUSINESS_ID);
+  const { pending, decisions, logs, loading, page, totalPages, total, setPage, approveDecision, rejectDecision, bulkApprove } = useDecisions(DEFAULT_BUSINESS_ID);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [tab, setTab] = useState<'pending' | 'history'>('pending');
 
   const historyLogs = useMemo(() =>
-    decisions.filter((d) => d.status !== 'pending').map((d) => ({
-      id: `${d.id}-log`,
-      decisionId: d.id,
-      action: d.actionType,
-      item: d.item,
-      discountPercent: (d.details as { discountPercent?: number } | null)?.discountPercent,
-      status: d.status as 'auto-approved' | 'approved' | 'rejected',
-      decidedAt: d.decidedAt ?? d.createdAt,
-      reason: d.reason,
-    })),
-    [decisions]
+    logs.filter((l) => l.status !== 'pending'),
+    [logs]
   );
 
   return (
