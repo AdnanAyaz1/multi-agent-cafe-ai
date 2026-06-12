@@ -1,9 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { BarChart3, Cloud, Brain, ShieldCheck, Sparkles, Cpu, Zap } from 'lucide-react';
 import { AGENT_CONFIG, AGENT_ROLES } from '@/constants/agents';
-import { AGENT_COLORS } from '@/constants/pipeline-display';
 
 const AGENT_ICONS: Record<string, typeof Brain> = {
   'menu-analyst': BarChart3,
@@ -13,44 +11,56 @@ const AGENT_ICONS: Record<string, typeof Brain> = {
   synthesizer: Sparkles,
 };
 
+const AGENT_COLORS: Record<string, string> = {
+  'menu-analyst': 'text-blue-500',
+  'weather-analyst': 'text-green-500',
+  strategist: 'text-amber-500',
+  critic: 'text-red-400',
+  synthesizer: 'text-purple-400',
+};
+
+const AGENT_BG: Record<string, string> = {
+  'menu-analyst': 'bg-blue-500/10 border-blue-500/20',
+  'weather-analyst': 'bg-green-500/10 border-green-500/20',
+  strategist: 'bg-amber-500/10 border-amber-500/20',
+  critic: 'bg-red-500/10 border-red-500/20',
+  synthesizer: 'bg-purple-500/10 border-purple-500/20',
+};
+
 export function AgentShowcase() {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}>
+    <div>
       <div className="flex items-center gap-3 mb-6">
-        <div className="h-px w-12 bg-gradient-to-r from-[#a78bfa] to-transparent" />
-        <p className="text-[11px] text-[#a78bfa] uppercase tracking-[0.2em] font-semibold" style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>Your AI Agents</p>
+        <div className="h-px w-12 bg-zinc-700" />
+        <p className="text-xs text-zinc-400 uppercase tracking-widest font-medium">Your AI Agents</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {AGENT_ROLES.map((role, i) => {
+        {AGENT_ROLES.map((role) => {
           const config = AGENT_CONFIG[role];
           const Icon = AGENT_ICONS[role];
-          const color = AGENT_COLORS[role];
           return (
-            <motion.div key={role} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease: [0.22, 1, 0.36, 1] }} className="glass-card rounded-2xl p-5 group relative overflow-hidden">
-              <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style={{ background: `${color}15` }} />
-              <div className="relative z-10">
-                <motion.div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-lg" style={{ background: `${color}15`, border: `1px solid ${color}20`, boxShadow: `0 4px 15px ${color}10` }} whileHover={{ scale: 1.1, rotate: 5 }}>
-                  <Icon className="w-6 h-6" style={{ color }} />
-                </motion.div>
-                <p className="text-white text-sm font-bold mb-1" style={{ fontFamily: 'var(--font-montserrat)' }}>{config.name}</p>
-                <p className="text-[#859399] text-[11px] leading-relaxed">{config.description}</p>
-                <div className="mt-3 flex items-center gap-1.5">
-                  <Cpu className="w-3 h-3 text-[#859399]/50" />
-                  <span className="text-[9px] text-[#859399]/50 uppercase tracking-wider" style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{config.model}</span>
-                </div>
+            <div key={role} className="glass-card rounded-xl p-5">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 border ${AGENT_BG[role]}`}>
+                <Icon className={`w-5 h-5 ${AGENT_COLORS[role]}`} />
               </div>
-            </motion.div>
+              <p className="text-white text-sm font-semibold mb-1">{config.name}</p>
+              <p className="text-zinc-400 text-xs leading-relaxed">{config.description}</p>
+              <div className="mt-3 flex items-center gap-1.5">
+                <Cpu className="w-3 h-3 text-zinc-500" />
+                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">{config.model}</span>
+              </div>
+            </div>
           );
         })}
       </div>
       <div className="flex items-center justify-center mt-6 gap-3">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.06]">
-          <Zap className="w-3.5 h-3.5 text-[#ffd79f]" />
-          <span className="text-[10px] text-[#859399] uppercase tracking-wider" style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>5 agents chained in sequence</span>
+        <div className="h-px flex-1 bg-zinc-800" />
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800">
+          <Zap className="w-3.5 h-3.5 text-amber-500" />
+          <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">5 agents chained in sequence</span>
         </div>
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+        <div className="h-px flex-1 bg-zinc-800" />
       </div>
-    </motion.div>
+    </div>
   );
 }

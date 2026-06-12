@@ -9,9 +9,9 @@ export interface ActivityItem {
 }
 
 export const ACTIVITY_STATUS_CONFIG = {
-  complete: { icon: CheckCircle2, color: 'text-[#1fe19e]', bg: 'bg-[#1fe19e]/10', border: 'border-[#1fe19e]/15' },
-  failed: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/15' },
-  pending: { icon: Clock, color: 'text-[#ffd79f]', bg: 'bg-[#ffd79f]/10', border: 'border-[#ffd79f]/15' },
+  complete: { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20' },
+  failed: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+  pending: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
 };
 
 export const MOCK_ACTIVITY: ActivityItem[] = [

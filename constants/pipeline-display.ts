@@ -1,9 +1,9 @@
 export const AGENT_COLORS: Record<string, string> = {
-  'menu-analyst': '#00d2ff',
-  'weather-analyst': '#1fe19e',
-  strategist: '#ffd79f',
-  critic: '#f87171',
-  synthesizer: '#a78bfa',
+  'menu-analyst': '#3b82f6',
+  'weather-analyst': '#22c55e',
+  strategist: '#f59e0b',
+  critic: '#ef4444',
+  synthesizer: '#a855f7',
 };
 
 export const DEFAULT_PIPELINE_STEPS = [

@@ -57,9 +57,9 @@ export function WeatherBackground({ condition }: { condition: string }) {
         {rainData.map((d, i) => (
           <motion.div
             key={i}
-            className="absolute w-px bg-gradient-to-b from-transparent via-[#00d2ff]/30 to-transparent"
+            className="absolute w-px bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
             style={{ left: d.left, height: d.height }}
-            animate={{ y: ['-10vh', '110vh'], opacity: [0, 0.6, 0] }}
+            animate={{ y: ['-10vh', '110vh'], opacity: [0, 0.4, 0] }}
             transition={{ duration: d.duration, repeat: Infinity, delay: d.delay, ease: 'linear' }}
           />
         ))}
@@ -73,9 +73,9 @@ export function WeatherBackground({ condition }: { condition: string }) {
         {snowData.map((d, i) => (
           <motion.div
             key={i}
-            className="absolute w-1.5 h-1.5 rounded-full bg-white/40"
+            className="absolute w-1.5 h-1.5 rounded-full bg-white/30"
             style={{ left: d.left }}
-            animate={{ y: ['-5vh', '105vh'], x: [0, Math.sin(i) * 30], opacity: [0, 0.8, 0] }}
+            animate={{ y: ['-5vh', '105vh'], x: [0, Math.sin(i) * 30], opacity: [0, 0.6, 0] }}
             transition={{ duration: d.duration, repeat: Infinity, delay: d.delay, ease: 'linear' }}
           />
         ))}
@@ -86,17 +86,12 @@ export function WeatherBackground({ condition }: { condition: string }) {
   if (lower.includes('storm') || lower.includes('thunder')) {
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute inset-0 bg-white"
-          animate={{ opacity: [0, 0, 0, 0.03, 0, 0.05, 0] }}
-          transition={{ duration: 4, repeat: Infinity, repeatDelay: 3 }}
-        />
         {stormData.map((d, i) => (
           <motion.div
             key={i}
-            className="absolute w-px bg-gradient-to-b from-transparent via-[#ffd79f]/40 to-transparent"
+            className="absolute w-px bg-gradient-to-b from-transparent via-amber-500/20 to-transparent"
             style={{ left: d.left, height: d.height }}
-            animate={{ y: ['-10vh', '110vh'], opacity: [0, 0.8, 0] }}
+            animate={{ y: ['-10vh', '110vh'], opacity: [0, 0.5, 0] }}
             transition={{ duration: d.duration, repeat: Infinity, delay: d.delay, ease: 'linear' }}
           />
         ))}
@@ -110,9 +105,9 @@ export function WeatherBackground({ condition }: { condition: string }) {
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            className="absolute rounded-full bg-white/[0.02]"
+            className="absolute rounded-full bg-white/[0.01]"
             style={{ width: `${200 + i * 100}px`, height: `${100 + i * 50}px`, top: `${20 + i * 25}%`, filter: 'blur(40px)' }}
-            animate={{ x: ['-10%', '110%'], opacity: [0, 0.4, 0] }}
+            animate={{ x: ['-10%', '110%'], opacity: [0, 0.3, 0] }}
             transition={{ duration: 20 + i * 8, repeat: Infinity, delay: i * 5, ease: 'linear' }}
           />
         ))}
@@ -122,18 +117,16 @@ export function WeatherBackground({ condition }: { condition: string }) {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <motion.div
-        className="absolute top-10 right-10 w-32 h-32 rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(255,215,159,0.15) 0%, transparent 70%)' }}
-        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      <div
+        className="absolute top-10 right-10 w-32 h-32 rounded-full bg-amber-500/5"
+        style={{ filter: 'blur(40px)' }}
       />
       {sunData.map((d, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 rounded-full bg-[#ffd79f]/30"
+          className="absolute w-1 h-1 rounded-full bg-amber-500/20"
           style={{ top: d.top, left: d.left }}
-          animate={{ opacity: [0, 0.6, 0], scale: [0.5, 1.2, 0.5] }}
+          animate={{ opacity: [0, 0.4, 0], scale: [0.5, 1.2, 0.5] }}
           transition={{ duration: d.duration, repeat: Infinity, delay: d.delay }}
         />
       ))}

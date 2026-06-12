@@ -6,8 +6,7 @@ export interface StatWidgetProps {
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   icon: LucideIcon;
-  iconGradient: string;
-  index?: number;
+  accentColor?: 'blue' | 'green' | 'amber';
 }
 
 export interface WeatherWidgetProps {

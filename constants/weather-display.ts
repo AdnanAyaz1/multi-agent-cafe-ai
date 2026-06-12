@@ -8,6 +8,6 @@ export const IMPACT_ACTIONS: Record<string, string[]> = {
 
 export const IMPACT_COLORS: Record<string, string> = {
   high: '#ef4444',
-  medium: '#ffd79f',
-  low: '#1fe19e',
+  medium: '#f59e0b',
+  low: '#22c55e',
 };

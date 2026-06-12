@@ -17,6 +17,6 @@ export const MOCK_COMPETITORS: CompetitorOverviewItem[] = [
 
 export const COMPETITOR_CHANGE_ICONS = {
   up: { icon: TrendingUp, color: 'text-red-400', bg: 'bg-red-500/10' },
-  down: { icon: TrendingDown, color: 'text-[#1fe19e]', bg: 'bg-[#1fe19e]/10' },
-  same: { icon: Minus, color: 'text-[#859399]', bg: 'bg-white/[0.03]' },
+  down: { icon: TrendingDown, color: 'text-green-500', bg: 'bg-green-500/10' },
+  same: { icon: Minus, color: 'text-zinc-400', bg: 'bg-zinc-800' },
 };
