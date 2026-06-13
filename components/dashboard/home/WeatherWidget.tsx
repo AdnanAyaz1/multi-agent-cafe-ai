@@ -23,12 +23,12 @@ export function WeatherWidget({ data }: WeatherWidgetProps) {
             </div>
             <div>
               <p className="text-white text-sm font-bold">Local Weather</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">{data.city}</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{data.city}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span className="text-[10px] text-blue-500 font-semibold font-mono">LIVE</span>
+            <span className="text-[10px] text-blue-500 font-semibold">LIVE</span>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export function WeatherWidget({ data }: WeatherWidgetProps) {
             <div key={stat.label} className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 text-center">
               <stat.icon className="w-4 h-4 text-blue-500 mx-auto mb-1.5" />
               <p className="text-white text-sm font-semibold font-mono">{stat.value}</p>
-              <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-mono">{stat.label}</p>
+              <p className="text-[9px] text-zinc-500 uppercase tracking-wider">{stat.label}</p>
             </div>
           ))}
         </div>

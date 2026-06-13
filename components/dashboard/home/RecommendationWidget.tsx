@@ -14,12 +14,12 @@ export function RecommendationWidget() {
             </div>
             <div>
               <p className="text-white text-sm font-bold">AI Recommendations</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">Today&apos;s top actions</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Today&apos;s top actions</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
             <TrendingUp className="w-3 h-3 text-green-500" />
-            <span className="text-[10px] text-green-500 font-semibold font-mono">+39% est.</span>
+            <span className="text-[10px] text-green-500 font-semibold">+39% est.</span>
           </div>
         </div>
         <div className="space-y-2">
@@ -33,8 +33,8 @@ export function RecommendationWidget() {
                 <p className="text-zinc-400 text-[11px] truncate">{rec.reason}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${rec.type === 'auto' ? 'text-green-500 bg-green-500/10' : 'text-blue-500 bg-blue-500/10'} font-mono`}>{rec.type === 'auto' ? 'AUTO' : 'REVIEW'}</span>
-                <span className="text-[9px] text-green-500 font-bold font-mono">{rec.impact}</span>
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${rec.type === 'auto' ? 'text-green-500 bg-green-500/10' : 'text-blue-500 bg-blue-500/10'}`}>{rec.type === 'auto' ? 'AUTO' : 'REVIEW'}</span>
+                <span className="text-[9px] text-green-500 font-bold">{rec.impact}</span>
               </div>
             </div>
           ))}

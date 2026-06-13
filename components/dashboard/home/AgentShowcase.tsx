@@ -47,7 +47,7 @@ export function AgentShowcase() {
               <p className="text-zinc-400 text-xs leading-relaxed">{config.description}</p>
               <div className="mt-3 flex items-center gap-1.5">
                 <Cpu className="w-3 h-3 text-zinc-500" />
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">{config.model}</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{config.model}</span>
               </div>
             </div>
           );
@@ -57,7 +57,7 @@ export function AgentShowcase() {
         <div className="h-px flex-1 bg-zinc-800" />
         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800">
           <Zap className="w-3.5 h-3.5 text-amber-500" />
-          <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">5 agents chained in sequence</span>
+          <span className="text-[10px] text-zinc-400 uppercase tracking-wider">5 agents chained in sequence</span>
         </div>
         <div className="h-px flex-1 bg-zinc-800" />
       </div>

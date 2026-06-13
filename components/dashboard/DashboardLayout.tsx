@@ -44,12 +44,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800">
                 <TopNavWeatherIcon condition={weather.condition} />
                 <span className="text-white text-xs font-semibold">{weather.temperature}°C</span>
-                <span className="text-zinc-400 text-[10px]" style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>{weather.city}</span>
+                <span className="text-zinc-400 text-[10px]">{weather.city}</span>
               </div>
             )}
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[10px] text-green-500 font-semibold uppercase tracking-wider" style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>5 agents online</span>
+              <span className="text-[10px] text-green-500 font-semibold uppercase tracking-wider">5 agents online</span>
             </div>
           </div>
 

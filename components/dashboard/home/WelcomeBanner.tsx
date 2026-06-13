@@ -21,7 +21,7 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px w-10 bg-zinc-700" />
-            <p className="text-[11px] text-blue-500 uppercase tracking-[0.2em] font-semibold font-mono">Dashboard</p>
+            <p className="text-[11px] text-blue-500 uppercase tracking-[0.2em] font-semibold">Dashboard</p>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 tracking-tight">
             {getGreeting()}, Boss
@@ -35,13 +35,13 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
               <Cloud className="w-4 h-4 text-blue-500" />
               <div>
                 <p className="text-white text-sm font-semibold">{weather.temperature}°C</p>
-                <p className="text-zinc-500 text-[10px] uppercase tracking-wider font-mono">{weather.condition}</p>
+                <p className="text-zinc-500 text-[10px] uppercase tracking-wider">{weather.condition}</p>
               </div>
             </div>
           )}
           <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-500/10 border border-green-500/20">
             <div className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-[10px] text-green-500 font-semibold uppercase tracking-wider font-mono">5 agents active</span>
+            <span className="text-[10px] text-green-500 font-semibold uppercase tracking-wider">5 agents active</span>
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
             <stat.icon className={`w-4 h-4 ${stat.color}`} />
             <div>
               <p className="text-white text-sm font-semibold">{stat.value}</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">{stat.label}</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{stat.label}</p>
             </div>
           </div>
         ))}

@@ -14,10 +14,10 @@ export function CompetitorOverview() {
             </div>
             <div>
               <p className="text-white text-sm font-bold">Competitor Watch</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">Price movements</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Price movements</p>
             </div>
           </div>
-          <span className="text-[10px] text-zinc-500 font-mono">4 competitors</span>
+          <span className="text-[10px] text-zinc-500">4 competitors</span>
         </div>
         <div className="space-y-2">
           {MOCK_COMPETITORS.map((item) => {

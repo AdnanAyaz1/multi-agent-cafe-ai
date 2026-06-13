@@ -14,7 +14,7 @@ export function RecentActivity() {
             </div>
             <div>
               <p className="text-white text-sm font-bold">Recent Activity</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">Latest events</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Latest events</p>
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@ export function RecentActivity() {
                   <p className="text-white text-sm font-semibold truncate">{item.title}</p>
                   <p className="text-zinc-400 text-xs truncate">{item.description}</p>
                 </div>
-                <span className="text-[9px] text-zinc-500 flex-shrink-0 font-mono">{item.time}</span>
+                <span className="text-[9px] text-zinc-500 flex-shrink-0">{item.time}</span>
               </div>
             );
           })}

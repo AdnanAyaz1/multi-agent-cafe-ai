@@ -57,7 +57,7 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
               <p className="text-white text-sm font-semibold">
                 Pipeline {isRunning ? 'Running' : 'Complete'}
               </p>
-              <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">
+              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">
                 {completedCount}/{AGENT_DISPLAY_ORDER.length} agents done
               </p>
             </div>
@@ -66,7 +66,7 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
           {isRunning && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              <span className="text-[10px] text-blue-500 font-semibold font-mono">LIVE</span>
+              <span className="text-[10px] text-blue-500 font-semibold">LIVE</span>
             </div>
           )}
         </div>
@@ -154,12 +154,12 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
                         {config.name}
                       </p>
                       {status === 'active' && (
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-semibold font-mono ${color} ${AGENT_BG[role]}`}>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${color} ${AGENT_BG[role]}`}>
                           RUNNING
                         </span>
                       )}
                       {status === 'complete' && (
-                        <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold text-green-500 bg-green-500/10 border border-green-500/20 font-mono">
+                        <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold text-green-500 bg-green-500/10 border border-green-500/20">
                           DONE
                         </span>
                       )}

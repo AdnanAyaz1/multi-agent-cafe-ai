@@ -32,7 +32,7 @@ export function Sidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-bold truncate">Main Branch</p>
-              <p className="text-[10px] text-green-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-jetbrains-mono)' }}>Active</p>
+              <p className="text-[10px] text-green-500 uppercase tracking-wider">Active</p>
             </div>
           </div>
         </div>
