@@ -51,6 +51,36 @@ interface PipelineStatusResponse {
   recommendation: RecommendationSummary | null;
 }
 
+interface RawAgentRun {
+  id: string;
+  agentName: string;
+  status: string;
+  durationMs: number | null;
+  tokenCount: number | null;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  error: string | null;
+  output: unknown;
+}
+
+interface RawRecommendation {
+  id: string;
+  summary: string;
+  reasoning: string;
+  confidence: string;
+  category: string;
+  priority: number;
+  status: string;
+  date: Date;
+  criticNotes: unknown;
+  actions: Array<{
+    id: string;
+    actionType: string;
+    item: string;
+    details: unknown;
+  }>;
+}
+
 export async function GET(
   _request: NextRequest,
   ctx: RouteContext<'/api/analysis/[pipelineId]'>
@@ -59,11 +89,10 @@ export async function GET(
     const { pipelineId } = await ctx.params;
     const validId = pipelineIdSchema.parse(pipelineId);
 
-    type AgentRunRow = Awaited<ReturnType<typeof prisma.agentRun.findMany>>[number];
-    const runs: AgentRunRow[] = await prisma.agentRun.findMany({
+    const runs: RawAgentRun[] = await prisma.agentRun.findMany({
       where: { pipelineId: validId },
       orderBy: { createdAt: 'asc' },
-    });
+    }) as unknown as RawAgentRun[];
 
     if (runs.length === 0) throw new NotFoundError('Pipeline');
 
@@ -138,7 +167,7 @@ function derivePipelineStatus(
   return 'running';
 }
 
-async function findRecommendationForPipeline(pipelineId: string) {
+async function findRecommendationForPipeline(pipelineId: string): Promise<RawRecommendation | null> {
   const rec = await prisma.recommendation.findFirst({
     where: {
       dataAnalysis: { path: ['pipelineId'], equals: pipelineId },
@@ -146,5 +175,5 @@ async function findRecommendationForPipeline(pipelineId: string) {
     include: { actions: true },
     orderBy: { date: 'desc' },
   });
-  return rec;
+  return rec as unknown as RawRecommendation | null;
 }
