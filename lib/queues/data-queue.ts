@@ -1,12 +1,8 @@
 import { Queue } from 'bullmq'
-
-const connection = {
-  host: process.env.REDIS_HOST ?? 'localhost',
-  port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
-}
+import { redisConnection } from './connection'
 
 export const dataCollectQueue = new Queue('data-collect', {
-  connection,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -17,7 +13,7 @@ export const dataCollectQueue = new Queue('data-collect', {
 })
 
 export const aiAnalysisQueue = new Queue('ai-analysis', {
-  connection,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 2,
     backoff: {
@@ -28,7 +24,7 @@ export const aiAnalysisQueue = new Queue('ai-analysis', {
 })
 
 export const reportQueue = new Queue('reports', {
-  connection,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 2,
     backoff: {
@@ -39,7 +35,7 @@ export const reportQueue = new Queue('reports', {
 })
 
 export const competitorCollectQueue = new Queue('competitor-collect', {
-  connection,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 3,
     backoff: {

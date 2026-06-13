@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { StripeProvider } from '@/components/stripe/StripeProvider';
@@ -63,7 +63,7 @@ function CheckoutForm({ plan }: { plan: string }) {
   );
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan');
@@ -186,5 +186,19 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+const loadingFallback = (
+  <div className="flex items-center justify-center min-h-screen" style={{ background: '#0e0c0a' }}>
+    <div className="w-10 h-10 border-2 border-[#e07850] border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={loadingFallback}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

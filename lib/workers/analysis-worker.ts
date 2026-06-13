@@ -2,16 +2,12 @@ import 'server-only';
 import { Worker, type Job } from 'bullmq';
 import { runAnalysisPipeline } from '@/lib/agents/orchestrator';
 import { logger } from '@/lib/logger';
+import { redisConnection } from '@/lib/queues/connection';
 
 export interface AnalysisJobData {
   businessId: string;
   pipelineId: string;
 }
-
-const connection = {
-  host: process.env.REDIS_HOST ?? 'localhost',
-  port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
-};
 
 const globalForWorker = globalThis as unknown as {
   analysisWorker: Worker<AnalysisJobData> | undefined;
@@ -32,7 +28,7 @@ function createWorker(): Worker<AnalysisJobData> {
       return result;
     },
     {
-      connection,
+      connection: redisConnection,
       concurrency: parseInt(process.env.ANALYSIS_CONCURRENCY ?? '2', 10),
       limiter: { max: 8, duration: 60_000 },
     }

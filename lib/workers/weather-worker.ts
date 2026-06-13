@@ -1,6 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import { prisma } from '@/lib/db';
 import { fetchWeather } from '@/lib/services/weather/client';
+import { redisConnection } from '@/lib/queues/connection';
 
 interface WeatherJobData {
   businessId: string;
@@ -8,11 +9,6 @@ interface WeatherJobData {
   latitude?: number;
   longitude?: number;
 }
-
-const connection = {
-  host: process.env.REDIS_HOST ?? 'localhost',
-  port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
-};
 
 const globalForWorker = globalThis as unknown as {
   weatherWorker: Worker<WeatherJobData> | undefined;
@@ -44,7 +40,7 @@ function createWorker(): Worker<WeatherJobData> {
       };
     },
     {
-      connection,
+      connection: redisConnection,
       limiter: { max: 10, duration: 60_000 },
     }
   );

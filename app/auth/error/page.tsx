@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -16,7 +17,7 @@ const errors: Record<string, string> = {
   Default: "An unexpected error occurred.",
 };
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const errorType = searchParams.get("error") || "Default";
   const errorMessage = errors[errorType] || errors.Default;
@@ -49,5 +50,19 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+const loadingFallback = (
+  <div className="min-h-screen flex items-center justify-center bg-[#0e0c0a]">
+    <div className="w-8 h-8 border-2 border-[#e07850] border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={loadingFallback}>
+      <AuthErrorContent />
+    </Suspense>
   );
 }

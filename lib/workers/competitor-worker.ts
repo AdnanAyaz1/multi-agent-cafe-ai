@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { scrapeCompetitorUrl } from '@/lib/services/competitor/client';
 import { runCompetitorParser } from '@/lib/agents/competitor-parser';
 import type { CompetitorData } from '@/lib/types';
+import { redisConnection } from '@/lib/queues/connection';
 
 export interface CompetitorJobData {
   businessId: string;
@@ -26,11 +27,6 @@ export interface CompetitorJobResult {
   scrapeMs: number;
   parseMs: number;
 }
-
-const connection = {
-  host: process.env.REDIS_HOST ?? 'localhost',
-  port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
-};
 
 const globalForWorker = globalThis as unknown as {
   competitorWorker: Worker<CompetitorJobData, CompetitorJobResult> | undefined;
@@ -95,7 +91,7 @@ function createWorker(): Worker<CompetitorJobData, CompetitorJobResult> {
       };
     },
     {
-      connection,
+      connection: redisConnection,
       concurrency: parseInt(process.env.COMPETITOR_CONCURRENCY ?? '2', 10),
       limiter: { max: 6, duration: 60_000 },
     }

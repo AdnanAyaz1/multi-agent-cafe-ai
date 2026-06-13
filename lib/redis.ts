@@ -3,9 +3,13 @@ import Redis from 'ioredis'
 const globalForRedis = globalThis as unknown as { redis: Redis }
 
 function createRedisClient(): Redis {
-  return new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+  const url = process.env.REDIS_URL ?? 'redis://localhost:6379'
+  const isTLS = url.startsWith('rediss://')
+
+  return new Redis(url, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
+    tls: isTLS ? {} : undefined,
   })
 }
 
