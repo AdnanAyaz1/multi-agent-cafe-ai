@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { JsonMenuSource } from './json-source';
 import { pickMenuSourceType, type MenuSource, type MenuSourceType } from './source';
 import type { Menu } from './types';
+import { DEFAULT_MENU_ITEMS } from './defaults';
 import { getCachedMenu, setCachedMenu } from './cache';
 import { NotFoundError } from '@/lib/errors';
 
@@ -28,7 +29,20 @@ export async function getMenuForBusiness(businessId: string): Promise<Menu> {
   if (!business) throw new NotFoundError('Business');
 
   const source = getSource(business.config);
-  const menu = await source.getMenu(businessId);
-  setCachedMenu(menu);
-  return menu;
+  try {
+    const menu = await source.getMenu(businessId);
+    setCachedMenu(menu);
+    return menu;
+  } catch (e) {
+    if (e instanceof NotFoundError) {
+      const fallback: Menu = {
+        businessId,
+        items: DEFAULT_MENU_ITEMS,
+        fetchedAt: new Date(),
+      };
+      setCachedMenu(fallback);
+      return fallback;
+    }
+    throw e;
+  }
 }

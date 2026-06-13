@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { promises as fs } from "fs";
+import path from "path";
 import { prisma } from "@/lib/db";
+import { DEFAULT_MENU_ITEMS } from "@/lib/menu/defaults";
+
+const MENUS_DIR =
+  process.env.MENU_JSON_DIR ?? path.join(process.cwd(), "data", "menus");
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, password, business, competitors, plan } = body;
+    const { name, email, password, business, competitors } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -52,12 +58,12 @@ export async function POST(req: Request) {
     await prisma.subscription.create({
       data: {
         userId: user.id,
-        plan: plan || "free",
+        plan: "free",
         status: "active",
       },
     });
 
-    await prisma.business.create({
+    const createdBusiness = await prisma.business.create({
       data: {
         userId: user.id,
         name: business.name,
@@ -69,6 +75,13 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    await fs.mkdir(MENUS_DIR, { recursive: true });
+    await fs.writeFile(
+      path.join(MENUS_DIR, `${createdBusiness.id}.json`),
+      JSON.stringify(DEFAULT_MENU_ITEMS, null, 2),
+      "utf-8"
+    );
 
     return NextResponse.json(
       { message: "Account created", userId: user.id },

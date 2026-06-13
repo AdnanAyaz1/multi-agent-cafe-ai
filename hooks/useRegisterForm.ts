@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useState, useCallback } from 'react';
 
-type Step = 'account' | 'business' | 'competitors' | 'plan';
+type Step = 'account' | 'business' | 'competitors';
 
 export interface UseRegisterFormReturn {
   step: Step;
@@ -28,7 +28,7 @@ export interface UseRegisterFormReturn {
   currentStepIndex: number;
 }
 
-const STEPS: Step[] = ['account', 'business', 'competitors', 'plan'];
+const STEPS: Step[] = ['account', 'business', 'competitors'];
 
 export function useRegisterForm(): UseRegisterFormReturn {
   const router = useRouter();
@@ -108,7 +108,7 @@ export function useRegisterForm(): UseRegisterFormReturn {
           return;
         }
 
-        router.push('/dashboard');
+        router.push('/pricing');
         router.refresh();
       } catch {
         setError('Something went wrong. Please try again.');

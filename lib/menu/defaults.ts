@@ -1,0 +1,27 @@
+import type { MenuItem } from './types';
+
+export const DEFAULT_MENU_ITEMS: MenuItem[] = [
+  { id: 'd1', name: 'Karak Chai', category: 'hot-drink', price: 80, tags: ['signature', 'vegetarian'] },
+  { id: 'd2', name: 'Doodh Pati', category: 'hot-drink', price: 120, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 'd3', name: 'Hot Chocolate', category: 'hot-drink', price: 250, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 'd4', name: 'Cappuccino', category: 'hot-drink', price: 350, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 'd5', name: 'Green Tea', category: 'hot-drink', price: 150, tags: ['vegan'] },
+
+  { id: 'd6', name: 'Iced Latte', category: 'cold-drink', price: 400, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 'd7', name: 'Cold Coffee', category: 'cold-drink', price: 350, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 'd8', name: 'Mango Lassi', category: 'cold-drink', price: 280, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 'd9', name: 'Fresh Lime Soda', category: 'cold-drink', price: 200, tags: ['vegan'] },
+  { id: 'd10', name: 'Iced Karak', category: 'cold-drink', price: 150, tags: ['signature', 'vegetarian'] },
+
+  { id: 'f1', name: 'Samosa', category: 'food', price: 50, tags: ['vegetarian', 'spicy'] },
+  { id: 'f2', name: 'Chicken Roll', category: 'food', price: 180, tags: ['spicy'] },
+  { id: 'f3', name: 'Club Sandwich', category: 'food', price: 450, tags: ['vegetarian-option'] },
+  { id: 'f4', name: 'Chicken Biryani', category: 'food', price: 550, tags: ['spicy', 'signature'] },
+  { id: 'f5', name: 'Veggie Wrap', category: 'food', price: 320, tags: ['vegetarian', 'vegan-option'] },
+  { id: 'f6', name: 'French Fries', category: 'food', price: 250, tags: ['vegetarian'] },
+
+  { id: 's1', name: 'Gulab Jamun', category: 'dessert', price: 150, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 's2', name: 'Kheer', category: 'dessert', price: 180, tags: ['vegetarian', 'contains-dairy'] },
+  { id: 's3', name: 'Chocolate Brownie', category: 'dessert', price: 320, tags: ['vegetarian', 'contains-dairy', 'contains-nuts'] },
+  { id: 's4', name: 'Rasmalai', category: 'dessert', price: 220, tags: ['vegetarian', 'contains-dairy'] },
+];

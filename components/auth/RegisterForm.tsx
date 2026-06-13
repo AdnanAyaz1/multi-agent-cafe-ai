@@ -21,7 +21,6 @@ export function RegisterForm() {
 
   const [accountData, setAccountData] = useState<AccountInput | null>(null);
   const [businessData, setBusinessData] = useState<BusinessInput | null>(null);
-  const [competitorUrls, setCompetitorUrls] = useState<string[]>(['']);
 
   const handleAccountComplete = (data: AccountInput) => {
     setAccountData(data);
@@ -33,12 +32,7 @@ export function RegisterForm() {
     nextStep();
   };
 
-  const handleCompetitorsComplete = (urls: string[]) => {
-    setCompetitorUrls(urls);
-    nextStep();
-  };
-
-  const handlePlanComplete = async (plan: string) => {
+  const handleCompetitorsComplete = async (urls: string[]) => {
     if (!accountData || !businessData) return;
     await submit({
       name: accountData.name,
@@ -48,8 +42,8 @@ export function RegisterForm() {
       businessType: businessData.businessType,
       city: businessData.city,
       timezone: businessData.timezone,
-      competitorUrls,
-      plan,
+      competitorUrls: urls,
+      plan: 'free',
     });
   };
 
@@ -74,15 +68,7 @@ export function RegisterForm() {
           onComplete={handleCompetitorsComplete}
           onBack={prevStep}
           onError={clearError}
-        />
-      )}
-
-      {step === 'plan' && (
-        <PlanStep
-          onComplete={handlePlanComplete}
-          onBack={prevStep}
           loading={loading}
-          onError={clearError}
         />
       )}
 
@@ -267,10 +253,12 @@ function CompetitorsStep({
   onComplete,
   onBack,
   onError,
+  loading,
 }: {
   onComplete: (urls: string[]) => void;
   onBack: () => void;
   onError: () => void;
+  loading: boolean;
 }) {
   const form = useForm<CompetitorsInput>({
     resolver: zodResolver(registerStepSchemas.competitors),
@@ -355,156 +343,13 @@ function CompetitorsStep({
           </button>
           <button
             type="submit"
-            className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#e07850] to-[#c8a070] text-[#1a1208] text-sm font-bold hover:shadow-lg hover:shadow-[#e07850]/20 transition-all duration-300 hover:-translate-y-0.5"
+            disabled={loading}
+            className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#e07850] to-[#c8a070] text-[#1a1208] text-sm font-bold hover:shadow-lg hover:shadow-[#e07850]/20 disabled:opacity-50 transition-all duration-300 hover:-translate-y-0.5"
           >
-            Continue
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
         </div>
       </form>
-    </div>
-  );
-}
-
-function PlanStep({
-  onComplete,
-  onBack,
-  loading,
-  onError,
-}: {
-  onComplete: (plan: string) => void;
-  onBack: () => void;
-  loading: boolean;
-  onError: () => void;
-}) {
-  const [selectedPlan, setSelectedPlan] = useState('free');
-
-  const plans = [
-    {
-      name: 'Free',
-      price: '$0',
-      period: 'forever',
-      features: ['3 AI analyses/day', '1 competitor tracked', 'Basic weather insights'],
-      value: 'free',
-    },
-    {
-      name: 'Pro',
-      price: '$29',
-      period: '/month',
-      features: ['Unlimited AI analyses', '10 competitors tracked', 'Advanced analytics', 'Priority support'],
-      value: 'pro',
-      badge: 'Popular',
-      popular: true,
-    },
-    {
-      name: 'Enterprise',
-      price: '$99',
-      period: '/month',
-      features: ['Everything in Pro', 'Unlimited competitors', 'Custom AI models', 'Dedicated support', 'API access'],
-      value: 'enterprise',
-    },
-  ];
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <span
-          className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#e07850]/10 text-[#e07850] text-[11px] font-bold tracking-[0.15em] mb-4"
-          style={{ fontFamily: 'var(--font-jetbrains-mono)' }}
-        >
-          PLAN
-        </span>
-        <h2 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'var(--font-montserrat)' }}>
-          Choose your plan
-        </h2>
-        <p className="text-[#a09890] text-sm">Start free, upgrade anytime</p>
-      </div>
-
-      <div className="space-y-3">
-        {plans.map((plan) => (
-          <button
-            key={plan.value}
-            type="button"
-            onClick={() => {
-              setSelectedPlan(plan.value);
-              onError();
-            }}
-            className={`w-full text-left rounded-2xl transition-all duration-300 ${
-              selectedPlan === plan.value
-                ? 'ring-1 ring-[#e07850]/30 shadow-lg shadow-[#e07850]/10'
-                : 'hover:border-white/[0.15]'
-            }`}
-          >
-            <div
-              className={`relative p-5 rounded-2xl border ${
-                selectedPlan === plan.value
-                  ? 'bg-[#e07850]/5 border-[#e07850]/20'
-                  : 'bg-white/[0.02] border-white/[0.06]'
-              }`}
-            >
-              {plan.badge && plan.popular && (
-                <div
-                  className="absolute -top-2.5 left-5 px-3 py-0.5 rounded-full bg-gradient-to-r from-[#e07850] to-[#c8a070] text-[#1a1208] text-[10px] font-bold uppercase tracking-wider"
-                  style={{ fontFamily: 'var(--font-jetbrains-mono)' }}
-                >
-                  {plan.badge}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      selectedPlan === plan.value ? 'border-[#e07850] bg-[#e07850]' : 'border-white/20'
-                    }`}
-                  >
-                    {selectedPlan === plan.value && <div className="w-2 h-2 rounded-full bg-[#1a1208]" />}
-                  </div>
-                  <span className="font-semibold text-white text-sm">{plan.name}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-2xl font-extrabold text-white" style={{ fontFamily: 'var(--font-montserrat)' }}>
-                    {plan.price}
-                  </span>
-                  <span className="text-xs text-[#a09890] ml-0.5">{plan.period}</span>
-                </div>
-              </div>
-              <div className="ml-8 space-y-1.5">
-                {plan.features.map((feature) => (
-                  <div key={feature} className="flex items-center gap-2 text-xs text-[#a09890]">
-                    <svg
-                      className="w-3 h-3 text-[#c8a070] flex-shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {feature}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      <div className="flex gap-4 mt-8">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-3 px-4 rounded-xl border border-white/[0.08] text-[#a09890] text-sm font-medium hover:bg-white/[0.04] hover:border-white/[0.15] hover:text-white transition-all duration-300"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={() => onComplete(selectedPlan)}
-          disabled={loading}
-          className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#e07850] to-[#c8a070] text-[#1a1208] text-sm font-bold hover:shadow-lg hover:shadow-[#e07850]/20 disabled:opacity-50 transition-all duration-300 hover:-translate-y-0.5"
-        >
-          {loading ? 'Creating account...' : 'Create account'}
-        </button>
-      </div>
     </div>
   );
 }

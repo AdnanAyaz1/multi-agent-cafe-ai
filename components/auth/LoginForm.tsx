@@ -30,6 +30,19 @@ export function LoginForm({ callbackUrl = '/dashboard' }: LoginFormProps) {
 
   return (
     <div className="glass-card rounded-3xl p-8 border border-white/[0.08]">
+      <div className="mb-6">
+        <span
+          className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#e07850]/10 text-[#e07850] text-[11px] font-bold tracking-[0.15em] mb-4"
+          style={{ fontFamily: 'var(--font-jetbrains-mono)' }}
+        >
+          SIGN IN
+        </span>
+        <h2 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'var(--font-montserrat)' }}>
+          Welcome back
+        </h2>
+        <p className="text-[#a09890] text-sm">Sign in to your CafePromo AI dashboard</p>
+      </div>
+
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
           {error}
@@ -87,6 +100,16 @@ export function LoginForm({ callbackUrl = '/dashboard' }: LoginFormProps) {
         </svg>
         Continue with Google
       </button>
+
+      <p className="mt-6 text-center text-sm text-[#a09890]">
+        Don&apos;t have an account?{' '}
+        <a
+          href="/auth/register"
+          className="text-[#e07850] hover:text-[#e07850]/80 font-medium transition-colors"
+        >
+          Sign up
+        </a>
+      </p>
     </div>
   );
 }

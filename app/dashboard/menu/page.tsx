@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { UtensilsCrossed, Search, RefreshCw, Bot, BotOff, Filter } from 'lucide-react';
 import { useMenuItems } from '@/hooks/useMenuItems';
-import { DEFAULT_BUSINESS_ID } from '@/constants/pipeline';
+import { useBusinessId } from '@/hooks/useBusinessId';
 import { MENU_CATEGORIES, type MenuCategory } from '@/constants/menu';
 import { CATEGORY_CONFIG } from '@/constants/menu-display';
 import { MenuItemCard } from '@/components/dashboard/menu/MenuItemCard';
@@ -11,6 +11,7 @@ import { MenuItemCard } from '@/components/dashboard/menu/MenuItemCard';
 export default function MenuPage() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<MenuCategory | 'all'>('all');
+  const { business, loading: businessLoading } = useBusinessId();
   const {
     items,
     loading,
@@ -20,7 +21,7 @@ export default function MenuPage() {
     toggleUnavailable,
     setAllControlled,
     refresh,
-  } = useMenuItems(DEFAULT_BUSINESS_ID);
+  } = useMenuItems(business?.id ?? '');
 
   const filtered = items.filter((item) => {
     const matchesSearch = !search || item.name.toLowerCase().includes(search.toLowerCase());
@@ -121,7 +122,7 @@ export default function MenuPage() {
       </div>
 
       {/* Menu items grid */}
-      {loading ? (
+      {loading || businessLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="glass-card rounded-2xl p-5">
@@ -151,7 +152,11 @@ export default function MenuPage() {
             {search ? 'No items found' : 'No menu items'}
           </h3>
           <p className="text-zinc-400 text-sm max-w-sm mx-auto">
-            {search ? 'Try a different search term.' : 'Add menu items to your business to get started.'}
+            {businessLoading
+              ? 'Loading your business...'
+              : search
+                ? 'Try a different search term.'
+                : 'Add menu items to your business to get started.'}
           </p>
         </div>
       ) : (
