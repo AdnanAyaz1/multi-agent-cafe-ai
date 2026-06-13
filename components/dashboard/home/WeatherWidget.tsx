@@ -9,13 +9,13 @@ export function WeatherWidget({ data }: WeatherWidgetProps) {
   const impact = getImpactLevel(data.condition);
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+    <div className="dash-glass dash-glow dash-shimmer rounded-2xl overflow-hidden">
       <div className="h-px w-full bg-zinc-700" />
 
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+            <div className="icon-glow w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
               <Cloud className="w-5 h-5 text-[#e07850]" />
             </div>
             <div>
@@ -42,7 +42,7 @@ export function WeatherWidget({ data }: WeatherWidgetProps) {
             { icon: Droplets, label: 'Humidity', value: `${data.humidity}%` },
             { icon: Wind, label: 'Wind', value: `${data.windSpeed} m/s` },
           ].map((stat) => (
-            <div key={stat.label} className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 text-center">
+            <div key={stat.label} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center icon-glow">
               <stat.icon className="w-4 h-4 text-[#e07850] mx-auto mb-1.5" />
               <p className="text-white text-sm font-semibold font-mono">{stat.value}</p>
               <p className="text-[9px] text-zinc-500 uppercase tracking-wider">{stat.label}</p>

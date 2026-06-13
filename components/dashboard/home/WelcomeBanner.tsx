@@ -12,7 +12,7 @@ const STATS = [
 
 export function WelcomeBanner({ weather }: WelcomeBannerProps) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 lg:p-8">
+    <div className="dash-glass dash-glow rounded-2xl p-6 lg:p-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
           <div className="flex items-center gap-3 mb-3">
@@ -27,7 +27,7 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
 
         <div className="flex items-center gap-3 flex-shrink-0">
           {weather && (
-            <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-zinc-800/50 border border-zinc-700">
+            <div className="icon-glow flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
               <Cloud className="w-4 h-4 text-[#e07850]" />
               <div>
                 <p className="text-white text-sm font-semibold">{weather.temperature}°C</p>

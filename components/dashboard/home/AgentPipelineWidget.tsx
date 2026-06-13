@@ -24,11 +24,11 @@ export function AgentPipelineWidget() {
   }));
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+    <div className="dash-glass dash-glow dash-shimmer rounded-2xl overflow-hidden">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+            <div className="icon-glow w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
               <Brain className="w-5 h-5 text-[#e89070]" />
             </div>
             <div>
@@ -60,7 +60,7 @@ export function AgentPipelineWidget() {
         </div>
         <div className="flex items-center gap-1.5 flex-wrap mt-4 pt-4 border-t border-zinc-800">
           {AGENT_DISPLAY_ORDER.map((role) => (
-            <span key={role} className="text-[9px] px-2.5 py-1 rounded-full border border-zinc-700 text-zinc-400 bg-zinc-800/50">{AGENT_CONFIG[role].name}</span>
+            <span key={role} className="text-[9px] px-2.5 py-1 rounded-full border border-white/[0.06] text-zinc-400 bg-white/[0.03]">{AGENT_CONFIG[role].name}</span>
           ))}
         </div>
       </div>

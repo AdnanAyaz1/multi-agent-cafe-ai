@@ -20,14 +20,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { weather } = useHomeDashboard();
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #0e0c0a 0%, #0c0a08 50%, #0e0c0a 100%)' }}>
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main area: offset by sidebar width */}
       <div className="md:ml-[280px]">
         {/* Top Navigation Bar */}
-        <nav className="sticky top-0 z-40 h-16 flex items-center justify-between px-6 lg:px-10 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
+        <nav className="sticky top-0 z-40 h-16 flex items-center justify-between px-6 lg:px-10 border-b border-white/[0.06]"
+          style={{ background: 'rgba(14, 12, 10, 0.85)', backdropFilter: 'blur(20px) saturate(1.1)' }}>
           {/* Left: spacer or brand for mobile */}
           <div className="flex items-center gap-3 md:hidden">
             <Link href="/dashboard" className="flex items-center gap-2">
@@ -39,15 +40,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Center: Quick info (desktop only) */}
-          <div className="hidden lg:flex items-center gap-5">
+          <div className="hidden lg:flex items-center gap-4">
             {weather && (
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                 <TopNavWeatherIcon condition={weather.condition} />
                 <span className="text-white text-xs font-semibold">{weather.temperature}°C</span>
                 <span className="text-zinc-400 text-[10px]">{weather.city}</span>
               </div>
             )}
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/[0.06] border border-green-500/[0.12]">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
               <span className="text-[10px] text-green-500 font-semibold uppercase tracking-wider">5 agents online</span>
             </div>
@@ -55,9 +56,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-3">
-            <button className="relative p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors duration-150">
+            <button className="icon-glow relative p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-zinc-400 hover:text-white transition-all duration-300">
               <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-zinc-950" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-[#0e0c0a]" />
             </button>
             <UserNav />
           </div>

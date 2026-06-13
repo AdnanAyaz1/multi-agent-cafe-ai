@@ -21,7 +21,8 @@ export function Sidebar() {
 
   return (
     <aside
-      className="fixed left-0 top-0 h-full w-[280px] z-40 flex flex-col pt-6 pb-6 border-r border-zinc-800 bg-zinc-950"
+      className="fixed left-0 top-0 h-full w-[280px] z-40 flex flex-col pt-6 pb-6 border-r border-white/[0.06]"
+      style={{ background: 'linear-gradient(180deg, rgba(14, 12, 10, 0.95), rgba(10, 8, 6, 0.98))', backdropFilter: 'blur(24px)' }}
     >
       {/* Branch Selector */}
       <div className="px-5 mb-8">
@@ -49,10 +50,10 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-150 group relative ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative ${
                 isActive
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                  ? 'bg-white/[0.06] text-white'
+                  : 'text-zinc-400 hover:bg-white/[0.03] hover:text-white'
               }`}
             >
               {isActive && (
@@ -75,10 +76,10 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-150 ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                 isActive
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                  ? 'bg-white/[0.06] text-white'
+                  : 'text-zinc-400 hover:bg-white/[0.03] hover:text-white'
               }`}
             >
               <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-[#e07850]' : ''}`} />

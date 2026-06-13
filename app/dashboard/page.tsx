@@ -56,7 +56,7 @@ export default function DashboardPage() {
           {weather ? (
             <WeatherWidget data={weather} />
           ) : (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-center">
+            <div className="dash-glass rounded-2xl p-8 text-center">
               <p className="text-zinc-400 text-sm font-mono">
                 {loading ? 'Loading weather data...' : 'No weather data available'}
               </p>

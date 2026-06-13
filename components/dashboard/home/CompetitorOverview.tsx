@@ -5,11 +5,11 @@ import { MOCK_COMPETITORS, COMPETITOR_CHANGE_ICONS } from '@/constants/competito
 
 export function CompetitorOverview() {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+    <div className="dash-glass dash-glow rounded-2xl overflow-hidden">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+            <div className="icon-glow w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
               <Eye className="w-5 h-5 text-[#e07850]" />
             </div>
             <div>
@@ -23,7 +23,7 @@ export function CompetitorOverview() {
           {MOCK_COMPETITORS.map((item) => {
             const cfg = COMPETITOR_CHANGE_ICONS[item.change];
             return (
-              <div key={`${item.name}-${item.item}`} className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30 border border-zinc-800 hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors duration-150">
+              <div key={`${item.name}-${item.item}`} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
                 <div className={`w-8 h-8 rounded-lg ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
                   <cfg.icon className={`w-4 h-4 ${cfg.color}`} />
                 </div>

@@ -5,11 +5,11 @@ import { MOCK_RECOMMENDATIONS } from '@/constants/recommendations';
 
 export function RecommendationWidget() {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+    <div className="dash-glass dash-featured dash-glow dash-shimmer rounded-2xl overflow-hidden">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+            <div className="icon-glow w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
               <Megaphone className="w-5 h-5 text-amber-500" />
             </div>
             <div>
@@ -24,7 +24,7 @@ export function RecommendationWidget() {
         </div>
         <div className="space-y-2">
           {MOCK_RECOMMENDATIONS.map((rec, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30 border border-zinc-800 hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors duration-150">
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${rec.type === 'auto' ? 'bg-green-500/10 border border-green-500/20' : 'bg-[#e07850]/10 border border-[#e07850]/20'}`}>
                 {rec.type === 'auto' ? <Target className="w-3.5 h-3.5 text-green-500" /> : <DollarSign className="w-3.5 h-3.5 text-[#e07850]" />}
               </div>
