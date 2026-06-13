@@ -13,6 +13,8 @@ export function middleware(request: NextRequest) {
 
   const isAuthPage = pathname.startsWith("/auth");
   const isDashboard = pathname.startsWith("/dashboard");
+  const isCheckout = pathname.startsWith("/checkout");
+  const isPricing = pathname === "/pricing";
   const isApiAuth = pathname.startsWith("/api/auth");
   const isPublicApi = pathname.startsWith("/api/weather") ||
     pathname.startsWith("/api/menu");
@@ -25,6 +27,10 @@ export function middleware(request: NextRequest) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
+    return NextResponse.next();
+  }
+
+  if (isCheckout || isPricing) {
     return NextResponse.next();
   }
 

@@ -7,6 +7,6 @@ interface LoginSearchParamsProps {
 }
 
 export function LoginSearchParams({ checkoutPlan }: LoginSearchParamsProps) {
-  const callbackUrl = checkoutPlan ? `/dashboard?checkout=${checkoutPlan}` : '/dashboard';
+  const callbackUrl = checkoutPlan ? `/checkout?plan=${checkoutPlan}` : '/dashboard';
   return <LoginForm callbackUrl={callbackUrl} />;
 }
