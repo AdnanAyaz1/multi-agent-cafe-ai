@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/db';
-import { aiAnalysisQueue } from '@/lib/queues/data-queue';
 import { analysisRunRequestSchema } from '@/lib/validators/analysis';
 import { parseBody } from '@/lib/validators';
 import { NotFoundError, ValidationError } from '@/lib/errors';
@@ -9,6 +8,8 @@ import handleError from '@/lib/handlers/errors';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('api:analysis/run');
+
+const isVercel = !!process.env.VERCEL;
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,22 +25,32 @@ export async function POST(request: NextRequest) {
     }
 
     const pipelineId = randomUUID();
-    const job = await aiAnalysisQueue.add(
-      'full-pipeline',
-      { businessId, pipelineId },
-      { priority: 2 }
-    );
 
-    log.info('pipeline enqueued', {
-      pipelineId,
-      businessId,
-      jobId: job.id,
-    });
+    if (isVercel) {
+      const { runAnalysisPipeline } = await import('@/lib/agents/orchestrator');
+      runAnalysisPipeline({ businessId, pipelineId }).catch((err) => {
+        log.error('inline pipeline failed', err, { pipelineId, businessId });
+      });
+
+      log.info('pipeline started inline (Vercel)', { pipelineId, businessId });
+    } else {
+      const { aiAnalysisQueue } = await import('@/lib/queues/data-queue');
+      const job = await aiAnalysisQueue.add(
+        'full-pipeline',
+        { businessId, pipelineId },
+        { priority: 2 }
+      );
+
+      log.info('pipeline enqueued', {
+        pipelineId,
+        businessId,
+        jobId: job.id,
+      });
+    }
 
     return NextResponse.json(
       {
         pipelineId,
-        jobId: job.id,
         status: 'queued',
         statusUrl: `/api/analysis/${pipelineId}`,
       },

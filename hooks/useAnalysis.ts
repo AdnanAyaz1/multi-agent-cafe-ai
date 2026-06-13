@@ -75,10 +75,29 @@ export function useAnalysis() {
         agentRuns: [],
       });
 
+      let pollCount = 0;
+      const maxPolls = 30;
+
       const interval = setInterval(async () => {
+        pollCount++;
         try {
           const statusRes = await fetch(`/api/analysis/${data.pipelineId}`);
-          if (!statusRes.ok) return;
+          if (statusRes.status === 404) {
+            if (pollCount >= maxPolls) {
+              clearInterval(interval);
+              intervalRef.current = null;
+              setLoading(false);
+              setError('Pipeline did not start. The analysis worker may not be available.');
+            }
+            return;
+          }
+          if (!statusRes.ok) {
+            clearInterval(interval);
+            intervalRef.current = null;
+            setLoading(false);
+            setError(`Pipeline status check failed (${statusRes.status})`);
+            return;
+          }
           const statusData = await statusRes.json();
           setStatus({
             status: statusData.status,
@@ -87,10 +106,12 @@ export function useAnalysis() {
           });
           if (statusData.status === 'complete' || statusData.status === 'failed') {
             clearInterval(interval);
+            intervalRef.current = null;
             setLoading(false);
           }
         } catch {
           clearInterval(interval);
+          intervalRef.current = null;
           setLoading(false);
         }
       }, 2000);
