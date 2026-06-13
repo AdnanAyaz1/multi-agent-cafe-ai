@@ -51,6 +51,10 @@ export function PricingSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: planKey }),
       });
+      if (res.status === 401) {
+        window.location.href = '/auth/login';
+        return;
+      }
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
