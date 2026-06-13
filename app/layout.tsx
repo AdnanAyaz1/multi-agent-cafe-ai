@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Montserrat, Inter, JetBrains_Mono, Sora } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/Providers";
 
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const inter = Inter({
-  variable: "--font-inter",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
   display: "swap",
 });
@@ -20,13 +14,6 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
-});
-
-const sora = Sora({
-  variable: "--font-sora",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -46,10 +33,8 @@ export default function RootLayout({
       className={cn(
         "h-full",
         "antialiased",
-        montserrat.variable,
-        inter.variable,
-        jetbrainsMono.variable,
-        sora.variable
+        jakarta.variable,
+        jetbrainsMono.variable
       )}
     >
       <body className="min-h-full font-sans">
