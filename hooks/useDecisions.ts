@@ -19,7 +19,7 @@ interface PaginatedResponse {
 export function useDecisions(businessId?: string) {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [pending, setPending] = useState<Decision[]>([]);
-  const [page, setPage] = useState(1);
+  const [page, setPageState] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -40,11 +40,12 @@ export function useDecisions(businessId?: string) {
     }
   }, [businessId]);
 
-  const loadPage = useCallback(async (p: number) => {
+  const setPage = useCallback(async (p: number) => {
+    setPageState(p);
     const data = await fetchDecisions(p);
     if (data) {
       setDecisions(data.decisions);
-      setPage(data.pagination.page);
+      setPageState(data.pagination.page);
       setTotalPages(data.pagination.totalPages);
       setTotal(data.pagination.total);
     }
@@ -58,9 +59,9 @@ export function useDecisions(businessId?: string) {
   }, [fetchDecisions]);
 
   useEffect(() => {
-    loadPage(1);
+    setPage(1);
     loadPending();
-  }, [loadPage, loadPending]);
+  }, [setPage, loadPending]);
 
   const ingestRecommendation = useCallback(async (rec: {
     id: string;
@@ -89,12 +90,12 @@ export function useDecisions(businessId?: string) {
         log.error('Failed to ingest decisions', undefined, { status: res.status, ...err });
         return;
       }
-      loadPage(page);
+      setPage(page);
       loadPending();
     } catch (e) {
       log.error('ingestRecommendation failed', e);
     }
-  }, [loadPage, loadPending, page]);
+  }, [setPage, loadPending, page]);
 
   const approveDecision = useCallback(async (decisionId: string, reason?: string) => {
     try {
@@ -103,13 +104,13 @@ export function useDecisions(businessId?: string) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'approved', reason }),
       });
-      loadPage(page);
+      setPage(page);
       loadPending();
     } catch {
       // Optimistic update
       setPending((prev) => prev.filter((d) => d.id !== decisionId));
     }
-  }, [loadPage, loadPending, page]);
+  }, [setPage, loadPending, page]);
 
   const rejectDecision = useCallback(async (decisionId: string, reason?: string) => {
     try {
@@ -118,12 +119,12 @@ export function useDecisions(businessId?: string) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'rejected', reason }),
       });
-      loadPage(page);
+      setPage(page);
       loadPending();
     } catch {
       setPending((prev) => prev.filter((d) => d.id !== decisionId));
     }
-  }, [loadPage, loadPending, page]);
+  }, [setPage, loadPending, page]);
 
   const bulkApprove = useCallback(async (decisionIds: string[]) => {
     await Promise.all(
@@ -135,9 +136,9 @@ export function useDecisions(businessId?: string) {
         })
       )
     );
-    loadPage(page);
+    setPage(page);
     loadPending();
-  }, [loadPage, loadPending, page]);
+  }, [setPage, loadPending, page]);
 
   const logs: DecisionLog[] = decisions
     .filter((d) => d.status !== 'pending')
@@ -171,6 +172,6 @@ export function useDecisions(businessId?: string) {
     approveDecision,
     rejectDecision,
     bulkApprove,
-    refresh: () => { loadPage(page); loadPending(); },
+    refresh: () => { setPage(page); loadPending(); },
   };
 }

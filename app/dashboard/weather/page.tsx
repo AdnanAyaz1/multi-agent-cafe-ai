@@ -7,7 +7,7 @@ import { useWeather } from '@/hooks/useWeather';
 import { getImpactLevel, IMPACT_MESSAGES } from '@/utils/weather';
 import { WeatherBackground } from '@/components/dashboard/weather/WeatherBackground';
 import { ConditionIcon } from '@/components/dashboard/weather/ConditionIcon';
-import { SUGGESTED_CITIES, IMPACT_ACTIONS, IMPACT_COLORS } from '@/constants/weather-display';
+import { IMPACT_ACTIONS, IMPACT_COLORS } from '@/constants/weather-display';
 
 export default function WeatherPage() {
   const [city, setCity] = useState('');
@@ -220,19 +220,7 @@ export default function WeatherPage() {
                   <Cloud className="w-10 h-10 text-zinc-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">Search for a city</h3>
-                <p className="text-zinc-400 text-sm max-w-sm mx-auto mb-8">Get real-time weather analysis and AI-powered menu optimization suggestions.</p>
-
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {SUGGESTED_CITIES.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => { setCity(c); fetchWeather(c); }}
-                      className="px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-medium hover:bg-zinc-800 hover:border-zinc-700 hover:text-white transition-all duration-150"
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
+                <p className="text-zinc-400 text-sm max-w-sm mx-auto">Get real-time weather analysis and AI-powered menu optimization suggestions.</p>
               </div>
             </div>
           )}
