@@ -78,12 +78,16 @@ export async function POST(req: Request) {
       });
     });
 
-    await fs.mkdir(MENUS_DIR, { recursive: true });
-    await fs.writeFile(
-      path.join(MENUS_DIR, `${createdBusiness.id}.json`),
-      JSON.stringify(DEFAULT_MENU_ITEMS, null, 2),
-      "utf-8"
-    );
+    try {
+      await fs.mkdir(MENUS_DIR, { recursive: true });
+      await fs.writeFile(
+        path.join(MENUS_DIR, `${createdBusiness.id}.json`),
+        JSON.stringify(DEFAULT_MENU_ITEMS, null, 2),
+        "utf-8"
+      );
+    } catch {
+      // File write may fail on serverless (read-only fs) — not critical
+    }
 
     return NextResponse.json(
       { message: "Account created" },

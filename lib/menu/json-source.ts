@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import type { MenuSource } from './source';
 import type { Menu, MenuItem } from './types';
-import { NotFoundError } from '@/lib/errors';
+import { DEFAULT_MENU_ITEMS } from './defaults';
 
 const MENUS_DIR =
   process.env.MENU_JSON_DIR ?? path.join(process.cwd(), 'data', 'menus');
@@ -16,8 +16,12 @@ export class JsonMenuSource implements MenuSource {
       raw = await fs.readFile(filePath, 'utf-8');
     } catch (e) {
       const code = (e as NodeJS.ErrnoException).code;
-      if (code === 'ENOENT') {
-        throw new NotFoundError(`Menu for business "${businessId}"`);
+      if (code === 'ENOENT' || code === 'EROFS') {
+        return {
+          businessId,
+          items: DEFAULT_MENU_ITEMS,
+          fetchedAt: new Date(),
+        };
       }
       throw e;
     }
