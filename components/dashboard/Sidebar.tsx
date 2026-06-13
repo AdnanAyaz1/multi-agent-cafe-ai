@@ -16,7 +16,7 @@ export function Sidebar() {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ csrfToken }),
     });
-    window.location.href = '/auth/login';
+    window.location.href = '/';
   };
 
   return (

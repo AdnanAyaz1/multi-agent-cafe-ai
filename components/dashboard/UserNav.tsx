@@ -94,7 +94,7 @@ export function UserNav() {
                   headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                   body: new URLSearchParams({ csrfToken }),
                 });
-                window.location.href = '/auth/login';
+                window.location.href = '/';
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-400 hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150 group"
             >
