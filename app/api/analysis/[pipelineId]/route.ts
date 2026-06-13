@@ -66,7 +66,7 @@ export async function GET(
 
     if (runs.length === 0) throw new NotFoundError('Pipeline');
 
-    const agentRuns: AgentRunSummary[] = runs.map((r) => ({
+    const agentRuns: AgentRunSummary[] = runs.map((r: (typeof runs)[number]) => ({
       id: r.id,
       agentName: r.agentName as AgentName,
       status: r.status,
