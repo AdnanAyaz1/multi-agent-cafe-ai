@@ -22,7 +22,6 @@ export default function DashboardPage() {
     if (!checkoutPlan) return;
 
     const runCheckout = async () => {
-      router.replace('/dashboard');
       try {
         const res = await fetch('/api/stripe/checkout', {
           method: 'POST',
@@ -40,6 +39,20 @@ export default function DashboardPage() {
 
     runCheckout();
   }, [checkoutPlan, router]);
+
+  if (checkoutPlan) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-xl bg-[#e07850]/10 border border-[#e07850]/20 flex items-center justify-center mx-auto mb-4">
+            <div className="w-5 h-5 border-2 border-[#e07850] border-t-transparent rounded-full animate-spin" />
+          </div>
+          <p className="text-white text-sm font-semibold">Redirecting to checkout...</p>
+          <p className="text-zinc-500 text-xs mt-1">Setting up your subscription</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
