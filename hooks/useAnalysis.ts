@@ -69,7 +69,25 @@ export function useAnalysis() {
       const data = await res.json();
       setPipelineId(data.pipelineId);
 
-      // Show pipeline immediately with running status
+      if (data.status === 'complete') {
+        setStatus({
+          status: 'complete',
+          agentRuns: [],
+        });
+        setLoading(false);
+
+        const statusRes = await fetch(`/api/analysis/${data.pipelineId}`);
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          setStatus({
+            status: statusData.status,
+            agentRuns: statusData.agentRuns ?? [],
+            recommendation: statusData.recommendation ?? undefined,
+          });
+        }
+        return;
+      }
+
       setStatus({
         status: 'running',
         agentRuns: [],

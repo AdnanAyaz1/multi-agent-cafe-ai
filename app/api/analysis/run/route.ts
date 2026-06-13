@@ -28,11 +28,21 @@ export async function POST(request: NextRequest) {
 
     if (isVercel) {
       const { runAnalysisPipeline } = await import('@/lib/agents/orchestrator');
-      runAnalysisPipeline({ businessId, pipelineId }).catch((err) => {
-        log.error('inline pipeline failed', err, { pipelineId, businessId });
+      const result = await runAnalysisPipeline({ businessId, pipelineId });
+
+      log.info('pipeline completed inline (Vercel)', {
+        pipelineId,
+        businessId,
+        recommendationId: result.recommendationId,
+        durationMs: result.durationMs,
       });
 
-      log.info('pipeline started inline (Vercel)', { pipelineId, businessId });
+      return NextResponse.json({
+        pipelineId,
+        status: 'complete',
+        recommendationId: result.recommendationId,
+        statusUrl: `/api/analysis/${pipelineId}`,
+      });
     } else {
       const { aiAnalysisQueue } = await import('@/lib/queues/data-queue');
       const job = await aiAnalysisQueue.add(
