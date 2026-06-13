@@ -53,7 +53,7 @@ export function FeaturesSection() {
           </p>
         </motion.div>
 
-        {/* Asymmetric bento grid — NOT 3 equal columns */}
+        {/* Asymmetric bento grid */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
           {/* Large feature — spans 3 cols */}
           <motion.div
@@ -61,18 +61,39 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-3 glass-card card-glow rounded-3xl p-8 lg:p-10 group relative overflow-hidden"
+            className="lg:col-span-3 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
+            style={{
+              background: "linear-gradient(160deg, rgba(20, 18, 16, 0.8), rgba(14, 12, 10, 0.6))",
+              border: "1px solid rgba(224, 120, 80, 0.06)",
+              backdropFilter: "blur(20px)",
+            }}
           >
-            <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-              style={{ background: "rgba(224, 120, 80, 0.04)" }} />
+            {/* Hover glow orb */}
+            <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-all duration-1000 pointer-events-none"
+              style={{ background: "rgba(224, 120, 80, 0.06)" }} />
+            {/* Hover border glow */}
+            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+              style={{
+                background: "linear-gradient(135deg, rgba(224, 120, 80, 0.08), transparent 40%, transparent 60%, rgba(200, 160, 112, 0.04))",
+                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                maskComposite: "exclude",
+                WebkitMaskComposite: "xor",
+                padding: "1px",
+              }}
+            />
+            {/* Shimmer sweep */}
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.03), transparent)" }} />
+
             <div className="relative z-10">
               <div className="flex items-start gap-6">
-                <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-500"
-                  style={{ background: "rgba(224, 120, 80, 0.08)", border: "1px solid rgba(224, 120, 80, 0.1)", color: "#e07850" }}>
+                <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(224,120,80,0.25)] transition-all duration-500"
+                  style={{ background: "rgba(224, 120, 80, 0.08)", border: "1px solid rgba(224, 120, 80, 0.12)", color: "#e07850" }}>
                   {iconMap.weather}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xl lg:text-2xl font-bold text-white mb-3 tracking-tight"
+                  <h3 className="text-xl lg:text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-[#f5dcc8] transition-colors duration-500"
                     style={{ fontFamily: "var(--font-sora)" }}>{FEATURES[0].title}</h3>
                   <p className="leading-relaxed text-sm lg:text-[15px]"
                     style={{ color: "rgba(160, 152, 144, 0.65)" }}>{FEATURES[0].description}</p>
@@ -87,16 +108,34 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-2 glass-card card-glow rounded-3xl p-8 lg:p-10 group relative overflow-hidden lg:mt-12"
+            className="lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden lg:mt-12 cursor-default"
+            style={{
+              background: "linear-gradient(160deg, rgba(20, 18, 16, 0.8), rgba(14, 12, 10, 0.6))",
+              border: "1px solid rgba(200, 160, 112, 0.06)",
+              backdropFilter: "blur(20px)",
+            }}
           >
-            <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-              style={{ background: "rgba(200, 160, 112, 0.05)" }} />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-all duration-1000 pointer-events-none"
+              style={{ background: "rgba(200, 160, 112, 0.06)" }} />
+            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+              style={{
+                background: "linear-gradient(135deg, rgba(200, 160, 112, 0.08), transparent 40%, transparent 60%, rgba(224, 120, 80, 0.04))",
+                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                maskComposite: "exclude",
+                WebkitMaskComposite: "xor",
+                padding: "1px",
+              }}
+            />
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(200, 160, 112, 0.03), transparent)" }} />
+
             <div className="relative z-10">
-              <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-500"
-                style={{ background: "rgba(200, 160, 112, 0.08)", border: "1px solid rgba(200, 160, 112, 0.1)", color: "#c8a070" }}>
+              <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(200,160,112,0.25)] transition-all duration-500"
+                style={{ background: "rgba(200, 160, 112, 0.08)", border: "1px solid rgba(200, 160, 112, 0.12)", color: "#c8a070" }}>
                 {iconMap.competitor}
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 tracking-tight"
+              <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-[#f5dcc8] transition-colors duration-500"
                 style={{ fontFamily: "var(--font-sora)" }}>{FEATURES[1].title}</h3>
               <p className="leading-relaxed text-sm"
                 style={{ color: "rgba(160, 152, 144, 0.65)" }}>{FEATURES[1].description}</p>
@@ -109,16 +148,34 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-2 glass-card card-glow rounded-3xl p-8 lg:p-10 group relative overflow-hidden"
+            className="lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
+            style={{
+              background: "linear-gradient(160deg, rgba(20, 18, 16, 0.8), rgba(14, 12, 10, 0.6))",
+              border: "1px solid rgba(224, 120, 80, 0.06)",
+              backdropFilter: "blur(20px)",
+            }}
           >
-            <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-              style={{ background: "rgba(224, 120, 80, 0.04)" }} />
+            <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-all duration-1000 pointer-events-none"
+              style={{ background: "rgba(224, 120, 80, 0.05)" }} />
+            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+              style={{
+                background: "linear-gradient(135deg, rgba(224, 120, 80, 0.08), transparent 40%, transparent 60%, rgba(200, 160, 112, 0.04))",
+                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                maskComposite: "exclude",
+                WebkitMaskComposite: "xor",
+                padding: "1px",
+              }}
+            />
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.03), transparent)" }} />
+
             <div className="relative z-10">
-              <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-500"
-                style={{ background: "rgba(224, 120, 80, 0.08)", border: "1px solid rgba(224, 120, 80, 0.1)", color: "#e07850" }}>
+              <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(224,120,80,0.25)] transition-all duration-500"
+                style={{ background: "rgba(224, 120, 80, 0.08)", border: "1px solid rgba(224, 120, 80, 0.12)", color: "#e07850" }}>
                 {iconMap.agents}
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 tracking-tight"
+              <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-[#f5dcc8] transition-colors duration-500"
                 style={{ fontFamily: "var(--font-sora)" }}>{FEATURES[2].title}</h3>
               <p className="leading-relaxed text-sm"
                 style={{ color: "rgba(160, 152, 144, 0.65)" }}>{FEATURES[2].description}</p>
@@ -131,12 +188,14 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 rounded-3xl p-8 lg:p-10 group relative overflow-hidden"
+            className="lg:col-span-5 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
             style={{
               background: "linear-gradient(135deg, rgba(224, 120, 80, 0.06), rgba(200, 160, 112, 0.03))",
               border: "1px solid rgba(224, 120, 80, 0.06)",
             }}
           >
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.02), transparent)" }} />
             <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
                 <p className="text-sm font-semibold mb-1" style={{ color: "#e07850", fontFamily: "var(--font-sora)" }}>
