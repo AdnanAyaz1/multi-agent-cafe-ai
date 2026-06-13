@@ -15,11 +15,6 @@ export async function POST() {
 
     const userId = session.user.id;
 
-    const existing = await prisma.subscription.findUnique({ where: { userId } });
-    if (existing && existing.plan !== 'free' && existing.stripeSubscriptionId) {
-      return NextResponse.json({ status: 'active', plan: existing.plan });
-    }
-
     const sub = await prisma.subscription.findUnique({ where: { userId } });
     const customerId = sub?.stripeId;
 
@@ -38,7 +33,11 @@ export async function POST() {
     }
 
     const stripeSub = subscriptions.data[0];
-    const plan = stripeSub.items.data[0]?.price?.id === process.env.STRIPE_GROWTH_PRICE_ID ? 'growth' : 'enterprise';
+    const priceId = stripeSub.items.data[0]?.price?.id;
+    let plan: 'growth' | 'enterprise' = 'growth';
+    if (priceId && priceId !== process.env.STRIPE_GROWTH_PRICE_ID) {
+      plan = 'enterprise';
+    }
 
     await prisma.subscription.upsert({
       where: { userId },

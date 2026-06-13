@@ -54,6 +54,7 @@ export async function POST(req: Request) {
       amount: planConfig.price,
       currency: 'usd',
       customer: customerId,
+      setup_future_usage: 'off_session',
       automatic_payment_methods: { enabled: true },
       metadata: { userId: user.id, plan },
       description: `CafePromo AI - ${planConfig.name} Plan (Monthly)`,

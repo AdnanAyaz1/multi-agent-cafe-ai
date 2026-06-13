@@ -40,7 +40,7 @@ function DashboardGuardInner({ children }: { children: React.ReactNode }) {
 
         setAllowed(true);
       } catch {
-        setAllowed(true);
+        setAllowed(false);
       } finally {
         setChecking(false);
       }

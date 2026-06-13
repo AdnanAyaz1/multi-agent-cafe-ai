@@ -47,33 +47,35 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-    });
-
-    await prisma.subscription.create({
-      data: {
-        userId: user.id,
-        plan: "free",
-        status: "active",
-      },
-    });
-
-    const createdBusiness = await prisma.business.create({
-      data: {
-        userId: user.id,
-        name: business.name,
-        type: business.type || "cafe",
-        city: business.city,
-        timezone: business.timezone || "UTC",
-        config: {
-          competitorUrls: competitors?.filter((url: string) => url?.trim()) || [],
+    const createdBusiness = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
         },
-      },
+      });
+
+      await tx.subscription.create({
+        data: {
+          userId: user.id,
+          plan: "free",
+          status: "active",
+        },
+      });
+
+      return tx.business.create({
+        data: {
+          userId: user.id,
+          name: business.name,
+          type: business.type || "cafe",
+          city: business.city,
+          timezone: business.timezone || "UTC",
+          config: {
+            competitorUrls: competitors?.filter((url: string) => url?.trim()) || [],
+          },
+        },
+      });
     });
 
     await fs.mkdir(MENUS_DIR, { recursive: true });
@@ -84,7 +86,7 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json(
-      { message: "Account created", userId: user.id },
+      { message: "Account created" },
       { status: 201 }
     );
   } catch (error) {
