@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useHomeDashboard } from '@/hooks/useHomeDashboard';
 import { WelcomeBanner } from '@/components/dashboard/home/WelcomeBanner';
 import { StatWidget } from '@/components/dashboard/home/StatWidget';
@@ -12,6 +14,32 @@ import { CloudRain, BarChart3, Megaphone, Tag } from 'lucide-react';
 
 export default function DashboardPage() {
   const { weather, loading } = useHomeDashboard();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const checkoutPlan = searchParams.get('checkout');
+
+  useEffect(() => {
+    if (!checkoutPlan) return;
+
+    const runCheckout = async () => {
+      router.replace('/dashboard');
+      try {
+        const res = await fetch('/api/stripe/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: checkoutPlan }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } catch {
+        // silently fail
+      }
+    };
+
+    runCheckout();
+  }, [checkoutPlan, router]);
 
   return (
     <div className="space-y-6">

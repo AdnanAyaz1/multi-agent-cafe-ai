@@ -1,8 +1,16 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { LoginForm } from '@/components/auth/LoginForm';
+import { LoginSearchParams } from '@/components/auth/LoginSearchParams';
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ checkout?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const checkoutPlan = params.checkout;
+
   return (
     <div className="min-h-screen flex items-center justify-center animated-gradient-bg relative overflow-hidden">
       <div className="fixed inset-0 dot-grid pointer-events-none z-0 opacity-50" />
@@ -30,7 +38,7 @@ export default function LoginPage() {
         </div>
 
         <Suspense>
-          <LoginForm />
+          <LoginSearchParams checkoutPlan={checkoutPlan} />
         </Suspense>
       </div>
     </div>

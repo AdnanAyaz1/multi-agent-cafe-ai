@@ -52,7 +52,8 @@ export function PricingSection() {
         body: JSON.stringify({ plan: planKey }),
       });
       if (res.status === 401) {
-        window.location.href = '/auth/login';
+        sessionStorage.setItem('pendingCheckout', planKey);
+        window.location.href = '/auth/login?checkout=' + planKey;
         return;
       }
       const data = await res.json();
