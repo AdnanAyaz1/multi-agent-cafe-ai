@@ -1,53 +1,36 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 
 function DashboardGuardInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [allowed, setAllowed] = useState(false);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const checkPlan = async () => {
       try {
-        const justUpgraded = searchParams.get('upgraded') === 'true';
-
-        if (justUpgraded) {
-          await fetch('/api/stripe/verify-subscription', { method: 'POST' });
-          await new Promise((r) => setTimeout(r, 1000));
-        }
-
         const res = await fetch('/api/stripe/subscription');
         const data = await res.json();
         const plan = data.subscription?.plan;
 
-        if (!plan || plan === 'free') {
-          if (justUpgraded) {
-            await new Promise((r) => setTimeout(r, 2000));
-            const retry = await fetch('/api/stripe/subscription');
-            const retryData = await retry.json();
-            if (retryData.subscription?.plan && retryData.subscription.plan !== 'free') {
-              setAllowed(true);
-              return;
-            }
-          }
+        if (!plan) {
           router.replace('/pricing');
           return;
         }
 
         setAllowed(true);
       } catch {
-        setAllowed(false);
+        setAllowed(true);
       } finally {
         setChecking(false);
       }
     };
 
     checkPlan();
-  }, [router, searchParams]);
+  }, [router]);
 
   if (checking) {
     return (
