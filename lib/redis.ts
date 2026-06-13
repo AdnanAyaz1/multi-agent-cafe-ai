@@ -13,6 +13,23 @@ function createRedisClient(): Redis {
   })
 }
 
-export const redis = globalForRedis.redis || createRedisClient()
+let _redis: Redis | null = null
 
-if (process.env.NODE_ENV !== 'production') globalForRedis.redis = redis
+function getRedis(): Redis {
+  if (!_redis) {
+    _redis = globalForRedis.redis || createRedisClient()
+    if (process.env.NODE_ENV !== 'production') globalForRedis.redis = _redis
+  }
+  return _redis
+}
+
+export const redis = new Proxy({} as Redis, {
+  get(_, prop) {
+    const target = getRedis()
+    const value = (target as any)[prop]
+    if (typeof value === 'function') {
+      return value.bind(target)
+    }
+    return value
+  },
+})
