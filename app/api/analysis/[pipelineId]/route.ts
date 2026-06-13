@@ -9,7 +9,6 @@ import type {
 } from '@/lib/agents/types';
 import { PIPELINE_AGENT_COUNT } from '@/lib/agents/types';
 import { logger } from '@/lib/logger';
-import type { Prisma } from '@prisma/client';
 
 const log = logger.child('api:analysis/status');
 
@@ -60,7 +59,7 @@ export async function GET(
     const { pipelineId } = await ctx.params;
     const validId = pipelineIdSchema.parse(pipelineId);
 
-    type AgentRunRow = Prisma.AgentRunGetPayload<Record<string, never>>;
+    type AgentRunRow = Awaited<ReturnType<typeof prisma.agentRun.findMany>>[number];
     const runs: AgentRunRow[] = await prisma.agentRun.findMany({
       where: { pipelineId: validId },
       orderBy: { createdAt: 'asc' },
