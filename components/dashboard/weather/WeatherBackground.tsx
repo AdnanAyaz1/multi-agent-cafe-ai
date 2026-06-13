@@ -57,7 +57,7 @@ export function WeatherBackground({ condition }: { condition: string }) {
         {rainData.map((d, i) => (
           <motion.div
             key={i}
-            className="absolute w-px bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
+            className="absolute w-px bg-gradient-to-b from-transparent via-[#e07850]/20 to-transparent"
             style={{ left: d.left, height: d.height }}
             animate={{ y: ['-10vh', '110vh'], opacity: [0, 0.4, 0] }}
             transition={{ duration: d.duration, repeat: Infinity, delay: d.delay, ease: 'linear' }}

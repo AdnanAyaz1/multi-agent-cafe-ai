@@ -1,10 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
-
-export interface WeatherStatProps {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-}
+import type { WeatherStatProps } from '@/types/dashboard-home';
 
 export function WeatherStat({ icon: Icon, label, value }: WeatherStatProps) {
   return (

@@ -2,10 +2,7 @@
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-interface RecommendationMarkdownProps {
-  content: string;
-}
+import type { RecommendationMarkdownProps } from '@/types/dashboard';
 
 export function RecommendationMarkdown({ content }: RecommendationMarkdownProps) {
   return (
@@ -52,7 +49,7 @@ export function RecommendationMarkdown({ content }: RecommendationMarkdownProps)
             const isInline = !className;
             if (isInline) {
               return (
-                <code className="px-1.5 py-0.5 rounded bg-zinc-800 text-blue-400 text-xs font-mono">
+                <code className="px-1.5 py-0.5 rounded bg-zinc-800 text-[#e89070] text-xs font-mono">
                   {children}
                 </code>
               );
@@ -69,7 +66,7 @@ export function RecommendationMarkdown({ content }: RecommendationMarkdownProps)
             </blockquote>
           ),
           a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#e07850] hover:underline">
               {children}
             </a>
           ),

@@ -38,7 +38,7 @@ export function StatsBar() {
               delay={1.2 + index * 0.15}
             />
           </span>
-          <span className="text-[11px] text-[#859399] uppercase tracking-widest mt-2" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
+          <span className="text-[11px] text-[#a09890] uppercase tracking-widest mt-2" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
             {stat.label}
           </span>
         </motion.div>

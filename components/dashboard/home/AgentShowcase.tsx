@@ -1,31 +1,8 @@
 'use client';
 
-import { BarChart3, Cloud, Brain, ShieldCheck, Sparkles, Cpu, Zap } from 'lucide-react';
+import { Cpu, Zap } from 'lucide-react';
 import { AGENT_CONFIG, AGENT_ROLES } from '@/constants/agents';
-
-const AGENT_ICONS: Record<string, typeof Brain> = {
-  'menu-analyst': BarChart3,
-  'weather-analyst': Cloud,
-  strategist: Brain,
-  critic: ShieldCheck,
-  synthesizer: Sparkles,
-};
-
-const AGENT_COLORS: Record<string, string> = {
-  'menu-analyst': 'text-blue-500',
-  'weather-analyst': 'text-green-500',
-  strategist: 'text-amber-500',
-  critic: 'text-red-400',
-  synthesizer: 'text-purple-400',
-};
-
-const AGENT_BG: Record<string, string> = {
-  'menu-analyst': 'bg-blue-500/10 border-blue-500/20',
-  'weather-analyst': 'bg-green-500/10 border-green-500/20',
-  strategist: 'bg-amber-500/10 border-amber-500/20',
-  critic: 'bg-red-500/10 border-red-500/20',
-  synthesizer: 'bg-purple-500/10 border-purple-500/20',
-};
+import { AGENT_ICONS, AGENT_COLORS, AGENT_BG } from '@/constants/agent-config';
 
 export function AgentShowcase() {
   return (

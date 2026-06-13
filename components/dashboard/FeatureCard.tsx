@@ -1,12 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-
-export interface FeatureCardProps {
-  href: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-}
+import type { FeatureCardProps } from '@/types/dashboard';
 
 export function FeatureCard({ href, eyebrow, title, description }: FeatureCardProps) {
   return (

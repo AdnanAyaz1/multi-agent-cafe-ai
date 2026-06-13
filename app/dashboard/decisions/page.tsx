@@ -40,7 +40,7 @@ export default function DecisionsPage() {
         {[
           { label: 'Pending', value: String(pending.length), Icon: Clock, iconColor: 'text-amber-500' },
           { label: 'Decided', value: String(total - pending.length), Icon: ShieldCheck, iconColor: 'text-green-500' },
-          { label: 'Total', value: String(total), Icon: History, iconColor: 'text-blue-500' },
+          { label: 'Total', value: String(total), Icon: History, iconColor: 'text-[#e07850]' },
         ].map((stat) => (
           <div key={stat.label} className="glass-card rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-1">

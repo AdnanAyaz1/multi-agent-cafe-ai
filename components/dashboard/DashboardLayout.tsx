@@ -9,7 +9,7 @@ import { useHomeDashboard } from '@/hooks/useHomeDashboard';
 function TopNavWeatherIcon({ condition }: { condition?: string }) {
   if (!condition) return <Sun className="w-3.5 h-3.5 text-amber-500" />;
   const c = condition.toLowerCase();
-  if (c.includes('rain') || c.includes('drizzle')) return <CloudRain className="w-3.5 h-3.5 text-blue-500" />;
+  if (c.includes('rain') || c.includes('drizzle')) return <CloudRain className="w-3.5 h-3.5 text-[#e07850]" />;
   if (c.includes('snow')) return <CloudSnow className="w-3.5 h-3.5 text-white" />;
   if (c.includes('storm') || c.includes('thunder')) return <CloudLightning className="w-3.5 h-3.5 text-amber-500" />;
   if (c.includes('cloud') || c.includes('overcast')) return <Cloud className="w-3.5 h-3.5 text-zinc-400" />;
@@ -31,7 +31,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {/* Left: spacer or brand for mobile */}
           <div className="flex items-center gap-3 md:hidden">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[#e07850] flex items-center justify-center">
                 <span className="text-white text-xs font-extrabold">C</span>
               </div>
               <span className="text-white text-sm font-bold">CafePromo AI</span>

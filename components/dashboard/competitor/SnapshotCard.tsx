@@ -15,10 +15,10 @@ export function SnapshotCard({ snapshot, index }: { snapshot: Snapshot; index: n
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
                 <h3 className="text-lg font-bold text-white truncate">{data.brand ?? 'Unbranded competitor'}</h3>
-                <span className="flex-shrink-0 text-[9px] px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">{data.items.length} items</span>
+                <span className="flex-shrink-0 text-[9px] px-2.5 py-1 rounded-full bg-[#e07850]/10 text-[#e07850] border border-[#e07850]/20">{data.items.length} items</span>
                 {data.promos.length > 0 && <span className="flex-shrink-0 text-[9px] px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20">{data.promos.length} promos</span>}
               </div>
-              <a href={data.finalUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-blue-500 transition-colors duration-150 truncate max-w-full">
+              <a href={data.finalUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-[#e07850] transition-colors duration-150 truncate max-w-full">
                 <ExternalLink className="w-3 h-3 flex-shrink-0" />
                 <span className="truncate">{data.finalUrl}</span>
               </a>

@@ -1,31 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, XCircle, Zap, Clock, History, X, TrendingDown, TrendingUp, Minus, Trash2, Lightbulb } from 'lucide-react';
-import type { DecisionLog } from '@/types/decisions';
-
-const STATUS_ICONS: Record<string, typeof CheckCircle2> = {
-  'auto-approved': Zap,
-  approved: CheckCircle2,
-  rejected: XCircle,
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  'auto-approved': 'text-green-500',
-  approved: 'text-green-500',
-  rejected: 'text-red-400',
-};
-
-const ACTION_CONFIG: Record<string, { icon: typeof TrendingUp; color: string; label: string }> = {
-  discount: { icon: TrendingDown, color: 'text-blue-500', label: 'Discount' },
-  promote: { icon: TrendingUp, color: 'text-green-500', label: 'Promote' },
-  hold: { icon: Minus, color: 'text-zinc-400', label: 'Hold' },
-  remove: { icon: Trash2, color: 'text-red-400', label: 'Remove' },
-};
-
-interface DecisionHistoryProps {
-  logs: DecisionLog[];
-}
+import { Clock, History, X, Lightbulb, CheckCircle2, XCircle, Zap } from 'lucide-react';
+import type { DecisionLog, DecisionHistoryProps } from '@/types/decisions';
+import { STATUS_ICONS, STATUS_COLORS, ACTION_CONFIG } from '@/constants/decision-config';
 
 export function DecisionHistory({ logs }: DecisionHistoryProps) {
   const [selectedLog, setSelectedLog] = useState<DecisionLog | null>(null);
@@ -74,7 +52,7 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                   {log.discountPercent != null && log.discountPercent > 0 && (
                     <>
                       <span className="text-zinc-500 text-[10px]">·</span>
-                      <span className="text-[10px] text-blue-500 font-bold">-{log.discountPercent}%</span>
+                      <span className="text-[10px] text-[#e07850] font-bold">-{log.discountPercent}%</span>
                     </>
                   )}
                 </div>
@@ -109,7 +87,7 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                 <div className="p-6 pb-4 border-b border-zinc-800">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${modalActionCfg.color}/10 border border-${modalActionCfg.color === 'text-blue-500' ? 'blue-500' : modalActionCfg.color === 'text-green-500' ? 'green-500' : 'zinc-700'}/20`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${modalActionCfg.color}/10 border ${modalActionCfg.border}`}>
                         <ModalActionIcon className={`w-5 h-5 ${modalActionCfg.color}`} />
                       </div>
                       <div>
@@ -148,13 +126,13 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                       <span className="text-xs font-semibold text-white capitalize">{selectedLog.action}</span>
                     </div>
                     {selectedLog.discountPercent != null && selectedLog.discountPercent > 0 && (
-                      <div className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                        <span className="text-xs font-bold text-blue-500">-{selectedLog.discountPercent}% off</span>
+                      <div className="px-3 py-1.5 rounded-lg bg-[#e07850]/10 border border-[#e07850]/20">
+                        <span className="text-xs font-bold text-[#e07850]">-{selectedLog.discountPercent}% off</span>
                       </div>
                     )}
                     {selectedLog.priority != null && (
-                      <div className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                        <span className="text-xs font-bold text-blue-400">Priority {selectedLog.priority}/5</span>
+                      <div className="px-3 py-1.5 rounded-lg bg-[#e07850]/10 border border-[#e07850]/20">
+                        <span className="text-xs font-bold text-[#e89070]">Priority {selectedLog.priority}/5</span>
                       </div>
                     )}
                     {selectedLog.confidence && (

@@ -7,12 +7,7 @@ import { CompetitorItemTable } from './CompetitorItemTable';
 import { CompetitorPromoList } from './CompetitorPromoList';
 import { CompetitorNotesList } from './CompetitorNotesList';
 import { CompetitorEmptyHint } from './CompetitorEmptyHint';
-
-export interface CompetitorSnapshotCardProps {
-  data: CompetitorData;
-  collectedAt: string;
-  expiresAt: string;
-}
+import type { CompetitorSnapshotCardProps } from '@/types/dashboard';
 
 export function CompetitorSnapshotCard({
   data,

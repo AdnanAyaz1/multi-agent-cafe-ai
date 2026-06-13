@@ -1,4 +1,4 @@
-import { ShaderBackground } from "./ShaderBackground";
+import { ParticleBackground } from "./ParticleBackground";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
 import { StatsSection } from "./StatsSection";
@@ -15,8 +15,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <SplashScreen />
-      <ShaderBackground />
-      <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
+      <ParticleBackground />
 
       <Navbar />
 

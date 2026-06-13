@@ -7,7 +7,7 @@ export function FloatingElements() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Large gradient orb - top left */}
       <motion.div
-        className="absolute -top-48 -left-48 w-[600px] h-[600px] rounded-full bg-[#00d2ff]/15 blur-[120px]"
+        className="absolute -top-48 -left-48 w-[600px] h-[600px] rounded-full bg-[#e07850]/15 blur-[120px]"
         animate={{
           y: [0, 30, 0],
           scale: [1, 1.1, 1],
@@ -21,7 +21,7 @@ export function FloatingElements() {
 
       {/* Large gradient orb - bottom right */}
       <motion.div
-        className="absolute -bottom-48 -right-48 w-[800px] h-[800px] rounded-full bg-[#1fe19e]/15 blur-[120px]"
+        className="absolute -bottom-48 -right-48 w-[800px] h-[800px] rounded-full bg-[#c8a070]/15 blur-[120px]"
         animate={{
           y: [0, -30, 0],
           x: [0, 20, 0],
@@ -36,7 +36,7 @@ export function FloatingElements() {
 
       {/* Medium gradient orb - center left */}
       <motion.div
-        className="absolute top-1/2 -left-24 w-[600px] h-[600px] rounded-full bg-[#00d2ff]/10 blur-[120px]"
+        className="absolute top-1/2 -left-24 w-[600px] h-[600px] rounded-full bg-[#e07850]/10 blur-[120px]"
         animate={{
           y: [0, -20, 0],
           x: [0, 15, 0],

@@ -1,24 +1,11 @@
-import { CloudRain, CloudSnow, Cloud, Sun, AlertTriangle } from 'lucide-react';
+import { Cloud, AlertTriangle } from 'lucide-react';
 import { StatCardGrid } from '../ui/StatCardGrid';
 import type { StatCardData } from '@/types/dashboard';
 import { Card } from '../ui/Card';
 import { CardHeading } from '../ui/CardHeading';
 import { getImpactLevel, IMPACT_MESSAGES } from '@/utils/weather';
+import { getConditionIcon, getImpactTitle } from '@/utils/weather-display';
 import type { WeatherStatsOverviewProps } from '@/types/dashboard';
-
-function getConditionIcon(condition: string) {
-  const lower = condition.toLowerCase();
-  if (lower.includes('rain')) return CloudRain;
-  if (lower.includes('snow')) return CloudSnow;
-  if (lower.includes('cloud')) return Cloud;
-  return Sun;
-}
-
-function getImpactTitle(impact: string) {
-  if (impact === 'high') return 'High Business Impact';
-  if (impact === 'medium') return 'Moderate Business Impact';
-  return 'Low Business Impact';
-}
 
 export function WeatherStatsOverview({ city, country, temperature, condition }: WeatherStatsOverviewProps) {
   const ConditionIcon = getConditionIcon(condition);
@@ -62,19 +49,19 @@ export function WeatherStatsOverview({ city, country, temperature, condition }: 
       <Card overflow className="p-6">
         <CardHeading className="mb-4">Weather Summary</CardHeading>
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white/40 p-3 rounded-lg border border-white/50">
+          <div className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]">
             <p className="text-xs text-muted-foreground font-bold uppercase">City</p>
             <p className="text-lg font-semibold text-card-foreground">{city}</p>
           </div>
-          <div className="bg-white/40 p-3 rounded-lg border border-white/50">
+          <div className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]">
             <p className="text-xs text-muted-foreground font-bold uppercase">Country</p>
             <p className="text-lg font-semibold text-card-foreground">{country}</p>
           </div>
-          <div className="bg-white/40 p-3 rounded-lg border border-white/50">
+          <div className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]">
             <p className="text-xs text-muted-foreground font-bold uppercase">Temperature</p>
             <p className="text-lg font-semibold text-card-foreground">{temperature}°C</p>
           </div>
-          <div className="bg-white/40 p-3 rounded-lg border border-white/50">
+          <div className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]">
             <p className="text-xs text-muted-foreground font-bold uppercase">Condition</p>
             <p className="text-lg font-semibold text-card-foreground">{condition}</p>
           </div>

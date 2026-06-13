@@ -1,17 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-export interface RecommendationActionItemProps {
-  actionType: string;
-  item: string;
-  details: RecommendationActionDetails | null;
-}
-
-export interface RecommendationActionDetails {
-  reason?: string;
-  priority?: number;
-  discountPercent?: number;
-}
+import type { RecommendationActionItemProps } from '@/types/dashboard';
 
 export function RecommendationActionItem({
   actionType,

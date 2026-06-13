@@ -40,3 +40,30 @@ export interface DecisionLog {
   confidence?: string | null;
   summary?: string | null;
 }
+
+export interface DecisionQueueProps {
+  pending: Decision[];
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  onShowDetails: (decision: Decision) => void;
+  onBulkApprove: () => void;
+}
+
+export interface DecisionHistoryProps {
+  logs: DecisionLog[];
+}
+
+export interface DecisionDetailsModalProps {
+  decision: Decision | null;
+  onClose: () => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+}
+
+export interface DecisionCardProps {
+  decision: Decision;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+  onShowDetails?: (decision: Decision) => void;
+  index?: number;
+}

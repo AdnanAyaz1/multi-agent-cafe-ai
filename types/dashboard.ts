@@ -1,7 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
 import type { PipelineRunStatus } from '@/constants/pipeline';
 import type { PipelineAgentRun, PipelineRecommendation, PipelineStatus } from '@/hooks/useAnalysis';
-import type { CompetitorData } from '@/lib/types';
+import type { RefreshOptions } from '@/hooks/useCompetitorSnapshots';
+import type { CompetitorData, CompetitorMenuItem, CompetitorPromo } from '@/lib/types';
 import type { WeatherData } from '@/lib/types';
 
 // Card
@@ -150,6 +151,10 @@ export interface PipelineTimelineProps {
 }
 
 export interface AgentTimelineProps {
+  runs: PipelineAgentRun[];
+}
+
+export interface HomeAgentTimelineProps {
   steps?: TimelineStepData[];
   title?: string;
 }
@@ -198,7 +203,7 @@ export interface CompetitorScrapeFormProps {
   businessId: string;
   disabled: boolean;
   busy: boolean;
-  onSubmit: (options?: { url?: string; timeoutMs?: number; maxTextLength?: number }) => void;
+  onSubmit: (options: RefreshOptions) => void;
 }
 
 export interface CompetitorEmptyHintProps {
@@ -210,39 +215,29 @@ export interface CompetitorNotesListProps {
 }
 
 export interface CompetitorPromoListProps {
-  promos: Array<{ title: string; details: string }>;
+  promos: CompetitorPromo[];
 }
 
 export interface CompetitorItemTableProps {
-  items: Array<{ name: string; price: string; category: string }>;
+  items: CompetitorMenuItem[];
 }
 
-// Weather stat
-export interface WeatherStatProps {
-  icon: LucideIcon;
-  label: string;
-  value: string;
+// Analysis markdown
+export interface RecommendationMarkdownProps {
+  content: string;
 }
 
 // Analysis action item
 export interface RecommendationActionItemProps {
   actionType: string;
   item: string;
-  details: {
-    reason?: string;
-    priority?: number;
-    suggestedPrice?: number;
-    originalPrice?: number;
-    confidence?: string;
-  } | null;
+  details: RecommendationActionDetails | null;
 }
 
 export interface RecommendationActionDetails {
   reason?: string;
   priority?: number;
-  suggestedPrice?: number;
-  originalPrice?: number;
-  confidence?: string;
+  discountPercent?: number;
 }
 
 // Analysis view
@@ -268,7 +263,6 @@ export interface FeatureCardProps {
   eyebrow: string;
   title: string;
   description: string;
-  icon: LucideIcon;
 }
 
 // Home dashboard data

@@ -25,15 +25,15 @@ export function RecommendationWidget() {
         <div className="space-y-2">
           {MOCK_RECOMMENDATIONS.map((rec, i) => (
             <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30 border border-zinc-800 hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors duration-150">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${rec.type === 'auto' ? 'bg-green-500/10 border border-green-500/20' : 'bg-blue-500/10 border border-blue-500/20'}`}>
-                {rec.type === 'auto' ? <Target className="w-3.5 h-3.5 text-green-500" /> : <DollarSign className="w-3.5 h-3.5 text-blue-500" />}
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${rec.type === 'auto' ? 'bg-green-500/10 border border-green-500/20' : 'bg-[#e07850]/10 border border-[#e07850]/20'}`}>
+                {rec.type === 'auto' ? <Target className="w-3.5 h-3.5 text-green-500" /> : <DollarSign className="w-3.5 h-3.5 text-[#e07850]" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-[13px] font-semibold truncate">{rec.action}</p>
                 <p className="text-zinc-400 text-[11px] truncate">{rec.reason}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${rec.type === 'auto' ? 'text-green-500 bg-green-500/10' : 'text-blue-500 bg-blue-500/10'}`}>{rec.type === 'auto' ? 'AUTO' : 'REVIEW'}</span>
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${rec.type === 'auto' ? 'text-green-500 bg-green-500/10' : 'text-[#e07850] bg-[#e07850]/10'}`}>{rec.type === 'auto' ? 'AUTO' : 'REVIEW'}</span>
                 <span className="text-[9px] text-green-500 font-bold">{rec.impact}</span>
               </div>
             </div>

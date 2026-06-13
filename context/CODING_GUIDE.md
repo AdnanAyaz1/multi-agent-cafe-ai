@@ -171,7 +171,7 @@ interface FormFieldProps {
 export function FormField({ label, error, children, className }: FormFieldProps) {
   return (
     <div className={cn('space-y-1.5', className)}>
-      <label className="block text-[11px] font-medium text-[#859399] uppercase tracking-[0.15em]">
+      <label className="block text-[11px] font-medium text-[#a09890] uppercase tracking-[0.15em]">
         {label}
       </label>
       {children}
@@ -301,23 +301,23 @@ This project uses a custom design system defined in `app/globals.css`.
 | Class | Usage |
 |---|---|
 | `glass-card` | Glassmorphism card with backdrop blur and border |
-| `gradient-text` | Cyan-to-green gradient text |
-| `gradient-bg` | Cyan-to-green gradient background |
+| `gradient-text` | Sienna-to-sand gradient text |
+| `gradient-bg` | Sienna-to-sand gradient background |
 | `animated-gradient-bg` | Animated gradient background |
 | `dot-grid` | Subtle dot grid overlay |
 | `card-glow` | Animated gradient border on hover |
-| `soft-shadow` | Cyan-tinted shadow |
-| `active-glow` | Strong cyan glow effect |
+| `soft-shadow` | Sienna-tinted shadow |
+| `active-glow` | Strong sienna glow effect |
 
 ### Color Palette
 
 | Token | Hex | Usage |
 |---|---|---|
-| Primary | `#00d2ff` | Buttons, links, accents |
-| Secondary | `#1fe19e` | Success, positive states |
-| Background | `#0e1417` | Page background |
-| Card | `#1a2024` | Card backgrounds |
-| Muted | `#859399` | Secondary text |
+| Primary | `#e07850` | Buttons, links, accents |
+| Secondary | `#c8a070` | Success, positive states |
+| Background | `#0e0c0a` | Page background |
+| Card | `#161412` | Card backgrounds |
+| Muted | `#a09890` | Secondary text |
 | Foreground | `#dee3e7` | Primary text |
 
 ### Typography

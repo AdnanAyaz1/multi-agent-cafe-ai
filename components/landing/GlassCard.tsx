@@ -12,7 +12,7 @@ export function GlassCard({ children, className, hover = true }: GlassCardProps)
     <div
       className={cn(
         "glass-card rounded-2xl",
-        hover && "transition-all duration-500 hover:border-[#00d2ff]/30 group card-glow",
+        hover && "transition-all duration-500 group card-glow",
         className
       )}
     >

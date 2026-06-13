@@ -11,8 +11,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { CompetitorHistoryItem, CompetitorTableRow } from '@/types/dashboard';
-
-const DEFAULT_BUSINESS_ID = 'cafe-001';
+import { DEFAULT_BUSINESS_ID } from '@/constants/pipeline';
 
 export function CompetitorInsights() {
   const [scraping, setScraping] = useState(false);

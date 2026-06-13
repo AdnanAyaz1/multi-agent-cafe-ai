@@ -3,27 +3,8 @@
 import { CheckCircle2, Loader2, AlertCircle, Clock, ChevronRight } from 'lucide-react';
 import type { PipelineAgentRun } from '@/hooks/useAnalysis';
 import { AGENT_DISPLAY_ORDER, AGENT_CONFIG } from '@/constants/agents';
-
-const AGENT_COLORS: Record<string, string> = {
-  'menu-analyst': 'text-blue-500',
-  'weather-analyst': 'text-green-500',
-  strategist: 'text-amber-500',
-  critic: 'text-red-400',
-  synthesizer: 'text-purple-400',
-};
-
-const AGENT_BG: Record<string, string> = {
-  'menu-analyst': 'bg-blue-500/10 border-blue-500/20',
-  'weather-analyst': 'bg-green-500/10 border-green-500/20',
-  strategist: 'bg-amber-500/10 border-amber-500/20',
-  critic: 'bg-red-500/10 border-red-500/20',
-  synthesizer: 'bg-purple-500/10 border-purple-500/20',
-};
-
-interface PipelineVisualizationProps {
-  runs: PipelineAgentRun[];
-  isRunning: boolean;
-}
+import { AGENT_COLORS, AGENT_BG } from '@/constants/agent-config';
+import type { PipelineVisualizationProps } from '@/types/dashboard-home';
 
 export function PipelineVisualization({ runs, isRunning }: PipelineVisualizationProps) {
   const byAgent = new Map<string, PipelineAgentRun[]>();
@@ -46,9 +27,9 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-[#e07850]/10 border border-[#e07850]/20 flex items-center justify-center">
               {isRunning ? (
-                <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                <Loader2 className="w-5 h-5 text-[#e07850] animate-spin" />
               ) : (
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
               )}
@@ -64,9 +45,9 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
           </div>
 
           {isRunning && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              <span className="text-[10px] text-blue-500 font-semibold">LIVE</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e07850]/10 border border-[#e07850]/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#e07850] animate-pulse" />
+              <span className="text-[10px] text-[#e07850] font-semibold">LIVE</span>
             </div>
           )}
         </div>
@@ -75,7 +56,7 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
         <div className="mb-8">
           <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
             <div
-              className="h-full rounded-full bg-blue-500 transition-all duration-500"
+              className="h-full rounded-full bg-[#e07850] transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>

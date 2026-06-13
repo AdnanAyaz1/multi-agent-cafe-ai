@@ -10,7 +10,7 @@ export function CompetitorOverview() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-              <Eye className="w-5 h-5 text-blue-500" />
+              <Eye className="w-5 h-5 text-[#e07850]" />
             </div>
             <div>
               <p className="text-white text-sm font-bold">Competitor Watch</p>

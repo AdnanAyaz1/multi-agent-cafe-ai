@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist_Mono, Sora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/Providers";
@@ -12,6 +12,19 @@ const jakarta = Plus_Jakarta_Sans({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600", "700", "800"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -34,7 +47,9 @@ export default function RootLayout({
         "h-full",
         "antialiased",
         jakarta.variable,
-        geistMono.variable
+        geistMono.variable,
+        sora.variable,
+        jetbrainsMono.variable
       )}
     >
       <body className="min-h-full font-sans">

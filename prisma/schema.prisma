@@ -56,17 +56,18 @@ model VerificationToken {
 }
 
 model Subscription {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  plan        String    @default("free")
-  status      String    @default("active")
-  stripeId    String?   @unique
-  startDate   DateTime  @default(now())
-  endDate     DateTime?
-  trialEndsAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  plan                  String    @default("free")
+  status                String    @default("active")
+  stripeId              String?   @unique
+  stripeSubscriptionId  String?   @unique
+  startDate             DateTime  @default(now())
+  endDate               DateTime?
+  trialEndsAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Business {

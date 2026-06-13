@@ -8,10 +8,7 @@ import { PipelineStatusBadge } from '../PipelineStatusBadge';
 import { AgentTimelineConnector } from './AgentTimelineConnector';
 import { AGENT_TIMELINE_META } from './agent-timeline-meta';
 import { cn } from '@/lib/utils';
-
-export interface AgentTimelineProps {
-  runs: PipelineAgentRun[];
-}
+import type { AgentTimelineProps } from '@/types/dashboard';
 
 export function AgentTimeline({ runs }: AgentTimelineProps) {
   const byAgent = new Map<string, PipelineAgentRun[]>();

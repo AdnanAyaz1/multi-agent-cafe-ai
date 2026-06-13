@@ -2,16 +2,12 @@
 
 import { Cloud, Zap, TrendingUp } from 'lucide-react';
 import { getGreeting } from '@/utils/greeting';
-import type { WeatherData } from '@/lib/types';
-
-interface WelcomeBannerProps {
-  weather: WeatherData | null;
-}
+import type { WelcomeBannerProps } from '@/types/dashboard-home';
 
 const STATS = [
   { icon: Zap, label: 'Pipeline runs today', value: '3', color: 'text-amber-500' },
   { icon: TrendingUp, label: 'Revenue impact', value: '+12%', color: 'text-green-500' },
-  { icon: Cloud, label: 'Weather alerts', value: '1', color: 'text-blue-500' },
+  { icon: Cloud, label: 'Weather alerts', value: '1', color: 'text-[#e07850]' },
 ];
 
 export function WelcomeBanner({ weather }: WelcomeBannerProps) {
@@ -21,7 +17,7 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px w-10 bg-zinc-700" />
-            <p className="text-[11px] text-blue-500 uppercase tracking-[0.2em] font-semibold">Dashboard</p>
+            <p className="text-[11px] text-[#e07850] uppercase tracking-[0.2em] font-semibold">Dashboard</p>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 tracking-tight">
             {getGreeting()}, Boss
@@ -32,7 +28,7 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
         <div className="flex items-center gap-3 flex-shrink-0">
           {weather && (
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-zinc-800/50 border border-zinc-700">
-              <Cloud className="w-4 h-4 text-blue-500" />
+              <Cloud className="w-4 h-4 text-[#e07850]" />
               <div>
                 <p className="text-white text-sm font-semibold">{weather.temperature}°C</p>
                 <p className="text-zinc-500 text-[10px] uppercase tracking-wider">{weather.condition}</p>

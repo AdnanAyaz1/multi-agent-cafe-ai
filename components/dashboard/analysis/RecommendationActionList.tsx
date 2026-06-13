@@ -1,8 +1,6 @@
 import type { PipelineRecommendation } from '@/hooks/useAnalysis';
-import {
-  RecommendationActionItem,
-  type RecommendationActionDetails,
-} from './RecommendationActionItem';
+import { RecommendationActionItem } from './RecommendationActionItem';
+import type { RecommendationActionDetails } from '@/types/dashboard';
 
 export interface RecommendationActionListProps {
   actions: NonNullable<PipelineRecommendation>['actions'];

@@ -16,13 +16,13 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
           'focus:outline-none focus:ring-1 transition-all text-sm appearance-none',
           error
             ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30'
-            : 'border-white/[0.08] focus:border-[#00d2ff]/50 focus:ring-[#00d2ff]/30',
+            : 'border-white/[0.08] focus:border-[#e07850]/50 focus:ring-[#e07850]/30',
           className
         )}
         {...props}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value} className="bg-[#0e1417] text-white">
+          <option key={option.value} value={option.value} className="bg-[#161412] text-white">
             {option.label}
           </option>
         ))}

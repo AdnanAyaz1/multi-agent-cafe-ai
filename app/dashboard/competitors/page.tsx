@@ -18,8 +18,8 @@ export default function CompetitorsPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-px w-12 bg-blue-500" />
-          <p className="text-[11px] text-blue-500 uppercase tracking-[0.2em] font-semibold">Competitor Intelligence</p>
+          <div className="h-px w-12 bg-[#e07850]" />
+          <p className="text-[11px] text-[#e07850] uppercase tracking-[0.2em] font-semibold">Competitor Intelligence</p>
         </div>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -62,7 +62,7 @@ export default function CompetitorsPage() {
 
       {/* Status bar */}
       {busy && (
-        <div className="flex items-center gap-2 text-sm text-blue-500">
+        <div className="flex items-center gap-2 text-sm text-[#e07850]">
           <Loader2 className="w-4 h-4 animate-spin" />
           {polling ? 'Waiting for worker to finish...' : 'Enqueueing scrape job...'}
         </div>

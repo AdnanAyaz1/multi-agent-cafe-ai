@@ -1,10 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Sparkles } from 'lucide-react';
 import type { CompetitorMenuItem } from '@/lib/types';
-
-export interface CompetitorItemTableProps {
-  items: CompetitorMenuItem[];
-}
+import type { CompetitorItemTableProps } from '@/types/dashboard';
 
 export function CompetitorItemTable({ items }: CompetitorItemTableProps) {
   return (

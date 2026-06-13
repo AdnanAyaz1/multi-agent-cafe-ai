@@ -35,7 +35,7 @@ export function UserNav() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-colors duration-150 group"
       >
-        <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-xs font-bold text-white">
+        <div className="w-8 h-8 rounded-lg bg-[#e07850] flex items-center justify-center text-xs font-bold text-white">
           {session.user.image ? (
             <Image
               src={session.user.image}
@@ -58,7 +58,7 @@ export function UserNav() {
           {/* User info */}
           <div className="px-5 py-4 border-b border-zinc-800">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-sm font-bold text-white">
+              <div className="w-10 h-10 rounded-xl bg-[#e07850] flex items-center justify-center text-sm font-bold text-white">
                 {session.user.image ? (
                   <Image
                     src={session.user.image}

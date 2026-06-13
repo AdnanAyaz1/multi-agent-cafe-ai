@@ -5,10 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import type { PipelineRecommendation } from '@/hooks/useAnalysis';
 import { ConfidenceBadge } from '../ConfidenceBadge';
 import { RecommendationActionList } from './RecommendationActionList';
-
-export interface RecommendationViewProps {
-  recommendation: NonNullable<PipelineRecommendation>;
-}
+import type { RecommendationViewProps } from '@/types/dashboard';
 
 export function RecommendationView({ recommendation }: RecommendationViewProps) {
   return (

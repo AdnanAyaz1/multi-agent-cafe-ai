@@ -1,28 +1,8 @@
 'use client';
 
-import { X, CheckCircle2, XCircle, Zap, Clock, TrendingDown, TrendingUp, Minus, Trash2, AlertTriangle, Lightbulb, Hash } from 'lucide-react';
-import type { Decision, DecisionStatus } from '@/types/decisions';
-
-const STATUS_CONFIG: Record<DecisionStatus, { icon: typeof CheckCircle2; color: string; label: string }> = {
-  'auto-approved': { icon: Zap, color: 'text-green-500', label: 'Auto-Approved' },
-  pending: { icon: Clock, color: 'text-amber-500', label: 'Pending Approval' },
-  approved: { icon: CheckCircle2, color: 'text-green-500', label: 'Approved' },
-  rejected: { icon: XCircle, color: 'text-red-400', label: 'Rejected' },
-};
-
-const ACTION_CONFIG: Record<string, { icon: typeof TrendingUp; color: string; label: string }> = {
-  discount: { icon: TrendingDown, color: 'text-blue-500', label: 'Discount' },
-  promote: { icon: TrendingUp, color: 'text-green-500', label: 'Promote' },
-  hold: { icon: Minus, color: 'text-zinc-400', label: 'Hold Pricing' },
-  remove: { icon: Trash2, color: 'text-red-400', label: 'Remove Item' },
-};
-
-interface DecisionDetailsModalProps {
-  decision: Decision | null;
-  onClose: () => void;
-  onApprove?: (id: string) => void;
-  onReject?: (id: string) => void;
-}
+import { X, CheckCircle2, XCircle, AlertTriangle, Lightbulb, Hash } from 'lucide-react';
+import type { Decision, DecisionDetailsModalProps } from '@/types/decisions';
+import { STATUS_CONFIG, ACTION_CONFIG } from '@/constants/decision-config';
 
 export function DecisionDetailsModal({ decision, onClose, onApprove, onReject }: DecisionDetailsModalProps) {
   if (!decision) return null;
@@ -46,7 +26,7 @@ export function DecisionDetailsModal({ decision, onClose, onApprove, onReject }:
           <div className="p-6 pb-4 border-b border-zinc-800">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${actionCfg.color}/10 border border-${actionCfg.color === 'text-blue-500' ? 'blue-500' : actionCfg.color === 'text-green-500' ? 'green-500' : 'zinc-700'}/20`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${actionCfg.color}/10 border ${actionCfg.border}`}>
                   <ActionIcon className={`w-5 h-5 ${actionCfg.color}`} />
                 </div>
                 <div>
@@ -70,8 +50,8 @@ export function DecisionDetailsModal({ decision, onClose, onApprove, onReject }:
                 <span className="text-xs font-semibold text-white">{actionCfg.label}</span>
               </div>
               {dp != null && dp > 0 && (
-                <div className="px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <span className="text-xs font-bold text-blue-500">-{dp}% discount</span>
+                <div className="px-3 py-1.5 rounded-lg bg-[#e07850]/10 border border-[#e07850]/20">
+                  <span className="text-xs font-bold text-[#e07850]">-{dp}% discount</span>
                 </div>
               )}
             </div>
@@ -90,7 +70,7 @@ export function DecisionDetailsModal({ decision, onClose, onApprove, onReject }:
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-3.5 h-3.5 text-blue-400" />
+                <AlertTriangle className="w-3.5 h-3.5 text-[#e89070]" />
                 <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">AI Confidence</p>
               </div>
               <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">

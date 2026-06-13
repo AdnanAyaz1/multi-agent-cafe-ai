@@ -10,7 +10,7 @@ export function CategorizationInsights({ insights }: CategorizationInsightsProps
         {insights.map((cat) => (
           <div
             key={cat.name}
-            className="bg-white/40 p-3 rounded-lg border border-white/50"
+            className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]"
           >
             <p className="text-xs text-muted-foreground font-bold uppercase">
               {cat.name}

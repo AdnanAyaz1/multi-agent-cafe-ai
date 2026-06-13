@@ -67,3 +67,9 @@ export interface ScrapeFormProps {
   busy: boolean;
   onSubmit: (options: { url?: string; timeoutMs?: number; maxTextLength?: number }) => void;
 }
+
+export interface WeatherStatProps {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}

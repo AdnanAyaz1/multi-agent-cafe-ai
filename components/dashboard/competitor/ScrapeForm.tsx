@@ -28,10 +28,10 @@ export function ScrapeForm({ businessId, disabled, busy, onSubmit }: ScrapeFormP
             onChange={(e) => setUrl(e.target.value)}
             placeholder={COMPETITOR_URL_OVERRIDE_PLACEHOLDER}
             disabled={busy}
-            className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/20 transition-all duration-150 disabled:opacity-50"
+            className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-[#e07850]/30 focus:ring-1 focus:ring-[#e07850]/20 transition-all duration-150 disabled:opacity-50"
           />
         </div>
-        <button type="submit" disabled={disabled || busy} className="px-5 py-3 rounded-xl bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2">
+        <button type="submit" disabled={disabled || busy} className="px-5 py-3 rounded-xl bg-[#e07850] text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           Scrape
         </button>
@@ -41,7 +41,7 @@ export function ScrapeForm({ businessId, disabled, busy, onSubmit }: ScrapeFormP
         </button>
       </div>
       <p className="px-4 pt-2 text-[10px] text-zinc-400">
-        Scraping for <span className="text-blue-500">{businessId}</span> — leave URL blank to scrape all stored URLs
+        Scraping for <span className="text-[#e07850]">{businessId}</span> — leave URL blank to scrape all stored URLs
       </p>
     </form>
   );

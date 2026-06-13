@@ -46,8 +46,8 @@ export default function AnalysisPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-px w-12 bg-blue-400" />
-          <p className="text-[11px] text-blue-400 uppercase tracking-[0.2em] font-semibold font-mono">Agent Pipeline</p>
+          <div className="h-px w-12 bg-[#e89070]" />
+          <p className="text-[11px] text-[#e89070] uppercase tracking-[0.2em] font-semibold font-mono">Agent Pipeline</p>
         </div>
         <h1 className="text-3xl lg:text-5xl font-extrabold text-white mb-3 tracking-tight">
           Watch AI think
@@ -68,7 +68,7 @@ export default function AnalysisPage() {
               onChange={(e) => setBusinessId(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !isRunning && handleRun()}
               placeholder="Enter business ID (e.g. cafe-001)"
-              className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-blue-400/30 focus:ring-1 focus:ring-blue-400/20 transition-all duration-150"
+              className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-[#e89070]/30 focus:ring-1 focus:ring-[#e89070]/20 transition-all duration-150"
             />
           </div>
           {isRunning ? (
@@ -76,7 +76,7 @@ export default function AnalysisPage() {
               Stop Pipeline
             </button>
           ) : (
-            <button onClick={handleRun} disabled={loading || !businessId.trim()} className="px-6 py-3 rounded-xl bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2">
+            <button onClick={handleRun} disabled={loading || !businessId.trim()} className="px-6 py-3 rounded-xl bg-[#e07850] text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2">
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
@@ -182,9 +182,9 @@ export default function AnalysisPage() {
                               <div className="flex items-center gap-2">
                                 <p className="text-white text-sm font-semibold truncate">{action.item}</p>
                                 {dp != null && dp > 0 && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                                    <TrendingDown className="w-2.5 h-2.5 text-blue-500" />
-                                    <span className="text-[9px] text-blue-500 font-bold font-mono">-{dp}%</span>
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#e07850]/10 border border-[#e07850]/20">
+                                    <TrendingDown className="w-2.5 h-2.5 text-[#e07850]" />
+                                    <span className="text-[9px] text-[#e07850] font-bold font-mono">-{dp}%</span>
                                   </span>
                                 )}
                               </div>

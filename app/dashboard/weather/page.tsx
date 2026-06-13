@@ -29,8 +29,8 @@ export default function WeatherPage() {
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-px w-12 bg-blue-500" />
-            <p className="text-[11px] text-blue-500 uppercase tracking-[0.2em] font-semibold font-mono">
+            <div className="h-px w-12 bg-[#e07850]" />
+            <p className="text-[11px] text-[#e07850] uppercase tracking-[0.2em] font-semibold font-mono">
               Weather Intelligence
             </p>
           </div>
@@ -59,13 +59,13 @@ export default function WeatherPage() {
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
                 placeholder="Search city..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/20 transition-all duration-150"
+                className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-[#e07850]/30 focus:ring-1 focus:ring-[#e07850]/20 transition-all duration-150"
               />
             </div>
             <button
               onClick={handleSearch}
               disabled={loading || !city.trim()}
-              className="px-6 py-3 rounded-xl bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2"
+              className="px-6 py-3 rounded-xl bg-[#e07850] text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -104,11 +104,11 @@ export default function WeatherPage() {
                 <div className="lg:col-span-8">
                   <div className="glass-card rounded-3xl overflow-hidden">
                     <div className="relative z-10">
-                      <div className="h-1 w-full bg-blue-500" />
+                      <div className="h-1 w-full bg-[#e07850]" />
                       <div className="p-8 lg:p-10">
                         <div className="flex items-center justify-between mb-8">
                           <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-2xl bg-[#e07850]/10 border border-[#e07850]/20 flex items-center justify-center">
                               <ConditionIcon condition={weather.condition} size={28} />
                             </div>
                             <div>
@@ -160,8 +160,8 @@ export default function WeatherPage() {
                   <div className="glass-card rounded-3xl overflow-hidden h-full">
                     <div className="relative z-10 p-6 h-full flex flex-col">
                       <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/10 border border-blue-500/20">
-                          <span className="text-blue-500 text-sm font-bold">AI</span>
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#e07850]/10 border border-[#e07850]/20">
+                          <span className="text-[#e07850] text-sm font-bold">AI</span>
                         </div>
                         <div>
                           <p className="text-white text-sm font-bold">Business Impact</p>
@@ -174,7 +174,7 @@ export default function WeatherPage() {
                           <div className="relative mb-6">
                             <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-blue-500 transition-all duration-1000 ease-out"
+                                className="h-full rounded-full bg-[#e07850] transition-all duration-1000 ease-out"
                                 style={{ width: impact === 'high' ? '90%' : impact === 'medium' ? '55%' : '25%' }}
                               />
                             </div>
@@ -199,8 +199,8 @@ export default function WeatherPage() {
                             <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold mb-3 font-mono">Suggested actions</p>
                             {IMPACT_ACTIONS[impact].map((action, i) => (
                               <div key={action} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-all duration-150 cursor-pointer group">
-                                <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-blue-500/10 group-hover:scale-110 transition-transform">
-                                  <span className="text-[9px] font-bold font-mono text-blue-500">{i + 1}</span>
+                                <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-[#e07850]/10 group-hover:scale-110 transition-transform">
+                                  <span className="text-[9px] font-bold font-mono text-[#e07850]">{i + 1}</span>
                                 </div>
                                 <span className="text-[12px] text-white/70 group-hover:text-white transition-colors">{action}</span>
                               </div>

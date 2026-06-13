@@ -1,8 +1,5 @@
 import { StickyNote } from 'lucide-react';
-
-export interface CompetitorNotesListProps {
-  notes: string[];
-}
+import type { CompetitorNotesListProps } from '@/types/dashboard';
 
 export function CompetitorNotesList({ notes }: CompetitorNotesListProps) {
   return (

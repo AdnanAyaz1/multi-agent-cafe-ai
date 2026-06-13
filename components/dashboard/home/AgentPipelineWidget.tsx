@@ -11,7 +11,7 @@ interface PipelineStep {
 
 function StepIcon({ status }: { status: PipelineStep['status'] }) {
   if (status === 'complete') return <div className="w-7 h-7 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-green-500" /></div>;
-  if (status === 'active') return <div className="w-7 h-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center"><Loader2 className="w-4 h-4 text-blue-500 animate-spin" /></div>;
+  if (status === 'active') return <div className="w-7 h-7 rounded-full bg-[#e07850]/10 border border-[#e07850]/20 flex items-center justify-center"><Loader2 className="w-4 h-4 text-[#e07850] animate-spin" /></div>;
   if (status === 'failed') return <div className="w-7 h-7 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center"><AlertCircle className="w-4 h-4 text-red-400" /></div>;
   return <div className="w-7 h-7 rounded-full bg-zinc-800/50 border border-zinc-700 flex items-center justify-center"><Clock className="w-4 h-4 text-zinc-500" /></div>;
 }
@@ -29,7 +29,7 @@ export function AgentPipelineWidget() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-blue-400" />
+              <Brain className="w-5 h-5 text-[#e89070]" />
             </div>
             <div>
               <p className="text-white text-sm font-bold">AI Pipeline</p>

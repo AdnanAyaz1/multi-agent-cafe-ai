@@ -25,9 +25,9 @@ export function GlowOrb({
   };
 
   const colorClasses = {
-    primary: "bg-[#00d2ff]",
-    secondary: "bg-[#1fe19e]",
-    tertiary: "bg-[#ffd79f]",
+    primary: "bg-brand-indigo",
+    secondary: "bg-brand-periwinkle",
+    tertiary: "bg-brand-sage",
   };
 
   return (

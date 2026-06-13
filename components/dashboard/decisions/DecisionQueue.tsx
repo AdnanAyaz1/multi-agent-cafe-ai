@@ -1,16 +1,8 @@
 'use client';
 
 import { Clock, CheckCircle2, Zap } from 'lucide-react';
-import type { Decision } from '@/types/decisions';
+import type { Decision, DecisionQueueProps } from '@/types/decisions';
 import { DecisionCard } from './DecisionCard';
-
-interface DecisionQueueProps {
-  pending: Decision[];
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-  onShowDetails: (decision: Decision) => void;
-  onBulkApprove: () => void;
-}
 
 export function DecisionQueue({ pending, onApprove, onReject, onShowDetails, onBulkApprove }: DecisionQueueProps) {
   if (pending.length === 0) {

@@ -6,13 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { COMPETITOR_FORM_DEFAULTS, COMPETITOR_URL_OVERRIDE_PLACEHOLDER } from '@/constants/competitor';
 import type { RefreshOptions } from '@/hooks/useCompetitorSnapshots';
-
-export interface CompetitorScrapeFormProps {
-  businessId: string;
-  disabled: boolean;
-  busy: boolean;
-  onSubmit: (options: RefreshOptions) => void;
-}
+import type { CompetitorScrapeFormProps } from '@/types/dashboard';
 
 export function CompetitorScrapeForm({
   businessId,

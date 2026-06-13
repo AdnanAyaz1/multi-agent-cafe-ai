@@ -1,29 +1,8 @@
 'use client';
 
-import { CheckCircle2, XCircle, Clock, Zap, ArrowRight, TrendingDown, TrendingUp, Minus, Trash2 } from 'lucide-react';
-import type { Decision, DecisionStatus } from '@/types/decisions';
-
-const STATUS_CONFIG: Record<DecisionStatus, { icon: typeof CheckCircle2; color: string; bg: string; border: string; label: string }> = {
-  'auto-approved': { icon: Zap, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20', label: 'Auto-Approved' },
-  pending: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20', label: 'Pending' },
-  approved: { icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20', label: 'Approved' },
-  rejected: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', label: 'Rejected' },
-};
-
-const ACTION_CONFIG: Record<string, { icon: typeof TrendingUp; color: string; label: string }> = {
-  discount: { icon: TrendingDown, color: 'text-blue-500', label: 'Discount' },
-  promote: { icon: TrendingUp, color: 'text-green-500', label: 'Promote' },
-  hold: { icon: Minus, color: 'text-zinc-400', label: 'Hold' },
-  remove: { icon: Trash2, color: 'text-red-400', label: 'Remove' },
-};
-
-interface DecisionCardProps {
-  decision: Decision;
-  onApprove?: (id: string) => void;
-  onReject?: (id: string) => void;
-  onShowDetails?: (decision: Decision) => void;
-  index?: number;
-}
+import { ArrowRight, TrendingDown } from 'lucide-react';
+import type { Decision, DecisionCardProps } from '@/types/decisions';
+import { STATUS_CONFIG, ACTION_CONFIG } from '@/constants/decision-config';
 
 export function DecisionCard({ decision, onApprove, onReject, onShowDetails, index = 0 }: DecisionCardProps) {
   const statusCfg = STATUS_CONFIG[decision.status];
@@ -69,9 +48,9 @@ export function DecisionCard({ decision, onApprove, onReject, onShowDetails, ind
         )}
 
         {dp != null && dp > 0 && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-3">
-            <TrendingDown className="w-3 h-3 text-blue-500" />
-            <span className="text-[10px] text-blue-500 font-bold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e07850]/10 border border-[#e07850]/20 mb-3">
+            <TrendingDown className="w-3 h-3 text-[#e07850]" />
+            <span className="text-[10px] text-[#e07850] font-bold">
               -{dp}% discount
             </span>
           </div>

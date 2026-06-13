@@ -27,7 +27,7 @@ export function Sidebar() {
       <div className="px-5 mb-8">
         <div className="glass-card rounded-2xl p-4 group cursor-pointer hover:border-zinc-700 transition-colors duration-150">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#e07850] flex items-center justify-center">
               <Store className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -56,9 +56,9 @@ export function Sidebar() {
               }`}
             >
               {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-blue-500" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[#e07850]" />
               )}
-              <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isActive ? 'text-blue-500' : 'text-zinc-400 group-hover:text-white'}`} />
+              <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isActive ? 'text-[#e07850]' : 'text-zinc-400 group-hover:text-white'}`} />
               <span className={`text-xs font-semibold tracking-wide ${isActive ? 'text-white' : ''}`}>
                 {item.label}
               </span>
@@ -81,7 +81,7 @@ export function Sidebar() {
                   : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
               }`}
             >
-              <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-blue-500' : ''}`} />
+              <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-[#e07850]' : ''}`} />
               <span className="text-xs font-semibold tracking-wide">
                 {item.label}
               </span>

@@ -58,7 +58,7 @@ export function LoginForm({ callbackUrl = '/dashboard' }: LoginFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#00d2ff] to-[#1fe19e] text-[#003543] text-sm font-bold hover:shadow-[#00d2ff]/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-[#00d2ff]/25 hover:-translate-y-0.5"
+          className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#e07850] to-[#c8a070] text-[#1a1208] text-sm font-bold hover:shadow-[#e07850]/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-[#e07850]/25 hover:-translate-y-0.5"
         >
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
@@ -67,7 +67,7 @@ export function LoginForm({ callbackUrl = '/dashboard' }: LoginFormProps) {
       <div className="my-6 flex items-center gap-4">
         <div className="flex-1 h-px bg-white/[0.08]" />
         <span
-          className="text-[10px] text-[#859399] uppercase tracking-[0.15em]"
+          className="text-[10px] text-[#a09890] uppercase tracking-[0.15em]"
           style={{ fontFamily: 'var(--font-jetbrains-mono)' }}
         >
           or

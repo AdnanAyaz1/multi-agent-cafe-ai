@@ -2,13 +2,8 @@ import { Cloud, AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { CardHeading } from '../ui/CardHeading';
 import { getImpactLevel, IMPACT_MESSAGES } from '@/utils/weather';
+import { getImpactTitle } from '@/utils/weather-display';
 import type { WeatherDetailCardProps } from '@/types/dashboard';
-
-function getImpactTitle(impact: string) {
-  if (impact === 'high') return 'High Business Impact';
-  if (impact === 'medium') return 'Moderate Business Impact';
-  return 'Low Business Impact';
-}
 
 export function WeatherDetailCard({ data }: WeatherDetailCardProps) {
   const impact = getImpactLevel(data.condition);
@@ -30,11 +25,11 @@ export function WeatherDetailCard({ data }: WeatherDetailCardProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white/40 p-3 rounded-lg border border-white/50">
+          <div className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]">
             <p className="text-xs text-muted-foreground font-bold uppercase">Humidity</p>
             <p className="text-lg font-semibold text-card-foreground">{data.humidity}%</p>
           </div>
-          <div className="bg-white/40 p-3 rounded-lg border border-white/50">
+          <div className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]">
             <p className="text-xs text-muted-foreground font-bold uppercase">Wind</p>
             <p className="text-lg font-semibold text-card-foreground">{data.windSpeed} m/s</p>
           </div>

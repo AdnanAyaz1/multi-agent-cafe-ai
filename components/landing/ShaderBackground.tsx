@@ -37,10 +37,10 @@ export function ShaderBackground() {
         vec2 uv = v_texCoord;
         vec2 pos = uv * u_resolution.xy / 100.0;
         vec2 grid_uv = fract(pos) - 0.5;
-        float dots = smoothstep(0.05, 0.0, length(grid_uv));
-        vec3 bgColor = vec3(0.043, 0.059, 0.102);
+        float dots = smoothstep(0.04, 0.0, length(grid_uv));
+        vec3 bgColor = vec3(0.024, 0.024, 0.055);
         vec3 finalColor = bgColor;
-        finalColor += dots * 0.025;
+        finalColor += dots * 0.018;
         gl_FragColor = vec4(finalColor, 1.0);
       }`;
 
@@ -77,7 +77,7 @@ export function ShaderBackground() {
   }, []);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 -z-10 opacity-50 pointer-events-none">
+    <div ref={containerRef} className="fixed inset-0 -z-10 opacity-40 pointer-events-none">
       <canvas ref={canvasRef} className="block w-full h-full" />
     </div>
   );

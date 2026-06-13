@@ -1,9 +1,6 @@
 import { Sparkles } from 'lucide-react';
 import type { CompetitorPromo } from '@/lib/types';
-
-export interface CompetitorPromoListProps {
-  promos: CompetitorPromo[];
-}
+import type { CompetitorPromoListProps } from '@/types/dashboard';
 
 export function CompetitorPromoList({ promos }: CompetitorPromoListProps) {
   return (

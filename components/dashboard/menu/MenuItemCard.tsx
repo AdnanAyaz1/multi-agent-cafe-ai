@@ -56,7 +56,7 @@ export function MenuItemCard({ item, isControlled, isUnavailable, onToggleContro
           )}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              {isUnavailable ? <EyeOff className="w-3.5 h-3.5 text-zinc-500" /> : <Eye className="w-3.5 h-3.5 text-blue-500" />}
+              {isUnavailable ? <EyeOff className="w-3.5 h-3.5 text-zinc-500" /> : <Eye className="w-3.5 h-3.5 text-[#e07850]" />}
               <span className="text-xs text-zinc-400">Available</span>
             </div>
             <Toggle enabled={!isUnavailable} onToggle={onToggleUnavailable} color="#3b82f6" size="sm" />

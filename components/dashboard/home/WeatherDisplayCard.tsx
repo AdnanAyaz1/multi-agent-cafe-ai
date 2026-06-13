@@ -1,22 +1,9 @@
-import { Cloud, AlertTriangle, CloudRain, CloudSnow, Sun } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { CardHeading } from '../ui/CardHeading';
 import { getImpactLevel, IMPACT_MESSAGES } from '@/utils/weather';
+import { getImpactTitle, ConditionIcon } from '@/utils/weather-display';
 import type { WeatherDisplayCardProps } from '@/types/dashboard';
-
-function getImpactTitle(impact: string) {
-  if (impact === 'high') return 'High Business Impact';
-  if (impact === 'medium') return 'Moderate Business Impact';
-  return 'Low Business Impact';
-}
-
-function ConditionIcon({ condition }: { condition: string }) {
-  const lower = condition.toLowerCase();
-  if (lower.includes('rain')) return <CloudRain className="size-10 text-info" />;
-  if (lower.includes('snow')) return <CloudSnow className="size-10 text-info" />;
-  if (lower.includes('cloud')) return <Cloud className="size-10 text-info" />;
-  return <Sun className="size-10 text-info" />;
-}
 
 export function WeatherDisplayCard({ data }: WeatherDisplayCardProps) {
   const impact = getImpactLevel(data.condition);
@@ -45,7 +32,7 @@ export function WeatherDisplayCard({ data }: WeatherDisplayCardProps) {
               { label: 'Wind', value: `${data.windSpeed} m/s` },
               { label: 'Units', value: data.units === 'metric' ? 'Metric' : 'Imperial' },
             ].map((item) => (
-              <div key={item.label} className="bg-white/40 p-3 rounded-lg border border-white/50">
+              <div key={item.label} className="bg-white/[0.04] p-3 rounded-lg border border-white/[0.08]">
                 <p className="text-xs text-muted-foreground font-bold uppercase">{item.label}</p>
                 <p className="text-lg font-semibold text-card-foreground">{item.value}</p>
               </div>

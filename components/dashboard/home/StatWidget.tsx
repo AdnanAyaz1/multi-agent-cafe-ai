@@ -1,27 +1,7 @@
 'use client';
 
+import { ACCENT_MAP } from '@/constants/dashboard-home';
 import type { StatWidgetProps } from '@/types/dashboard-home';
-
-const ACCENT_MAP = {
-  blue: {
-    bg: 'bg-blue-500/10',
-    border: 'border-blue-500/20',
-    icon: 'text-blue-500',
-    positive: 'text-green-500',
-  },
-  green: {
-    bg: 'bg-green-500/10',
-    border: 'border-green-500/20',
-    icon: 'text-green-500',
-    positive: 'text-green-500',
-  },
-  amber: {
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
-    icon: 'text-amber-500',
-    positive: 'text-green-500',
-  },
-} as const;
 
 export function StatWidget({ label, value, change, changeType = 'neutral', icon: Icon, accentColor = 'blue' }: StatWidgetProps) {
   const accent = ACCENT_MAP[accentColor] || ACCENT_MAP.blue;
