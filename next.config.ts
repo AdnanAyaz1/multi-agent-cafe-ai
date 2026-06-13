@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
     "@crawlee/core",
     "crawlee",
   ],
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+  },
 };
 
 export default nextConfig;
