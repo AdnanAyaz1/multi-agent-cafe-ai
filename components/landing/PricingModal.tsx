@@ -3,47 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { X } from 'lucide-react';
-
-const plans = [
-  {
-    name: 'Starter',
-    price: '0',
-    period: 'forever',
-    description: 'For cafes just getting started.',
-    features: ['1 AI Agent', 'Daily weather analysis', 'Basic recommendations', 'Email support'],
-    cta: 'Get Started Free',
-    href: '/auth/register',
-    planKey: null,
-    popular: false,
-  },
-  {
-    name: 'Growth',
-    price: '49',
-    period: '/month',
-    description: 'For cafes ready to maximize revenue.',
-    features: ['5 AI Agents', 'Competitor tracking', 'Advanced pricing engine', 'Auto-approve changes', 'Priority support'],
-    cta: 'Start Free Trial',
-    href: null,
-    planKey: 'growth' as const,
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    price: '199',
-    period: '/month',
-    description: 'For multi-location cafe chains.',
-    features: ['Unlimited AI Agents', 'Custom AI training', 'API access', 'Multi-location dashboard', 'Dedicated account manager'],
-    cta: 'Contact Sales',
-    href: null,
-    planKey: 'enterprise' as const,
-    popular: false,
-  },
-];
-
-interface PricingModalProps {
-  open: boolean;
-  onClose: () => void;
-}
+import { PRICING_PLANS } from '@/constants/pricing';
+import type { PricingModalProps } from '@/types/pricing';
 
 export function PricingModal({ open, onClose }: PricingModalProps) {
   const { data: session } = useSession();
@@ -66,7 +27,7 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
 
   const handleCheckout = async (planKey: string) => {
     if (!session) {
-      window.location.href = `/auth/login?checkout=${planKey}`;
+      window.location.replace(`/auth/login?checkout=${planKey}`);
       return;
     }
 
@@ -78,12 +39,12 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
         body: JSON.stringify({ plan: planKey }),
       });
       if (res.status === 401) {
-        window.location.href = `/auth/login?checkout=${planKey}`;
+        window.location.replace(`/auth/login?checkout=${planKey}`);
         return;
       }
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        window.location.replace(data.url);
       }
     } catch {
       setLoading(null);
@@ -127,7 +88,7 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
 
         {/* Plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
-          {plans.map((plan) => (
+          {PRICING_PLANS.map((plan) => (
             <div
               key={plan.name}
               className={`relative rounded-2xl p-6 transition-all duration-500 ${

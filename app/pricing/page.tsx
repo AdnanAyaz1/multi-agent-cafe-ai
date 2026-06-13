@@ -3,42 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-
-const plans = [
-  {
-    name: 'Starter',
-    price: '0',
-    period: 'forever',
-    description: 'For cafes just getting started with AI.',
-    features: ['1 AI Agent', 'Daily weather analysis', 'Basic recommendations', 'Email support'],
-    cta: 'Get Started Free',
-    href: '/auth/register',
-    planKey: null,
-    popular: false,
-  },
-  {
-    name: 'Growth',
-    price: '49',
-    period: '/month',
-    description: 'For cafes ready to maximize revenue.',
-    features: ['5 AI Agents', 'Competitor tracking', 'Advanced pricing engine', 'Auto-approve changes', 'Priority support', 'Weekly reports'],
-    cta: 'Start Free Trial',
-    href: null,
-    planKey: 'growth' as const,
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    price: '199',
-    period: '/month',
-    description: 'For multi-location cafe chains.',
-    features: ['Unlimited AI Agents', 'Custom AI training', 'API access', 'Multi-location dashboard', 'Dedicated account manager', 'Custom integrations'],
-    cta: 'Contact Sales',
-    href: null,
-    planKey: 'enterprise' as const,
-    popular: false,
-  },
-];
+import { PRICING_PLANS } from '@/constants/pricing';
 
 export default function PricingPage() {
   const { data: session } = useSession();
@@ -47,7 +12,7 @@ export default function PricingPage() {
   const handleCheckout = async (planKey: string) => {
     if (!session) {
       sessionStorage.setItem('pendingCheckout', planKey);
-      window.location.href = `/auth/login?checkout=${planKey}`;
+      window.location.replace(`/auth/login?checkout=${planKey}`);
       return;
     }
 
@@ -59,12 +24,12 @@ export default function PricingPage() {
         body: JSON.stringify({ plan: planKey }),
       });
       if (res.status === 401) {
-        window.location.href = `/auth/login?checkout=${planKey}`;
+        window.location.replace(`/auth/login?checkout=${planKey}`);
         return;
       }
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        window.location.replace(data.url);
       }
     } catch {
       setLoading(null);
@@ -125,7 +90,7 @@ export default function PricingPage() {
 
         {/* Plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          {plans.map((plan) => (
+          {PRICING_PLANS.map((plan) => (
             <div
               key={plan.name}
               className={`relative rounded-3xl p-8 transition-all duration-500 ${

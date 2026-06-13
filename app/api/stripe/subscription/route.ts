@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('stripe-subscription');
 
 export async function GET() {
   try {
@@ -22,7 +25,7 @@ export async function GET() {
 
     return NextResponse.json({ subscription: subscription ?? { plan: 'free', status: 'active' } });
   } catch (error) {
-    console.error('Subscription fetch error:', error);
+    log.error('Failed to fetch subscription', error);
     return NextResponse.json({ error: 'Failed to fetch subscription' }, { status: 500 });
   }
 }

@@ -7,18 +7,14 @@ import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { ArrowLeft, Shield, CheckCircle2 } from 'lucide-react';
 
-const planDetails: Record<string, { name: string; price: string; period: string }> = {
-  growth: { name: 'Growth', price: '$49', period: '/month' },
-  enterprise: { name: 'Enterprise', price: '$199', period: '/month' },
-};
+import { CHECKOUT_PLAN_DETAILS } from '@/constants/checkout';
 
 function CheckoutForm({ plan }: { plan: string }) {
   const stripe = useStripe();
   const elements = useElements();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const details = planDetails[plan];
+  const details = CHECKOUT_PLAN_DETAILS[plan];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +105,7 @@ export default function CheckoutPage() {
     createPayment();
   }, [plan, router]);
 
-  const details = planDetails[plan ?? ''];
+  const details = CHECKOUT_PLAN_DETAILS[plan ?? ''];
 
   return (
     <div className="min-h-screen" style={{ background: '#0e0c0a' }}>

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('stripe-verify');
 
 export async function POST() {
   try {
@@ -53,10 +56,10 @@ export async function POST() {
       },
     });
 
-    console.log(`[Verify] Activated plan "${plan}" for user ${userId}`);
+    log.info(`Activated plan "${plan}" for user ${userId}`);
     return NextResponse.json({ status: 'active', plan });
   } catch (error) {
-    console.error('[Verify] Error:', error);
+    log.error('Verification failed', error);
     return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
   }
 }

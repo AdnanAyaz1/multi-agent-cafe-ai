@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { stripe, STRIPE_PLANS, type PlanKey } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('stripe-payment-intent');
 
 export async function POST(req: Request) {
   try {
@@ -58,7 +61,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error('Payment intent error:', error);
+    log.error('Failed to create payment', error);
     return NextResponse.json({ error: 'Failed to create payment' }, { status: 500 });
   }
 }

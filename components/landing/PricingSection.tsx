@@ -3,42 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
-
-const plans = [
-  {
-    name: "Starter",
-    price: "0",
-    period: "forever",
-    description: "For cafes just getting started with AI.",
-    features: ["1 AI Agent", "Daily weather analysis", "Basic recommendations", "Email support"],
-    cta: "Get Started Free",
-    href: "/auth/register",
-    planKey: null,
-    popular: false,
-  },
-  {
-    name: "Growth",
-    price: "49",
-    period: "/month",
-    description: "For cafes ready to maximize revenue.",
-    features: ["5 AI Agents", "Competitor tracking", "Advanced pricing engine", "Auto-approve changes", "Priority support", "Weekly reports"],
-    cta: "Start Free Trial",
-    href: null,
-    planKey: "growth" as const,
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "199",
-    period: "/month",
-    description: "For multi-location cafe chains.",
-    features: ["Unlimited AI Agents", "Custom AI training", "API access", "Multi-location dashboard", "Dedicated account manager", "Custom integrations"],
-    cta: "Contact Sales",
-    href: null,
-    planKey: "enterprise" as const,
-    popular: false,
-  },
-];
+import { PRICING_PLANS } from "@/constants/pricing";
 
 export function PricingSection() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -53,12 +18,12 @@ export function PricingSection() {
       });
       if (res.status === 401) {
         sessionStorage.setItem('pendingCheckout', planKey);
-        window.location.href = '/auth/login?checkout=' + planKey;
+        window.location.replace('/auth/login?checkout=' + planKey);
         return;
       }
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        window.location.replace(data.url);
       }
     } catch {
       setLoading(null);
@@ -96,7 +61,7 @@ export function PricingSection() {
 
         {/* Pricing — featured center card, NOT equal 3-col */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 items-start max-w-5xl mx-auto">
-          {plans.map((plan, i) => (
+          {PRICING_PLANS.map((plan, i) => (
             <motion.div
               key={plan.name}
               initial={{ opacity: 0, y: 40, filter: "blur(4px)" }}
