@@ -119,7 +119,7 @@ export function TestimonialsSection() {
                       {t.metric}
                     </span>
                     <span className="block text-[9px] uppercase tracking-[0.2em] mt-0.5"
-                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.5)" }}>
+                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.7)" }}>
                       {t.metricLabel}
                     </span>
                   </div>
@@ -144,9 +144,9 @@ export function TestimonialsSection() {
                   </div>
                   <div>
                     <p className="text-white font-semibold text-sm">{t.author}</p>
-                    <p className="text-sm" style={{ color: "rgba(160, 152, 144, 0.55)" }}>{t.role}</p>
+                    <p className="text-sm" style={{ color: "rgba(160, 152, 144, 0.75)" }}>{t.role}</p>
                     <p className="text-[9px] uppercase tracking-[0.15em] mt-0.5"
-                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.4)" }}>
+                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.6)" }}>
                       {t.location}
                     </p>
                   </div>
@@ -175,17 +175,19 @@ export function TestimonialsSection() {
             <div className="flex items-center gap-1.5">
               {testimonials.map((_, i) => (
                 <button key={i} onClick={() => { setDirection(i > active ? 1 : -1); setActive(i); }}
-                  className="h-1 rounded-full transition-all duration-500 cursor-pointer"
+                  className="h-1 rounded-full transition-all duration-500 cursor-pointer relative"
                   style={{
                     width: i === active ? "32px" : "6px",
                     background: i === active ? "linear-gradient(90deg, #e07850, #c8a070)" : "rgba(224, 120, 80, 0.12)",
                   }}
-                  aria-label={`Go to testimonial ${i + 1}`} />
+                  aria-label={`Go to testimonial ${i + 1}`}>
+                  <span className="absolute inset-0 -m-2" />
+                </button>
               ))}
             </div>
 
             <span className="text-[10px] tabular-nums"
-              style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.5)" }}>
+              style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.7)" }}>
               {String(active + 1).padStart(2, "0")} / {String(testimonials.length).padStart(2, "0")}
             </span>
           </div>

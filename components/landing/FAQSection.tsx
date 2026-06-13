@@ -99,7 +99,7 @@ export function FAQSection() {
         </div>
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }} className="text-center mt-12">
-          <p className="text-sm" style={{ color: "rgba(160, 152, 144, 0.5)" }}>
+          <p className="text-sm" style={{ color: "rgba(160, 152, 144, 0.7)" }}>
             Still have questions?{" "}
             <a href="mailto:support@cafepromo.ai" className="font-medium transition-colors duration-300"
               style={{ color: "#e07850" }}>Contact us</a>

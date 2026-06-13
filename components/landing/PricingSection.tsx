@@ -93,14 +93,14 @@ export function PricingSection() {
                   <h3 className="text-xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-sora)" }}>
                     {plan.name}
                   </h3>
-                  <p className="text-sm mb-8" style={{ color: "rgba(160, 152, 144, 0.55)" }}>{plan.description}</p>
+                  <p className="text-sm mb-8" style={{ color: "rgba(160, 152, 144, 0.75)" }}>{plan.description}</p>
 
                   <div className="flex items-baseline gap-1 mb-10">
-                    <span className="text-sm" style={{ color: "rgba(160, 152, 144, 0.5)" }}>$</span>
+                    <span className="text-sm" style={{ color: "rgba(160, 152, 144, 0.7)" }}>$</span>
                     <span className="text-6xl font-extrabold text-white tracking-tight" style={{ fontFamily: "var(--font-sora)" }}>
                       {plan.price}
                     </span>
-                    <span className="text-sm ml-1" style={{ color: "rgba(160, 152, 144, 0.5)" }}>{plan.period}</span>
+                    <span className="text-sm ml-1" style={{ color: "rgba(160, 152, 144, 0.7)" }}>{plan.period}</span>
                   </div>
 
                   {plan.href ? (

@@ -135,7 +135,7 @@ export function HeroSection() {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center"
       >
         <span className="text-[9px] mb-3 tracking-[0.25em] uppercase"
-          style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.5)" }}>
+          style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.7)" }}>
           Scroll
         </span>
         <motion.div className="w-5 h-8 rounded-full flex justify-center pt-1.5"
