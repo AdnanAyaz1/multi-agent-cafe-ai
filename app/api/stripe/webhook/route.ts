@@ -20,6 +20,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
+  console.log(`[Stripe Webhook] Received: ${event.type}`);
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -44,13 +46,16 @@ export async function POST(req: Request) {
               stripeSubscriptionId: session.subscription as string,
             },
           });
+          console.log(`[Stripe Webhook] Activated plan "${plan}" for user ${userId}`);
         }
         break;
       }
 
+      case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.userId;
+        const subId = subscription.id;
 
         if (userId) {
           const status = mapStripeStatus(subscription.status);
@@ -60,9 +65,11 @@ export async function POST(req: Request) {
             where: { userId },
             data: {
               status,
+              stripeSubscriptionId: subId,
               endDate: periodEnd ? new Date(periodEnd * 1000) : undefined,
             },
           });
+          console.log(`[Stripe Webhook] Updated subscription for user ${userId}: status=${status}`);
         }
         break;
       }
@@ -81,6 +88,7 @@ export async function POST(req: Request) {
               endDate: null,
             },
           });
+          console.log(`[Stripe Webhook] Downgraded user ${userId} to free`);
         }
         break;
       }
@@ -107,7 +115,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook handler error:', error);
+    console.error('[Stripe Webhook] Handler error:', error);
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }
@@ -115,7 +123,6 @@ export async function POST(req: Request) {
 function mapStripeStatus(status: Stripe.Subscription.Status): string {
   switch (status) {
     case 'active':
-      return 'active';
     case 'trialing':
       return 'active';
     case 'past_due':

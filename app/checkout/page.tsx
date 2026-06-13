@@ -1,13 +1,78 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { StripeProvider } from '@/components/stripe/StripeProvider';
+import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { ArrowLeft, Shield, CheckCircle2 } from 'lucide-react';
+
+const planDetails: Record<string, { name: string; price: string; period: string }> = {
+  growth: { name: 'Growth', price: '$49', period: '/month' },
+  enterprise: { name: 'Enterprise', price: '$199', period: '/month' },
+};
+
+function CheckoutForm({ plan }: { plan: string }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const details = planDetails[plan];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setLoading(true);
+    setError('');
+
+    const { error: submitError } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/dashboard?upgraded=true`,
+      },
+    });
+
+    if (submitError) {
+      setError(submitError.message ?? 'Payment failed');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <PaymentElement />
+
+      {error && (
+        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={!stripe || loading}
+        className="w-full py-3.5 rounded-xl text-white font-semibold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:shadow-[0_0_24px_-4px_rgba(224,120,80,0.3)]"
+        style={{ background: "linear-gradient(135deg, #e07850, #c86040)" }}
+      >
+        {loading ? 'Processing...' : `Subscribe to ${details?.name ?? plan}`}
+      </button>
+
+      <div className="flex items-center justify-center gap-2 text-[11px] text-zinc-600">
+        <Shield className="w-3 h-3" />
+        <span>Secured by Stripe. Your payment info is encrypted.</span>
+      </div>
+    </form>
+  );
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan');
+  const [clientSecret, setClientSecret] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!plan) {
@@ -15,9 +80,9 @@ export default function CheckoutPage() {
       return;
     }
 
-    const runCheckout = async () => {
+    const createPayment = async () => {
       try {
-        const res = await fetch('/api/stripe/checkout', {
+        const res = await fetch('/api/stripe/payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ plan }),
@@ -29,41 +94,100 @@ export default function CheckoutPage() {
         }
 
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        } else {
+          router.replace('/pricing');
         }
       } catch {
-        router.replace('/dashboard');
+        router.replace('/pricing');
+      } finally {
+        setLoading(false);
       }
     };
 
-    runCheckout();
+    createPayment();
   }, [plan, router]);
 
+  const details = planDetails[plan ?? ''];
+
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0e0c0a' }}>
-      <div className="text-center">
-        <Link href="/" className="inline-flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#e07850] to-[#c8a070] flex items-center justify-center">
-            <span className="text-[#1a1208] font-bold text-sm">C</span>
+    <div className="min-h-screen" style={{ background: '#0e0c0a' }}>
+      {/* Top bar */}
+      <nav className="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-white/[0.06]"
+        style={{ background: 'rgba(14, 12, 10, 0.85)', backdropFilter: 'blur(20px)' }}>
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#e07850] to-[#c8a070] flex items-center justify-center">
+            <span className="text-[#1a1208] font-bold text-xs">C</span>
           </div>
-          <span className="text-lg font-bold text-white tracking-tight">CafePromo AI</span>
+          <span className="text-white text-sm font-bold">CafePromo AI</span>
         </Link>
-
-        <div className="mb-6">
-          <div className="w-12 h-12 rounded-xl bg-[#e07850]/10 border border-[#e07850]/20 flex items-center justify-center mx-auto mb-4">
-            <div className="w-5 h-5 border-2 border-[#e07850] border-t-transparent rounded-full animate-spin" />
-          </div>
-          <p className="text-white text-sm font-semibold">Setting up your subscription</p>
-          <p className="text-zinc-500 text-xs mt-1">Redirecting to Stripe checkout...</p>
-        </div>
-
         <button
-          onClick={() => router.replace('/dashboard')}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
         >
-          Skip for now
+          <ArrowLeft className="w-4 h-4" />
+          Back
         </button>
+      </nav>
+
+      {/* Content */}
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-12">
+        <div className="w-full max-w-md">
+          {/* Plan summary */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-white mb-2">Complete your subscription</h1>
+            <p className="text-zinc-500 text-sm">
+              {details ? (
+                <>
+                  <span className="text-white font-semibold">{details.name}</span> plan — {details.price}{details.period}
+                </>
+              ) : (
+                'Setting up your plan...'
+              )}
+            </p>
+          </div>
+
+          {/* Payment card */}
+          <div className="rounded-2xl p-6"
+            style={{
+              background: "linear-gradient(160deg, rgba(22, 20, 18, 0.9), rgba(14, 12, 10, 0.7))",
+              border: "1px solid rgba(224, 120, 80, 0.08)",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
+            }}
+          >
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="w-10 h-10 border-2 border-[#e07850] border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-zinc-500 text-sm">Preparing checkout...</p>
+              </div>
+            ) : clientSecret ? (
+              <StripeProvider clientSecret={clientSecret}>
+                <CheckoutForm plan={plan ?? ''} />
+              </StripeProvider>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-red-400 text-sm">Failed to initialize payment. Please try again.</p>
+                <button
+                  onClick={() => router.replace('/pricing')}
+                  className="mt-4 text-sm text-[#e07850] hover:underline"
+                >
+                  Go back to pricing
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Trust badges */}
+          <div className="flex items-center justify-center gap-4 mt-6">
+            {['256-bit SSL', 'PCI Compliant', 'Cancel anytime'].map((badge) => (
+              <div key={badge} className="flex items-center gap-1.5 text-[10px] text-zinc-600">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>{badge}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
