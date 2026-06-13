@@ -260,39 +260,7 @@
     transform: translateY(-2px);
   }
 
-  /* Curved corner lines — top-left + bottom-right */
-  .dash-glass::before,
-  .dash-glass::after {
-    content: "";
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    border-radius: 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .dash-glass::before {
-    top: -1px;
-    left: -1px;
-    border-top: 2px solid rgba(224, 120, 80, 0.3);
-    border-left: 2px solid rgba(224, 120, 80, 0.3);
-    border-top-left-radius: 16px;
-    transform: translate(-4px, -4px);
-  }
-  .dash-glass::after {
-    bottom: -1px;
-    right: -1px;
-    border-bottom: 2px solid rgba(200, 160, 112, 0.2);
-    border-right: 2px solid rgba(200, 160, 112, 0.2);
-    border-bottom-right-radius: 16px;
-    transform: translate(4px, 4px);
-  }
-  .dash-glass:hover::before,
-  .dash-glass:hover::after {
-    opacity: 1;
-    transform: translate(0, 0);
-  }
+  /* Curved corner lines — removed, keeping glow + shimmer only */
 
   /* Glow ring on hover */
   .dash-glow {
