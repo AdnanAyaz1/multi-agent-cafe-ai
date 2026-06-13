@@ -1,5 +1,5 @@
 export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
+  if (process.env.NEXT_RUNTIME === 'nodejs' && !process.env.VERCEL) {
     await import('@/lib/workers/weather-worker');
     await import('@/lib/workers/analysis-worker');
     await import('@/lib/workers/competitor-worker');
