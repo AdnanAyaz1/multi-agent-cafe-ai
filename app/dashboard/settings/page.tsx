@@ -1,11 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, CreditCard, ExternalLink } from 'lucide-react';
 import { PricingModal } from '@/components/landing/PricingModal';
 
+const PLAN_LABELS: Record<string, { name: string; color: string }> = {
+  free: { name: 'Starter (Free)', color: 'text-zinc-400' },
+  growth: { name: 'Growth', color: 'text-[#e07850]' },
+  enterprise: { name: 'Enterprise', color: 'text-amber-400' },
+};
+
 export default function SettingsPage() {
   const [showPricing, setShowPricing] = useState(false);
+  const [plan, setPlan] = useState('free');
+  const [status, setStatus] = useState('active');
+
+  useEffect(() => {
+    fetch('/api/stripe/subscription')
+      .then((r) => r.json())
+      .then((data) => {
+        setPlan(data.subscription?.plan ?? 'free');
+        setStatus(data.subscription?.status ?? 'active');
+      })
+      .catch(() => {});
+  }, []);
+
+  const planInfo = PLAN_LABELS[plan] ?? PLAN_LABELS.free;
 
   return (
     <div className="space-y-8">
@@ -39,7 +59,10 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
           <div>
             <p className="text-white text-sm font-semibold">Current Plan</p>
-            <p className="text-zinc-500 text-xs mt-0.5">Upgrade or change your subscription</p>
+            <p className="text-xs mt-1">
+              <span className={`font-bold ${planInfo.color}`}>{planInfo.name}</span>
+              <span className="text-zinc-500 ml-2">· {status}</span>
+            </p>
           </div>
           <button
             onClick={() => setShowPricing(true)}
@@ -47,7 +70,7 @@ export default function SettingsPage() {
             style={{ background: "linear-gradient(135deg, #e07850, #c86040)" }}
           >
             <CreditCard className="w-3.5 h-3.5" />
-            Manage Plan
+            {plan === 'free' ? 'Upgrade Plan' : 'Manage Plan'}
           </button>
         </div>
 
