@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, Loader2, Lightbulb, ListChecks, Sparkles, ArrowRight, Zap, CheckCircle2, XCircle, TrendingDown } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useDecisions } from '@/hooks/useDecisions';
 import { AgentShowcase } from '@/components/dashboard/home/AgentShowcase';
@@ -16,6 +17,7 @@ export default function AnalysisPage() {
   const { status, loading, error, run, cancel } = useAnalysis();
   const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const prevStatusRef = useRef<string | null>(null);
 
   const handleRun = () => {
     if (businessId.trim()) run(businessId.trim());
@@ -24,9 +26,42 @@ export default function AnalysisPage() {
   const isRunning = status?.status === 'running';
   const recommendation = status?.recommendation;
 
+  useEffect(() => {
+    if (!status?.status) return;
+    const prev = prevStatusRef.current;
+    const current = status.status;
+    if (prev === current) return;
+    prevStatusRef.current = current;
 
-  console.log("STATUS:", status);
-  console.log("IS RUNNING", isRunning);
+    if (current === 'running' && prev !== 'running') {
+      toast.loading('Pipeline started — agents are working...', { id: 'pipeline' });
+    } else if (current === 'complete') {
+      toast.success('Pipeline complete — recommendation ready!', { id: 'pipeline' });
+    } else if (current === 'failed') {
+      toast.error('Pipeline failed — please try again.', { id: 'pipeline' });
+    } else if (current === 'cancelled') {
+      toast.info('Pipeline cancelled.', { id: 'pipeline' });
+    }
+  }, [status?.status]);
+
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      prevErrorRef.current = error;
+      toast.error(error, { id: 'pipeline-error' });
+    }
+    if (!error) prevErrorRef.current = null;
+  }, [error]);
+
+  const handleApprove = useCallback(async (decisionId: string, actionItem: string) => {
+    await approveDecision(decisionId);
+    toast.success(`Approved: ${actionItem}`);
+  }, [approveDecision]);
+
+  const handleReject = useCallback(async (decisionId: string, actionItem: string) => {
+    await rejectDecision(decisionId);
+    toast.warning(`Rejected: ${actionItem}`);
+  }, [rejectDecision]);
 
   const ingestedRef = useRef<string | null>(null);
   useEffect(() => {
@@ -208,13 +243,13 @@ export default function AnalysisPage() {
                               {isPending && decision && (
                                 <>
                                   <button
-                                    onClick={() => rejectDecision(decision.id)}
+                                    onClick={() => handleReject(decision.id, action.item)}
                                     className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold hover:bg-red-500/20 transition-all duration-150 font-mono"
                                   >
                                     Reject
                                   </button>
                                   <button
-                                    onClick={() => approveDecision(decision.id)}
+                                    onClick={() => handleApprove(decision.id, action.item)}
                                     className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-bold hover:bg-green-500/20 transition-all duration-150 font-mono"
                                   >
                                     Approve
@@ -252,8 +287,8 @@ export default function AnalysisPage() {
       <DecisionDetailsModal
         decision={selectedDecision}
         onClose={() => setSelectedDecision(null)}
-        onApprove={approveDecision}
-        onReject={rejectDecision}
+        onApprove={(id) => handleApprove(id, selectedDecision?.item ?? 'action')}
+        onReject={(id) => handleReject(id, selectedDecision?.item ?? 'action')}
       />
     </div>
   );
