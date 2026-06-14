@@ -1,46 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { toast } from 'sonner';
+import { usePricingPage } from '@/hooks/usePricingPage';
 import { PRICING_PLANS } from '@/constants/pricing';
 
 export default function PricingPage() {
-  const { data: session } = useSession();
-  const [loading, setLoading] = useState<string | null>(null);
-
-  const handleCheckout = async (planKey: string) => {
-    if (!session) {
-      sessionStorage.setItem('pendingCheckout', planKey);
-      window.location.replace(`/auth/login?checkout=${planKey}`);
-      return;
-    }
-
-    setLoading(planKey);
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey }),
-      });
-      if (res.status === 401) {
-        window.location.replace(`/auth/login?checkout=${planKey}`);
-        return;
-      }
-      const data = await res.json();
-      if (data.url) {
-        window.location.replace(data.url);
-      }
-    } catch {
-      setLoading(null);
-      toast.error('Failed to start checkout. Please try again.');
-    }
-  };
+  const { session, loading, handleCheckout } = usePricingPage();
 
   return (
     <div className="min-h-screen" style={{ background: '#0e0c0a' }}>
-      {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-6 lg:px-10 border-b border-white/[0.06]"
         style={{ background: 'rgba(14, 12, 10, 0.85)', backdropFilter: 'blur(20px)' }}>
         <Link href="/" className="flex items-center gap-3">
@@ -70,9 +38,7 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      {/* Content */}
       <div className="pt-32 pb-24 px-6 lg:px-10 max-w-5xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="h-px w-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.3))' }} />
@@ -90,7 +56,6 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {PRICING_PLANS.map((plan) => (
             <div
@@ -160,7 +125,6 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Footer note */}
         <p className="text-center text-zinc-600 text-xs mt-12">
           All plans include SSL, daily backups, and 99.9% uptime. Need help choosing?{' '}
           <Link href="/" className="text-[#e07850] hover:underline">Talk to us</Link>

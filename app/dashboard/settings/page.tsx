@@ -1,31 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Settings, CreditCard, ExternalLink } from 'lucide-react';
+import { useSettingsPage } from '@/hooks/useSettingsPage';
 import { PricingModal } from '@/components/landing/PricingModal';
 
-const PLAN_LABELS: Record<string, { name: string; color: string }> = {
-  free: { name: 'Starter (Free)', color: 'text-zinc-400' },
-  growth: { name: 'Growth', color: 'text-[#e07850]' },
-  enterprise: { name: 'Enterprise', color: 'text-amber-400' },
-};
-
 export default function SettingsPage() {
-  const [showPricing, setShowPricing] = useState(false);
-  const [plan, setPlan] = useState('free');
-  const [status, setStatus] = useState('active');
-
-  useEffect(() => {
-    fetch('/api/stripe/subscription')
-      .then((r) => r.json())
-      .then((data) => {
-        setPlan(data.subscription?.plan ?? 'free');
-        setStatus(data.subscription?.status ?? 'active');
-      })
-      .catch(() => {});
-  }, []);
-
-  const planInfo = PLAN_LABELS[plan] ?? PLAN_LABELS.free;
+  const { showPricing, setShowPricing, plan, status, planInfo } = useSettingsPage();
 
   return (
     <div className="space-y-8">
@@ -42,7 +22,6 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Subscription */}
       <div className="dash-glass rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -80,7 +59,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Placeholder sections */}
       <div className="dash-glass rounded-2xl p-16 text-center">
         <div className="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mx-auto mb-6">
           <Settings className="w-8 h-8 text-zinc-400" />

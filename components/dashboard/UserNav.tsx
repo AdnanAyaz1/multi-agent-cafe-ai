@@ -1,25 +1,14 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { LogOut, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDropdown } from '@/hooks/useDropdown';
 
 export function UserNav() {
   const { data: session } = useSession();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const { open, setOpen, ref } = useDropdown();
 
   if (!session?.user) return null;
 
@@ -56,7 +45,6 @@ export function UserNav() {
 
       {open && (
         <div className="absolute right-0 mt-2 w-64 py-2 glass-card rounded-2xl shadow-xl shadow-black/30 z-50 overflow-hidden">
-          {/* User info */}
           <div className="px-5 py-4 border-b border-zinc-800">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#e07850] flex items-center justify-center text-sm font-bold text-white">
@@ -84,7 +72,6 @@ export function UserNav() {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="p-2">
             <button
               onClick={async () => {

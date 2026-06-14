@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { NAV_LINKS } from "@/constants/landing";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { NAV_LINKS } from '@/constants/landing';
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -11,15 +11,14 @@ export function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled ? "nav-scrolled" : ""}`}>
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className={`flex items-center justify-between ${scrolled ? "h-16" : "h-20 lg:h-24"} transition-all duration-500`}>
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-105"
@@ -32,7 +31,6 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop nav links - pill container */}
           <div className="hidden md:flex items-center gap-1 rounded-full px-2 py-1.5"
             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.03)" }}>
             {NAV_LINKS.map((link) => (
@@ -47,7 +45,6 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             <Link href="/auth/login" className="text-[13px] px-4 py-2 transition-colors duration-300"
               style={{ color: "rgba(200, 180, 160, 0.6)" }}>
@@ -65,7 +62,6 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
           <button className="md:hidden p-2 cursor-pointer" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
             <div className="w-6 h-5 relative flex flex-col justify-between">
               <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "rotate-45 translate-y-[9px]" : ""}`}
@@ -78,7 +74,6 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Mobile menu */}
         <AnimatePresence>
           {mobileOpen && (
             <motion.div

@@ -1,14 +1,15 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { toast } from 'sonner';
-import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Shield, CheckCircle2 } from 'lucide-react';
-
+import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { CHECKOUT_PLAN_DETAILS } from '@/constants/checkout';
+import { useCheckoutPage } from '@/hooks/useCheckoutPage';
 
 function CheckoutForm({ plan }: { plan: string }) {
   const stripe = useStripe();
@@ -71,49 +72,11 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan');
-  const [clientSecret, setClientSecret] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!plan) {
-      router.replace('/pricing');
-      return;
-    }
-
-    const createPayment = async () => {
-      try {
-        const res = await fetch('/api/stripe/payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan }),
-        });
-
-        if (res.status === 401) {
-          router.replace(`/auth/login?checkout=${plan}`);
-          return;
-        }
-
-        const data = await res.json();
-        if (data.clientSecret) {
-          setClientSecret(data.clientSecret);
-        } else {
-          router.replace('/pricing');
-        }
-      } catch {
-        router.replace('/pricing');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    createPayment();
-  }, [plan, router]);
-
+  const { clientSecret, loading } = useCheckoutPage(plan, router);
   const details = CHECKOUT_PLAN_DETAILS[plan ?? ''];
 
   return (
     <div className="min-h-screen" style={{ background: '#0e0c0a' }}>
-      {/* Top bar */}
       <nav className="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-white/[0.06]"
         style={{ background: 'rgba(14, 12, 10, 0.85)', backdropFilter: 'blur(20px)' }}>
         <Link href="/" className="flex items-center gap-3">
@@ -131,10 +94,8 @@ function CheckoutContent() {
         </button>
       </nav>
 
-      {/* Content */}
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-12">
         <div className="w-full max-w-md">
-          {/* Plan summary */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-white mb-2">Complete your subscription</h1>
             <p className="text-zinc-500 text-sm">
@@ -148,7 +109,6 @@ function CheckoutContent() {
             </p>
           </div>
 
-          {/* Payment card */}
           <div className="rounded-2xl p-6"
             style={{
               background: "linear-gradient(160deg, rgba(22, 20, 18, 0.9), rgba(14, 12, 10, 0.7))",
@@ -178,7 +138,6 @@ function CheckoutContent() {
             )}
           </div>
 
-          {/* Trust badges */}
           <div className="flex items-center justify-center gap-4 mt-6">
             {['256-bit SSL', 'PCI Compliant', 'Cancel anytime'].map((badge) => (
               <div key={badge} className="flex items-center gap-1.5 text-[10px] text-zinc-600">

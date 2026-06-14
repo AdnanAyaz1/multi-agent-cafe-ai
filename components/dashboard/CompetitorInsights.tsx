@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
   Database,
   History,
@@ -10,92 +9,22 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
-import type { CompetitorHistoryItem, CompetitorTableRow } from '@/types/dashboard';
-import { DEFAULT_BUSINESS_ID } from '@/constants/pipeline';
+import { useCompetitorInsights } from '@/hooks/useCompetitorInsights';
 
 export function CompetitorInsights() {
-  const [scraping, setScraping] = useState(false);
-  const [url, setUrl] = useState('');
-  const [history, setHistory] = useState<CompetitorHistoryItem[]>([]);
-  const [tableData, setTableData] = useState<CompetitorTableRow[]>([]);
-  const [stats, setStats] = useState({ itemsTracked: 0, priceDeviations: 0, agentSpeed: '—' });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch(`/api/competitor/${DEFAULT_BUSINESS_ID}?limit=10`);
-        if (res.ok) {
-          const data = await res.json();
-          const snapshots = data.snapshots ?? [];
-
-          // Derive history from snapshots
-          const historyItems: CompetitorHistoryItem[] = snapshots.map((s: { collectedAt: string }) => ({
-            name: data.businessName ?? DEFAULT_BUSINESS_ID,
-            time: new Date(s.collectedAt).toLocaleString(),
-          }));
-          setHistory(historyItems.slice(0, 5));
-
-          // Derive table data from latest snapshot
-          if (snapshots.length > 0) {
-            const latest = snapshots[0];
-            const parsed = latest.data as { items?: Array<{ name: string; price: string; category: string; promo?: string }> };
-            if (parsed?.items) {
-              const rows: CompetitorTableRow[] = parsed.items.map((item) => ({
-                name: item.name,
-                price: item.price,
-                category: item.category,
-                promo: item.promo ?? null,
-                score: Math.floor(Math.random() * 40) + 60,
-              }));
-              setTableData(rows);
-              setStats({
-                itemsTracked: rows.length,
-                priceDeviations: rows.filter((r) => r.promo).length,
-                agentSpeed: '—',
-              });
-            }
-          }
-        }
-      } catch {
-        // Fetch failed
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  const handleScrape = async () => {
-    setScraping(true);
-    try {
-      await fetch('/api/competitor/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessId: DEFAULT_BUSINESS_ID, url: url || undefined }),
-      });
-      // Wait a moment then refetch
-      setTimeout(async () => {
-        const res = await fetch(`/api/competitor/${DEFAULT_BUSINESS_ID}?limit=10`);
-        if (res.ok) {
-          const data = await res.json();
-          const snapshots = data.snapshots ?? [];
-          const historyItems: CompetitorHistoryItem[] = snapshots.map((s: { collectedAt: string }) => ({
-            name: data.businessName ?? DEFAULT_BUSINESS_ID,
-            time: new Date(s.collectedAt).toLocaleString(),
-          }));
-          setHistory(historyItems.slice(0, 5));
-        }
-        setScraping(false);
-      }, 5000);
-    } catch {
-      setScraping(false);
-    }
-  };
+  const {
+    scraping,
+    url,
+    setUrl,
+    history,
+    tableData,
+    stats,
+    loading,
+    handleScrape,
+  } = useCompetitorInsights();
 
   return (
     <div className="space-y-6 pb-10">
-      {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-foreground tracking-tight font-heading">
@@ -116,11 +45,8 @@ export function CompetitorInsights() {
         </div>
       </div>
 
-      {/* Bento Grid */}
       <div className="grid grid-cols-12 gap-5">
-        {/* Left Column - URL Input + History */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-5">
-          {/* URL Input Card */}
           <div className="bg-card p-6 rounded-xl shadow-sm ring-1 ring-foreground/5">
             <h3 className="text-lg font-semibold text-card-foreground mb-4 font-heading">
               New Intelligence Mission
@@ -158,7 +84,6 @@ export function CompetitorInsights() {
             </div>
           </div>
 
-          {/* History Card */}
           <div className="bg-card p-6 rounded-xl shadow-sm ring-1 ring-foreground/5 flex-grow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-card-foreground font-heading">
@@ -193,9 +118,7 @@ export function CompetitorInsights() {
           </div>
         </div>
 
-        {/* Right Column - Data Table */}
         <div className="col-span-12 lg:col-span-8 flex flex-col gap-5">
-          {/* Data Table */}
           <div className="bg-card rounded-xl shadow-sm ring-1 ring-foreground/5 flex-grow overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-semibold text-card-foreground font-heading">
@@ -282,7 +205,6 @@ export function CompetitorInsights() {
         </div>
       </div>
 
-      {/* Footer Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="bg-card/70 backdrop-blur p-6 rounded-xl ring-1 ring-foreground/5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">

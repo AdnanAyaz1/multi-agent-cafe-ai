@@ -25,7 +25,6 @@ export function TestimonialsSection() {
       <div className="section-divider absolute top-0 left-0 w-full" />
 
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -50,7 +49,6 @@ export function TestimonialsSection() {
           </p>
         </motion.div>
 
-        {/* Editorial testimonial card — NOT a generic slider */}
         <div className="relative max-w-4xl mx-auto">
           <div className="glass-card rounded-3xl p-8 lg:p-14 relative overflow-hidden min-h-[380px] flex flex-col justify-center">
             <AnimatePresence mode="wait" custom={direction}>
@@ -62,7 +60,6 @@ export function TestimonialsSection() {
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="relative z-10"
               >
-                {/* Top row: quote mark + metric */}
                 <div className="flex items-start justify-between mb-8">
                   <span className="text-6xl font-extrabold leading-none" style={{ fontFamily: "var(--font-sora)", color: `${t.accent}15` }}>
                     &ldquo;
@@ -78,13 +75,11 @@ export function TestimonialsSection() {
                   </div>
                 </div>
 
-                {/* Quote */}
                 <p className="text-lg lg:text-xl leading-relaxed mb-10 max-w-3xl"
                   style={{ color: "rgba(237, 232, 226, 0.8)" }}>
                   {t.quote}
                 </p>
 
-                {/* Author */}
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold"
                     style={{
@@ -108,7 +103,6 @@ export function TestimonialsSection() {
             </AnimatePresence>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center justify-between mt-8">
             <div className="flex items-center gap-2">
               <button onClick={() => { setDirection(-1); setActive((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length); }}

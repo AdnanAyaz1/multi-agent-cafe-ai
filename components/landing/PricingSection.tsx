@@ -2,41 +2,17 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { toast } from "sonner";
+import { usePricingCheckout } from "@/hooks/usePricingCheckout";
 import { PRICING_PLANS } from "@/constants/pricing";
 
 export function PricingSection() {
-  const [loading, setLoading] = useState<string | null>(null);
+  const { loading, handleCheckout } = usePricingCheckout();
 
-  const handleCheckout = async (planKey: string) => {
-    setLoading(planKey);
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey }),
-      });
-      if (res.status === 401) {
-        sessionStorage.setItem('pendingCheckout', planKey);
-        window.location.replace('/auth/login?checkout=' + planKey);
-        return;
-      }
-      const data = await res.json();
-      if (data.url) {
-        window.location.replace(data.url);
-      }
-    } catch {
-      setLoading(null);
-      toast.error('Failed to start checkout. Please try again.');
-    }
-  };
   return (
     <section id="pricing" className="py-24 lg:py-40 relative">
       <div className="section-divider absolute top-0 left-0 w-full" />
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -61,7 +37,6 @@ export function PricingSection() {
           </p>
         </motion.div>
 
-        {/* Pricing — featured center card, NOT equal 3-col */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 items-start max-w-5xl mx-auto">
           {PRICING_PLANS.map((plan, i) => (
             <motion.div

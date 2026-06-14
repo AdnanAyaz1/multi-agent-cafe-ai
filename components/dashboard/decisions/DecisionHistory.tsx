@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { Clock, History, X, Lightbulb, CheckCircle2, XCircle, Zap } from 'lucide-react';
-import type { DecisionLog, DecisionHistoryProps } from '@/types/decisions';
+import { useDecisionHistory } from '@/hooks/useDecisionHistory';
+import type { DecisionHistoryProps } from '@/types/decisions';
 import { STATUS_ICONS, STATUS_COLORS, ACTION_CONFIG } from '@/constants/decision-config';
 
 export function DecisionHistory({ logs }: DecisionHistoryProps) {
-  const [selectedLog, setSelectedLog] = useState<DecisionLog | null>(null);
+  const { selectedLog, setSelectedLog } = useDecisionHistory();
 
   if (logs.length === 0) {
     return (
@@ -23,11 +23,9 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
   return (
     <>
       <div className="space-y-2">
-        {logs.map((log, i) => {
+        {logs.map((log) => {
           const Icon = STATUS_ICONS[log.status] ?? Clock;
           const color = STATUS_COLORS[log.status] ?? 'text-zinc-400';
-          const actionCfg = ACTION_CONFIG[log.action] ?? ACTION_CONFIG.hold;
-          const ActionIcon = actionCfg.icon;
           return (
             <div
               key={log.id}
@@ -71,7 +69,6 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
         })}
       </div>
 
-      {/* Detail Modal */}
       {selectedLog && (() => {
         const modalActionCfg = ACTION_CONFIG[selectedLog.action] ?? ACTION_CONFIG.hold;
         const ModalActionIcon = modalActionCfg.icon;
@@ -83,7 +80,6 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
             />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div className="glass-card rounded-3xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-                {/* Header */}
                 <div className="p-6 pb-4 border-b border-zinc-800">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -105,9 +101,7 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-5">
-                  {/* AI Recommendation Summary */}
                   {selectedLog.summary && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -120,7 +114,6 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                     </div>
                   )}
 
-                  {/* Action + discount + priority */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800">
                       <span className="text-xs font-semibold text-white capitalize">{selectedLog.action}</span>
@@ -142,7 +135,6 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                     )}
                   </div>
 
-                  {/* Reasoning */}
                   {selectedLog.reason && (
                     <div className="space-y-2">
                       <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">Why this action?</p>
@@ -152,7 +144,6 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                     </div>
                   )}
 
-                  {/* Decision outcome */}
                   <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-900 border border-zinc-800">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       selectedLog.status === 'rejected' ? 'bg-red-500/10 border border-red-500/20' :
@@ -174,7 +165,6 @@ export function DecisionHistory({ logs }: DecisionHistoryProps) {
                   </div>
                 </div>
 
-                {/* Footer */}
                 <div className="p-6 pt-4 border-t border-zinc-800">
                   <button
                     onClick={() => setSelectedLog(null)}

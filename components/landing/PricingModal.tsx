@@ -1,69 +1,22 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { X } from 'lucide-react';
-import { toast } from 'sonner';
+import { usePricingModal } from '@/hooks/usePricingCheckout';
 import { PRICING_PLANS } from '@/constants/pricing';
 import type { PricingModalProps } from '@/types/pricing';
 
 export function PricingModal({ open, onClose }: PricingModalProps) {
-  const { data: session } = useSession();
-  const [loading, setLoading] = useState<string | null>(null);
-
-  const handleEscape = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose();
-  }, [onClose]);
-
-  useEffect(() => {
-    if (open) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
-  }, [open, handleEscape]);
-
-  const handleCheckout = async (planKey: string) => {
-    if (!session) {
-      window.location.replace(`/auth/login?checkout=${planKey}`);
-      return;
-    }
-
-    setLoading(planKey);
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey }),
-      });
-      if (res.status === 401) {
-        window.location.replace(`/auth/login?checkout=${planKey}`);
-        return;
-      }
-      const data = await res.json();
-      if (data.url) {
-        window.location.replace(data.url);
-      }
-    } catch {
-      setLoading(null);
-      toast.error('Failed to start checkout. Please try again.');
-    }
-  };
+  const { loading, handleCheckout } = usePricingModal(open, onClose);
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl"
         style={{
           background: "linear-gradient(160deg, rgba(22, 20, 18, 0.98), rgba(14, 12, 10, 0.95))",
@@ -71,7 +24,6 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
           boxShadow: "0 0 80px -20px rgba(224, 120, 80, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.5)",
         }}
       >
-        {/* Header */}
         <div className="flex items-center justify-between p-6 pb-0">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] font-semibold text-[#e07850] mb-1"
@@ -88,7 +40,6 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
           </button>
         </div>
 
-        {/* Plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
           {PRICING_PLANS.map((plan) => (
             <div
