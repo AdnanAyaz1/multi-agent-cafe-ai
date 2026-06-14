@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import type { MenuItem } from '@/lib/menu/types';
 
 interface ControlledItems {
@@ -48,7 +49,6 @@ export function useMenuItems(businessId: string) {
       const menuItems: MenuItem[] = data.items ?? data ?? [];
       setItems(menuItems);
 
-      // Initialize controlled state for new items (default: true)
       const stored = loadControlledItems(businessId);
       const updated: ControlledItems = {};
       for (const item of menuItems) {
@@ -57,7 +57,9 @@ export function useMenuItems(businessId: string) {
       setControlled(updated);
       saveControlledItems(businessId, updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load menu');
+      const msg = err instanceof Error ? err.message : 'Failed to load menu';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -86,6 +88,7 @@ export function useMenuItems(businessId: string) {
     }
     setControlled(next);
     saveControlledItems(businessId, next);
+    toast.success(value ? 'All items set to AI-controlled' : 'All items released from AI control');
   }, [items, businessId]);
 
   return {

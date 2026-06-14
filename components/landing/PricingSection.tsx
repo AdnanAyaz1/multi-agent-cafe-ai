@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { toast } from "sonner";
 import { PRICING_PLANS } from "@/constants/pricing";
 
 export function PricingSection() {
@@ -27,6 +28,7 @@ export function PricingSection() {
       }
     } catch {
       setLoading(null);
+      toast.error('Failed to start checkout. Please try again.');
     }
   };
   return (

@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { LogOut, Mail } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function UserNav() {
   const { data: session } = useSession();
@@ -87,14 +88,19 @@ export function UserNav() {
           <div className="p-2">
             <button
               onClick={async () => {
-                const csrfRes = await fetch('/api/auth/csrf');
-                const { csrfToken } = await csrfRes.json();
-                await fetch('/api/auth/signout', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body: new URLSearchParams({ csrfToken }),
-                });
-                window.location.href = '/';
+                try {
+                  const csrfRes = await fetch('/api/auth/csrf');
+                  const { csrfToken } = await csrfRes.json();
+                  await fetch('/api/auth/signout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ csrfToken }),
+                  });
+                  toast.success('Signed out successfully');
+                  window.location.href = '/';
+                } catch {
+                  toast.error('Failed to sign out');
+                }
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-400 hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150 group"
             >

@@ -3,20 +3,26 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Store, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 import { MAIN_NAV, BOTTOM_NAV } from '@/constants/navigation';
 
 export function Sidebar() {
   const pathname = usePathname();
 
   const handleLogout = async () => {
-    const csrfRes = await fetch('/api/auth/csrf');
-    const { csrfToken } = await csrfRes.json();
-    await fetch('/api/auth/signout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ csrfToken }),
-    });
-    window.location.href = '/';
+    try {
+      const csrfRes = await fetch('/api/auth/csrf');
+      const { csrfToken } = await csrfRes.json();
+      await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ csrfToken }),
+      });
+      toast.success('Signed out successfully');
+      window.location.href = '/';
+    } catch {
+      toast.error('Failed to sign out');
+    }
   };
 
   return (

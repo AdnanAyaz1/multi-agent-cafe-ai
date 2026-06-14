@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 
 export interface UseLoginFormReturn {
   loading: boolean;
@@ -30,12 +31,15 @@ export function useLoginForm(): UseLoginFormReturn {
         });
         if (result?.error) {
           setError('Invalid email or password. Please try again.');
+          toast.error('Invalid email or password');
         } else {
+          toast.success('Welcome back!');
           router.push(callbackUrl);
           router.refresh();
         }
       } catch {
         setError('Something went wrong. Please try again.');
+        toast.error('Login failed');
       } finally {
         setLoading(false);
       }

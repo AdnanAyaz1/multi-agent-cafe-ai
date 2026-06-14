@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import type { Decision, DecisionAction, DecisionLog } from '@/types/decisions';
 import { logger } from '@/lib/logger';
 
@@ -88,12 +89,15 @@ export function useDecisions(businessId?: string) {
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         log.error('Failed to ingest decisions', undefined, { status: res.status, ...err });
+        toast.error('Failed to save recommendations');
         return;
       }
       setPage(page);
       loadPending();
+      toast.success('Recommendations saved');
     } catch (e) {
       log.error('ingestRecommendation failed', e);
+      toast.error('Failed to save recommendations');
     }
   }, [setPage, loadPending, page]);
 
@@ -106,9 +110,10 @@ export function useDecisions(businessId?: string) {
       });
       setPage(page);
       loadPending();
+      toast.success('Decision approved');
     } catch {
-      // Optimistic update
       setPending((prev) => prev.filter((d) => d.id !== decisionId));
+      toast.error('Failed to approve decision');
     }
   }, [setPage, loadPending, page]);
 
@@ -121,23 +126,30 @@ export function useDecisions(businessId?: string) {
       });
       setPage(page);
       loadPending();
+      toast.success('Decision rejected');
     } catch {
       setPending((prev) => prev.filter((d) => d.id !== decisionId));
+      toast.error('Failed to reject decision');
     }
   }, [setPage, loadPending, page]);
 
   const bulkApprove = useCallback(async (decisionIds: string[]) => {
-    await Promise.all(
-      decisionIds.map((id) =>
-        fetch(`/api/decisions/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'approved' }),
-        })
-      )
-    );
-    setPage(page);
-    loadPending();
+    try {
+      await Promise.all(
+        decisionIds.map((id) =>
+          fetch(`/api/decisions/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved' }),
+          })
+        )
+      );
+      setPage(page);
+      loadPending();
+      toast.success(`${decisionIds.length} decisions approved`);
+    } catch {
+      toast.error('Failed to approve some decisions');
+    }
   }, [setPage, loadPending, page]);
 
   const logs: DecisionLog[] = decisions

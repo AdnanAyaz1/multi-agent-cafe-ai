@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import type { CompetitorData } from '@/lib/types';
 
 export interface RefreshOptions {
@@ -70,6 +71,7 @@ export function useCompetitorSnapshots(businessId: string) {
       });
 
       setPolling(true);
+      toast.loading('Scrape job started — waiting for results...', { id: 'scrape' });
 
       const interval = setInterval(async () => {
         try {
@@ -81,11 +83,13 @@ export function useCompetitorSnapshots(businessId: string) {
             clearInterval(interval);
             setPolling(false);
             setRefreshing(false);
+            toast.success('New competitor data available!', { id: 'scrape' });
           }
         } catch {
           clearInterval(interval);
           setPolling(false);
           setRefreshing(false);
+          toast.error('Failed to fetch updated snapshots', { id: 'scrape' });
         }
       }, 3000);
 
@@ -94,6 +98,7 @@ export function useCompetitorSnapshots(businessId: string) {
       setRefreshing(false);
       setPolling(false);
       setError(err instanceof Error ? err.message : 'Refresh failed');
+      toast.error('Failed to start scrape job');
     }
   }, [businessId, snapshots.length, stopPolling]);
 

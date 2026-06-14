@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { ArrowLeft, Shield, CheckCircle2 } from 'lucide-react';
@@ -32,7 +33,10 @@ function CheckoutForm({ plan }: { plan: string }) {
 
     if (submitError) {
       setError(submitError.message ?? 'Payment failed');
+      toast.error(submitError.message ?? 'Payment failed');
       setLoading(false);
+    } else {
+      toast.success('Payment successful! Redirecting...');
     }
   };
 

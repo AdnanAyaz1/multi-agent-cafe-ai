@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Loader2, Play, Sparkles, Square } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { DEFAULT_BUSINESS_ID } from '@/constants/pipeline';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,29 @@ import { RecommendationView } from './analysis/RecommendationView';
 export default function AnalysisPanel() {
   const [businessId, setBusinessId] = useState(DEFAULT_BUSINESS_ID);
   const { pipelineId, status, loading, error, run, cancel } = useAnalysis();
+  const prevStatusRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!status?.status) return;
+    const prev = prevStatusRef.current;
+    const current = status.status;
+    if (prev === current) return;
+    prevStatusRef.current = current;
+
+    if (current === 'running' && prev !== 'running') {
+      toast.loading('Pipeline started — agents are working...', { id: 'pipeline' });
+    } else if (current === 'complete') {
+      toast.success('Pipeline complete — recommendation ready!', { id: 'pipeline' });
+    } else if (current === 'failed') {
+      toast.error('Pipeline failed — please try again.', { id: 'pipeline' });
+    } else if (current === 'cancelled') {
+      toast.info('Pipeline cancelled.', { id: 'pipeline' });
+    }
+  }, [status?.status]);
+
+  useEffect(() => {
+    if (error) toast.error(error, { id: 'pipeline-error' });
+  }, [error]);
 
   const onRun = () => {
     const trimmed = businessId.trim();

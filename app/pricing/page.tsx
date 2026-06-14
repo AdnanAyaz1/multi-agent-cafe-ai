@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 import { PRICING_PLANS } from '@/constants/pricing';
 
 export default function PricingPage() {
@@ -33,6 +34,7 @@ export default function PricingPage() {
       }
     } catch {
       setLoading(null);
+      toast.error('Failed to start checkout. Please try again.');
     }
   };
 

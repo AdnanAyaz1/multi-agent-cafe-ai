@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { ShieldCheck, History, Clock, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useDecisions } from '@/hooks/useDecisions';
 import { DEFAULT_BUSINESS_ID } from '@/constants/pipeline';
@@ -13,6 +13,18 @@ export default function DecisionsPage() {
   const { pending, decisions, logs, loading, page, totalPages, total, setPage, approveDecision, rejectDecision, bulkApprove } = useDecisions(DEFAULT_BUSINESS_ID);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [tab, setTab] = useState<'pending' | 'history'>('pending');
+
+  const handleApprove = useCallback(async (decisionId: string) => {
+    await approveDecision(decisionId);
+  }, [approveDecision]);
+
+  const handleReject = useCallback(async (decisionId: string) => {
+    await rejectDecision(decisionId);
+  }, [rejectDecision]);
+
+  const handleBulkApprove = useCallback(async () => {
+    await bulkApprove(pending.map((d) => d.id));
+  }, [bulkApprove, pending]);
 
   const historyLogs = useMemo(() =>
     logs.filter((l) => l.status !== 'pending'),
@@ -82,10 +94,10 @@ export default function DecisionsPage() {
       {tab === 'pending' ? (
         <DecisionQueue
           pending={pending}
-          onApprove={approveDecision}
-          onReject={rejectDecision}
+          onApprove={handleApprove}
+          onReject={handleReject}
           onShowDetails={setSelectedDecision}
-          onBulkApprove={() => bulkApprove(pending.map((d) => d.id))}
+          onBulkApprove={handleBulkApprove}
         />
       ) : (
         <div className="space-y-4">
@@ -144,8 +156,8 @@ export default function DecisionsPage() {
       <DecisionDetailsModal
         decision={selectedDecision}
         onClose={() => setSelectedDecision(null)}
-        onApprove={approveDecision}
-        onReject={rejectDecision}
+        onApprove={handleApprove}
+        onReject={handleReject}
       />
     </div>
   );

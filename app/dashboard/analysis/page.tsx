@@ -53,14 +53,12 @@ export default function AnalysisPage() {
     if (!error) prevErrorRef.current = null;
   }, [error]);
 
-  const handleApprove = useCallback(async (decisionId: string, actionItem: string) => {
+  const handleApprove = useCallback(async (decisionId: string, _actionItem?: string) => {
     await approveDecision(decisionId);
-    toast.success(`Approved: ${actionItem}`);
   }, [approveDecision]);
 
-  const handleReject = useCallback(async (decisionId: string, actionItem: string) => {
+  const handleReject = useCallback(async (decisionId: string, _actionItem?: string) => {
     await rejectDecision(decisionId);
-    toast.warning(`Rejected: ${actionItem}`);
   }, [rejectDecision]);
 
   const ingestedRef = useRef<string | null>(null);

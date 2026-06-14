@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 
 type Step = 'account' | 'business' | 'competitors';
 
@@ -93,9 +94,12 @@ export function useRegisterForm(): UseRegisterFormReturn {
 
         if (!response.ok) {
           setError(result.error || 'Registration failed. Please try again.');
+          toast.error(result.error || 'Registration failed');
           setLoading(false);
           return;
         }
+
+        toast.success('Account created! Welcome to CafePromo AI');
 
         const signInResult = await signIn('credentials', {
           email: data.email,

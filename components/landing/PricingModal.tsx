@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { X } from 'lucide-react';
+import { toast } from 'sonner';
 import { PRICING_PLANS } from '@/constants/pricing';
 import type { PricingModalProps } from '@/types/pricing';
 
@@ -48,6 +49,7 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
       }
     } catch {
       setLoading(null);
+      toast.error('Failed to start checkout. Please try again.');
     }
   };
 
