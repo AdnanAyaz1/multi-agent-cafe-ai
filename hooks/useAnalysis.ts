@@ -69,13 +69,12 @@ export function useAnalysis() {
       const data = await res.json();
       setPipelineId(data.pipelineId);
 
-      if (data.status === 'complete') {
-        setStatus({
-          status: 'complete',
-          agentRuns: [],
-        });
-        setLoading(false);
+      setStatus({
+        status: 'running',
+        agentRuns: [],
+      });
 
+      if (data.status === 'complete') {
         const statusRes = await fetch(`/api/analysis/${data.pipelineId}`);
         if (statusRes.ok) {
           const statusData = await statusRes.json();
@@ -84,14 +83,10 @@ export function useAnalysis() {
             agentRuns: statusData.agentRuns ?? [],
             recommendation: statusData.recommendation ?? undefined,
           });
+          setLoading(false);
         }
         return;
       }
-
-      setStatus({
-        status: 'running',
-        agentRuns: [],
-      });
 
       let pollCount = 0;
       const maxPolls = 30;
