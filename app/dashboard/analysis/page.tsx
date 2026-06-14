@@ -24,6 +24,10 @@ export default function AnalysisPage() {
   const isRunning = status?.status === 'running';
   const recommendation = status?.recommendation;
 
+
+  console.log("STATUS:", status);
+  console.log("IS RUNNING", isRunning);
+
   const ingestedRef = useRef<string | null>(null);
   useEffect(() => {
     if (recommendation?.id && recommendation.id !== ingestedRef.current) {
@@ -158,23 +162,21 @@ export default function AnalysisPage() {
                       return (
                         <div
                           key={action.id}
-                          className={`glass-card rounded-2xl p-4 transition-all duration-150 ${
-                            isPending ? 'border-amber-500/20' : ''
-                          }`}
+                          className={`glass-card rounded-2xl p-4 transition-all duration-150 ${isPending ? 'border-amber-500/20' : ''
+                            }`}
                         >
                           <div className="flex items-center gap-4">
                             {/* Number / status icon */}
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                              isAuto ? 'bg-green-500/10 border border-green-500/20' :
-                              isPending ? 'bg-amber-500/10 border border-amber-500/20' :
-                              status === 'approved' ? 'bg-green-500/10 border border-green-500/20' :
-                              status === 'rejected' ? 'bg-red-500/10 border border-red-500/20' :
-                              'bg-zinc-900 border border-zinc-800'
-                            }`}>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isAuto ? 'bg-green-500/10 border border-green-500/20' :
+                                isPending ? 'bg-amber-500/10 border border-amber-500/20' :
+                                  status === 'approved' ? 'bg-green-500/10 border border-green-500/20' :
+                                    status === 'rejected' ? 'bg-red-500/10 border border-red-500/20' :
+                                      'bg-zinc-900 border border-zinc-800'
+                              }`}>
                               {isAuto ? <Zap className="w-4 h-4 text-green-500" /> :
-                               status === 'approved' ? <CheckCircle2 className="w-4 h-4 text-green-500" /> :
-                               status === 'rejected' ? <XCircle className="w-4 h-4 text-red-400" /> :
-                               <span className="text-[9px] font-bold text-amber-500 font-mono">{i + 1}</span>}
+                                status === 'approved' ? <CheckCircle2 className="w-4 h-4 text-green-500" /> :
+                                  status === 'rejected' ? <XCircle className="w-4 h-4 text-red-400" /> :
+                                    <span className="text-[9px] font-bold text-amber-500 font-mono">{i + 1}</span>}
                             </div>
 
                             {/* Content */}
