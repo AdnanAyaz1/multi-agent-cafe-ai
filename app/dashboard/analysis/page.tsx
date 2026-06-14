@@ -3,9 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, Loader2, Lightbulb, ListChecks, Sparkles, ArrowRight, Zap, CheckCircle2, XCircle, TrendingDown } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useDecisions } from '@/hooks/useDecisions';
+import { analysisFormSchema, type AnalysisFormInput } from '@/lib/validators/analysis';
 import { AgentShowcase } from '@/components/dashboard/home/AgentShowcase';
 import { PipelineVisualization } from '@/components/dashboard/home/PipelineVisualization';
 import { RecommendationMarkdown } from '@/components/dashboard/analysis/RecommendationMarkdown';
@@ -13,15 +16,21 @@ import { DecisionDetailsModal } from '@/components/dashboard/decisions/DecisionD
 import type { Decision } from '@/types/decisions';
 
 export default function AnalysisPage() {
-  const [businessId, setBusinessId] = useState('');
   const { status, loading, error, run, cancel } = useAnalysis();
-  const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const prevStatusRef = useRef<string | null>(null);
 
-  const handleRun = () => {
-    if (businessId.trim()) run(businessId.trim());
-  };
+  const form = useForm<AnalysisFormInput>({
+    resolver: zodResolver(analysisFormSchema),
+    defaultValues: { businessId: '' },
+  });
+
+  const businessId = form.watch('businessId');
+  const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
+
+  const handleRun = form.handleSubmit((data) => {
+    run(data.businessId);
+  });
 
   const isRunning = status?.status === 'running';
   const recommendation = status?.recommendation;
@@ -96,24 +105,23 @@ export default function AnalysisPage() {
 
       {/* Search form */}
       <div className="glass-card rounded-2xl p-1.5 max-w-2xl">
-        <div className="flex items-center gap-2">
+        <form onSubmit={handleRun} className="flex items-center gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
               type="text"
-              value={businessId}
-              onChange={(e) => setBusinessId(e.target.value)}
+              {...form.register('businessId')}
               onKeyDown={(e) => e.key === 'Enter' && !isRunning && handleRun()}
               placeholder="Enter business ID (e.g. cafe-001)"
               className="w-full pl-11 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:border-[#e89070]/30 focus:ring-1 focus:ring-[#e89070]/20 transition-all duration-150"
             />
           </div>
           {isRunning ? (
-            <button onClick={cancel} className="px-6 py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/30 transition-all duration-150 flex items-center gap-2">
+            <button type="button" onClick={cancel} className="px-6 py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/30 transition-all duration-150 flex items-center gap-2">
               Stop Pipeline
             </button>
           ) : (
-            <button onClick={handleRun} disabled={loading || !businessId.trim()} className="px-6 py-3 rounded-xl bg-[#e07850] text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2">
+            <button type="submit" disabled={loading || !businessId.trim()} className="px-6 py-3 rounded-xl bg-[#e07850] text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all duration-150 flex items-center gap-2">
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
@@ -122,7 +130,7 @@ export default function AnalysisPage() {
               Run Pipeline
             </button>
           )}
-        </div>
+        </form>
         <AnimatePresence>
           {error && (
             <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="px-4 pb-2 text-sm text-red-400">
