@@ -9,77 +9,15 @@ import type {
 } from '@/lib/agents/types';
 import { PIPELINE_AGENT_COUNT } from '@/lib/agents/types';
 import { logger } from '@/lib/logger';
+import type {
+  AgentRunSummary,
+  RecommendationSummary,
+  PipelineStatusResponse,
+  RawAgentRun,
+  RawRecommendation,
+} from '@/types/analysis';
 
 const log = logger.child('api:analysis/status');
-
-interface AgentRunSummary {
-  id: string;
-  agentName: AgentName;
-  status: string;
-  durationMs: number | null;
-  tokenCount: number | null;
-  startedAt: string | null;
-  completedAt: string | null;
-  error: string | null;
-  output: unknown;
-}
-
-interface RecommendationSummary {
-  id: string;
-  summary: string;
-  reasoning: string;
-  confidence: string;
-  category: string;
-  priority: number;
-  status: string;
-  createdAt: string;
-  actions: Array<{
-    id: string;
-    actionType: string;
-    item: string;
-    details: unknown;
-  }>;
-  criticNotes: unknown;
-}
-
-interface PipelineStatusResponse {
-  pipelineId: string;
-  status: PipelineStatus;
-  startedAt: string | null;
-  completedAt: string | null;
-  agentRuns: AgentRunSummary[];
-  recommendation: RecommendationSummary | null;
-}
-
-interface RawAgentRun {
-  id: string;
-  agentName: string;
-  status: string;
-  durationMs: number | null;
-  tokenCount: number | null;
-  startedAt: Date | null;
-  completedAt: Date | null;
-  error: string | null;
-  output: unknown;
-}
-
-interface RawRecommendation {
-  id: string;
-  summary: string;
-  reasoning: string;
-  confidence: string;
-  category: string;
-  priority: number;
-  status: string;
-  date: Date;
-  criticNotes: unknown;
-  actions: Array<{
-    id: string;
-    actionType: string;
-    item: string;
-    details: unknown;
-  }>;
-}
 
 export async function GET(
   _request: NextRequest,

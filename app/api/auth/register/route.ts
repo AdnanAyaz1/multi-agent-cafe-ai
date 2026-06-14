@@ -3,7 +3,10 @@ import bcrypt from "bcryptjs";
 import { promises as fs } from "fs";
 import path from "path";
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { DEFAULT_MENU_ITEMS } from "@/lib/menu/defaults";
+
+const log = logger.child('api:auth/register');
 
 const MENUS_DIR =
   process.env.MENU_JSON_DIR ?? path.join(process.cwd(), "data", "menus");
@@ -94,7 +97,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    log.error('Registration failed', error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -1,14 +1,9 @@
 'use client';
 
-import { Cloud, Zap, TrendingUp } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 import { getGreeting } from '@/utils/greeting';
 import type { WelcomeBannerProps } from '@/types/dashboard-home';
-
-const STATS = [
-  { icon: Zap, label: 'Pipeline runs today', value: '3', color: 'text-amber-500' },
-  { icon: TrendingUp, label: 'Revenue impact', value: '+12%', color: 'text-green-500' },
-  { icon: Cloud, label: 'Weather alerts', value: '1', color: 'text-[#e07850]' },
-];
+import { STATS } from '@/constants/dashboard-home';
 
 export function WelcomeBanner({ weather }: WelcomeBannerProps) {
   return (

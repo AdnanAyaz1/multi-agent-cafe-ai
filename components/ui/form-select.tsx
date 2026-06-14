@@ -1,10 +1,6 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
-
-interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  error?: boolean;
-  options: { value: string; label: string }[];
-}
+import type { FormSelectProps } from '@/types/ui';
 
 export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
   ({ className, error, options, ...props }, ref) => {

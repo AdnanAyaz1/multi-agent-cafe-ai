@@ -1,12 +1,6 @@
-import type { LucideIcon } from 'lucide-react';
 import { AGENT_DISPLAY, AGENT_DISPLAY_ORDER, type AgentRole } from '@/constants/agents';
 import { AGENT_ICONS } from '../agent-icons';
-
-export interface AgentTimelineMeta {
-  label: string;
-  description: string;
-  Icon: LucideIcon;
-}
+import type { AgentTimelineMeta } from '@/types/dashboard';
 
 export const AGENT_TIMELINE_META: Record<AgentRole, AgentTimelineMeta> =
   buildAgentTimelineMeta();

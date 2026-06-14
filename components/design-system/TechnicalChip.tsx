@@ -1,11 +1,5 @@
-import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-
-interface TechnicalChipProps {
-  children: ReactNode;
-  className?: string;
-  variant?: "default" | "outline";
-}
+import type { TechnicalChipProps } from '@/types/design-system';
 
 export function TechnicalChip({
   children,

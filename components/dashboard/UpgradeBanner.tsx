@@ -2,11 +2,7 @@
 
 import Link from 'next/link';
 import { Lock, Zap } from 'lucide-react';
-
-interface UpgradeBannerProps {
-  feature: string;
-  requiredPlan?: 'growth' | 'enterprise';
-}
+import type { UpgradeBannerProps } from '@/types/ui';
 
 export function UpgradeBanner({ feature, requiredPlan = 'growth' }: UpgradeBannerProps) {
   return (

@@ -23,7 +23,7 @@ function getPrisma(): PrismaClient {
 export const prisma = new Proxy({} as PrismaClient, {
   get(_, prop) {
     const target = getPrisma();
-    const value = (target as any)[prop];
+    const value = (target as unknown as Record<string | symbol, unknown>)[prop];
     if (typeof value === 'function') {
       return value.bind(target);
     }

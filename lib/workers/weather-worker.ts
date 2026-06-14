@@ -2,6 +2,9 @@ import { Worker, Job } from 'bullmq';
 import { prisma } from '@/lib/db';
 import { fetchWeather } from '@/lib/services/weather/client';
 import { redisConnection } from '@/lib/queues/connection';
+import { logger } from '@/lib/logger';
+
+const log = logger.child('weather-worker');
 
 interface WeatherJobData {
   businessId: string;
@@ -46,11 +49,11 @@ function createWorker(): Worker<WeatherJobData> {
   );
 
   worker.on('completed', (job) => {
-    console.log(`[weather-worker] job ${job.id} completed for ${job.data.city}`);
+    log.info(`job ${job.id} completed`, { city: job.data.city });
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[weather-worker] job ${job?.id} failed:`, err.message);
+    log.error(`job ${job?.id} failed`, err);
   });
 
   return worker;

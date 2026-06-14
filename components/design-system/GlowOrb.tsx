@@ -1,16 +1,5 @@
 import { cn } from "@/lib/utils";
-
-interface GlowOrbProps {
-  color?: "primary" | "secondary" | "tertiary";
-  size?: "sm" | "md" | "lg";
-  className?: string;
-  position?: {
-    top?: string;
-    bottom?: string;
-    left?: string;
-    right?: string;
-  };
-}
+import type { GlowOrbProps } from '@/types/design-system';
 
 export function GlowOrb({
   color = "primary",

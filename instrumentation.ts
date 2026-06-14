@@ -1,3 +1,7 @@
+import { logger } from '@/lib/logger';
+
+const log = logger.child('boot');
+
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME === 'nodejs' && !process.env.VERCEL) {
     await import('@/lib/workers/weather-worker');
@@ -5,6 +9,6 @@ export async function register(): Promise<void> {
     await import('@/lib/workers/competitor-worker');
     const { startScheduler } = await import('@/lib/scheduler');
     startScheduler();
-    console.log('[boot] workers and scheduler initialized');
+    log.info('workers and scheduler initialized');
   }
 }

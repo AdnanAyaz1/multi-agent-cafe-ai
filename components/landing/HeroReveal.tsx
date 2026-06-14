@@ -1,13 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ReactNode } from "react";
-
-interface HeroRevealProps {
-  children: ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-}
+import type { HeroRevealProps } from '@/types/landing';
 
 export function HeroTitle({ children, className, style }: HeroRevealProps) {
   return (

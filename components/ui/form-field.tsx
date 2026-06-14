@@ -1,13 +1,5 @@
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
-
-interface FormFieldProps {
-  label?: string;
-  error?: string;
-  children: ReactNode;
-  className?: string;
-  mono?: boolean;
-}
+import type { FormFieldProps } from '@/types/ui';
 
 export function FormField({ label, error, children, className, mono = true }: FormFieldProps) {
   return (

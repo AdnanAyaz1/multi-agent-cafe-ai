@@ -2,12 +2,7 @@
 
 import { Brain, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { AGENT_DISPLAY_ORDER, AGENT_CONFIG } from '@/constants/agents';
-
-interface PipelineStep {
-  label: string;
-  status: 'complete' | 'active' | 'pending' | 'failed';
-  description?: string;
-}
+import type { PipelineStep } from '@/types/dashboard-home';
 
 function StepIcon({ status }: { status: PipelineStep['status'] }) {
   if (status === 'complete') return <div className="w-7 h-7 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-green-500" /></div>;

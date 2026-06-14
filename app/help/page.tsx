@@ -2,29 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft, HelpCircle, Mail, MessageSquare, BookOpen } from 'lucide-react';
-
-const FAQS = [
-  {
-    q: 'What is CafePromo AI?',
-    a: 'An AI-powered business intelligence platform for cafes. It analyzes weather, sales, competitors, and menus to give you daily recommendations on what to promote and discount.',
-  },
-  {
-    q: 'How does the agent pipeline work?',
-    a: 'Five specialized AI agents run in sequence: weather analysis, sales analysis, competitor monitoring, menu optimization, and a synthesizer that produces actionable recommendations.',
-  },
-  {
-    q: 'How do I connect my data?',
-    a: 'Go to Settings to configure your business profile. Weather data is pulled automatically via Open-Meteo. Sales and competitor data can be imported through the API.',
-  },
-  {
-    q: 'Can I change or cancel my plan?',
-    a: 'Yes. Go to Settings > Subscription to manage your plan. You can upgrade, downgrade, or cancel at any time. Changes take effect immediately.',
-  },
-  {
-    q: 'Is my data secure?',
-    a: 'All data is encrypted in transit (TLS) and at rest. We use Neon Postgres with SSL. Stripe handles payment processing — we never store card details.',
-  },
-];
+import { HELP_FAQS } from '@/constants/faqs';
 
 export default function HelpPage() {
   return (
@@ -84,7 +62,7 @@ export default function HelpPage() {
             <HelpCircle className="w-5 h-5 text-[#e07850]" />
             Frequently Asked Questions
           </h2>
-          {FAQS.map((faq) => (
+          {HELP_FAQS.map((faq) => (
             <details
               key={faq.q}
               className="dash-glass rounded-2xl overflow-hidden group"

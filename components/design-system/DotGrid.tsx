@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
-
-interface DotGridProps {
-  className?: string;
-  fixed?: boolean;
-}
+import type { DotGridProps } from '@/types/design-system';
 
 export function DotGrid({ className, fixed = true }: DotGridProps) {
   return (

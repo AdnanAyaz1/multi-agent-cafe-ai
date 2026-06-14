@@ -2,16 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useInView } from "framer-motion";
-
-interface CountingNumberProps {
-  target: number;
-  duration?: number;
-  delay?: number;
-  prefix?: string;
-  suffix?: string;
-  decimals?: number;
-  className?: string;
-}
+import type { CountingNumberProps } from '@/types/landing';
 
 export function CountingNumber({
   target,

@@ -2,19 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LANDING_FAQS } from "@/constants/faqs";
 
-const faqs = [
-  { q: "How long does setup take?", a: "Most cafes are fully set up in under 5 minutes. Add your menu, paste your competitor URLs, and you're done. The AI learns your business patterns within 24 hours and delivers your first actionable briefing the next morning." },
-  { q: "Does it work with my POS system?", a: "CafePromo AI doesn't need direct POS integration to work. You enter your menu items manually (or paste a photo of your menu and we'll digitize it). We're building direct integrations with Square, Toast, and Clover." },
-  { q: "How accurate are the AI recommendations?", a: "Our 5-agent system cross-references weather forecasts, competitor pricing, your sales history, and local events. In beta, 78% of recommendations were adopted by cafe owners and resulted in measurable revenue lift." },
-  { q: "What's included in the free plan?", a: "The free plan is permanent — no credit card, no time limit. You get 3 AI analyses per day, 1 competitor tracked, and basic weather insights. The Growth plan ($49/mo) unlocks unlimited analyses, 10 competitors, and priority support." },
-  { q: "Can I cancel anytime?", a: "Yes. No contracts, no cancellation fees. Downgrade or cancel from your dashboard in one click. Your data stays available for 30 days after cancellation if you change your mind." },
-  { q: "What happens to my data?", a: "Your menu, pricing, and competitor data are encrypted at rest and in transit. We never sell your data. You can export everything or request full deletion at any time." },
-  { q: "Do I need technical knowledge?", a: "Not at all. If you can type your menu items and paste a URL, you can use CafePromo AI. The dashboard is designed for cafe owners, not engineers. Daily briefings are written in plain English with clear action items." },
-  { q: "Can I use it for multiple locations?", a: "Not yet, but multi-location support is on our roadmap for Q3 2026. Each location will get its own AI agent set with cross-location insights." },
-];
-
-function FAQItem({ faq, index }: { faq: (typeof faqs)[number]; index: number }) {
+function FAQItem({ faq, index }: { faq: (typeof LANDING_FAQS)[number]; index: number }) {
   const [open, setOpen] = useState(false);
   return (
     <motion.div
@@ -95,7 +85,7 @@ export function FAQSection() {
           </p>
         </motion.div>
         <div className="space-y-1">
-          {faqs.map((faq, i) => <FAQItem key={faq.q} faq={faq} index={i} />)}
+          {LANDING_FAQS.map((faq, i) => <FAQItem key={faq.q} faq={faq} index={i} />)}
         </div>
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }} className="text-center mt-12">

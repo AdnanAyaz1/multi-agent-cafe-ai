@@ -7,10 +7,7 @@ import { loginSchema, type LoginInput } from '@/lib/validators/auth';
 import { useLoginForm } from '@/hooks/useLoginForm';
 import { FormField } from '@/components/ui/form-field';
 import { FormInput } from '@/components/ui/form-input';
-
-interface LoginFormProps {
-  callbackUrl?: string;
-}
+import type { LoginFormProps } from '@/types/auth';
 
 export function LoginForm({ callbackUrl = '/dashboard' }: LoginFormProps) {
   const { loading, error, login, clearError } = useLoginForm();

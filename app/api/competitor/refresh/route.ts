@@ -6,11 +6,7 @@ import { competitorRefreshRequestSchema } from '@/lib/validators/competitor';
 import { parseBody } from '@/lib/validators';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
-
-interface EnqueueResult {
-  jobId: string | undefined;
-  url: string;
-}
+import type { EnqueueResult } from '@/types/competitor';
 
 function extractCompetitorUrls(config: unknown): string[] {
   if (!config || typeof config !== 'object') return [];

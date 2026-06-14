@@ -18,6 +18,11 @@ interface FormattedError {
   body: ErrorResponseBody;
 }
 
+interface MongoDuplicateKeyError extends Error {
+  code: number;
+  keyValue: Record<string, unknown>;
+}
+
 const formatResponse = (
   responseType: ResponseType,
   status: number,
@@ -63,8 +68,8 @@ const handleError = (
 
   if (error instanceof Error) {
     const message = error.message || 'An unexpected error occurred';
-    let status = 500;
-    let code = 'INTERNAL_ERROR';
+    const status = 500;
+    const code = 'INTERNAL_ERROR';
 
     if (error.name === 'CastError') {
       const id = error.message.split(' ')[6]?.replace(/[^a-zA-Z0-9]/g, '') ?? '';
@@ -76,8 +81,8 @@ const handleError = (
       );
     }
 
-    if ((error as any).code === 11000) {
-      const duplicateKey = Object.keys((error as any).keyValue).join(', ');
+    if ((error as MongoDuplicateKeyError).code === 11000) {
+      const duplicateKey = Object.keys((error as MongoDuplicateKeyError).keyValue).join(', ');
       return formatResponse(
         responseType,
         409,

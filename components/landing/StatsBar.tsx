@@ -2,13 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CountingNumber } from "./CountingNumber";
-
-const stats = [
-  { value: 5, suffix: "", label: "AI Agents" },
-  { value: 24, suffix: "/7", label: "Analysis" },
-  { value: 3, suffix: "", label: "Data Sources" },
-  { value: 10, suffix: "x", label: "Faster Decisions" },
-];
+import { STATS } from "@/constants/landing";
 
 export function StatsBar() {
   return (
@@ -18,7 +12,7 @@ export function StatsBar() {
       transition={{ duration: 0.6, delay: 1, ease: [0.22, 1, 0.36, 1] }}
       className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 w-full"
     >
-      {stats.map((stat, index) => (
+      {STATS.map((stat, index) => (
         <motion.div
           key={stat.label}
           initial={{ opacity: 0, y: 15 }}

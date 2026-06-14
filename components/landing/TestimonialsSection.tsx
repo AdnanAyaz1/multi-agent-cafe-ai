@@ -2,54 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const testimonials = [
-  {
-    quote: "We increased daily revenue by 23% in the first month. The AI picks up on things we never would have noticed — like promoting cold brew on humid afternoons.",
-    author: "Sarah Chen",
-    role: "Owner, Brew & Bean",
-    location: "Portland, OR",
-    metric: "+23%",
-    metricLabel: "revenue",
-    accent: "#e07850",
-  },
-  {
-    quote: "The competitor tracking alone is worth it. We get alerts when nearby cafes change prices, and the AI suggests counter-moves instantly. It's like having a strategist on staff 24/7.",
-    author: "Marcus Rodriguez",
-    role: "Manager, Sunrise Cafe",
-    location: "Austin, TX",
-    metric: "12",
-    metricLabel: "competitors tracked",
-    accent: "#c8a070",
-  },
-  {
-    quote: "I used to spend 2 hours every morning deciding what to promote. Now the AI does it in seconds and it's usually right. My mornings are freed up for what matters.",
-    author: "Priya Patel",
-    role: "Owner, Chai Corner",
-    location: "Chicago, IL",
-    metric: "2hrs",
-    metricLabel: "saved daily",
-    accent: "#e07850",
-  },
-  {
-    quote: "The weather analysis is scarily accurate. It predicted a cold front 3 days out and pre-adjusted our menu. We sold 40% more hot drinks that week.",
-    author: "James O'Connor",
-    role: "Owner, The Warm Cup",
-    location: "Seattle, WA",
-    metric: "+40%",
-    metricLabel: "hot drink sales",
-    accent: "#c8a070",
-  },
-  {
-    quote: "We went from guessing to knowing. Every pricing decision now has data behind it. Our margins improved by 8 points in the first quarter.",
-    author: "Aisha Williams",
-    role: "Manager, Maven Coffee",
-    location: "Denver, CO",
-    metric: "+8pts",
-    metricLabel: "margin gain",
-    accent: "#e07850",
-  },
-];
+import { TESTIMONIALS } from "@/constants/testimonials";
 
 export function TestimonialsSection() {
   const [active, setActive] = useState(0);
@@ -57,7 +10,7 @@ export function TestimonialsSection() {
 
   const next = useCallback(() => {
     setDirection(1);
-    setActive((prev) => (prev + 1) % testimonials.length);
+    setActive((prev) => (prev + 1) % TESTIMONIALS.length);
   }, []);
 
   useEffect(() => {
@@ -65,7 +18,7 @@ export function TestimonialsSection() {
     return () => clearInterval(timer);
   }, [next]);
 
-  const t = testimonials[active];
+  const t = TESTIMONIALS[active];
 
   return (
     <section className="py-24 lg:py-40 overflow-hidden relative">
@@ -158,13 +111,13 @@ export function TestimonialsSection() {
           {/* Controls */}
           <div className="flex items-center justify-between mt-8">
             <div className="flex items-center gap-2">
-              <button onClick={() => { setDirection(-1); setActive((prev) => (prev - 1 + testimonials.length) % testimonials.length); }}
+              <button onClick={() => { setDirection(-1); setActive((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length); }}
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer"
                 style={{ border: "1px solid rgba(224, 120, 80, 0.08)", color: "rgba(138, 132, 124, 0.4)" }}
                 aria-label="Previous testimonial">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
               </button>
-              <button onClick={() => { setDirection(1); setActive((prev) => (prev + 1) % testimonials.length); }}
+              <button onClick={() => { setDirection(1); setActive((prev) => (prev + 1) % TESTIMONIALS.length); }}
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer"
                 style={{ border: "1px solid rgba(224, 120, 80, 0.08)", color: "rgba(138, 132, 124, 0.4)" }}
                 aria-label="Next testimonial">
@@ -173,7 +126,7 @@ export function TestimonialsSection() {
             </div>
 
             <div className="flex items-center gap-1.5">
-              {testimonials.map((_, i) => (
+              {TESTIMONIALS.map((_, i) => (
                 <button key={i} onClick={() => { setDirection(i > active ? 1 : -1); setActive(i); }}
                   className="h-1 rounded-full transition-all duration-500 cursor-pointer relative"
                   style={{
@@ -188,7 +141,7 @@ export function TestimonialsSection() {
 
             <span className="text-[10px] tabular-nums"
               style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.7)" }}>
-              {String(active + 1).padStart(2, "0")} / {String(testimonials.length).padStart(2, "0")}
+              {String(active + 1).padStart(2, "0")} / {String(TESTIMONIALS.length).padStart(2, "0")}
             </span>
           </div>
         </div>

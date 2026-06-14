@@ -1,10 +1,7 @@
 'use client';
 
 import { LoginForm } from './LoginForm';
-
-interface LoginSearchParamsProps {
-  checkoutPlan?: string;
-}
+import type { LoginSearchParamsProps } from '@/types/auth';
 
 export function LoginSearchParams({ checkoutPlan }: LoginSearchParamsProps) {
   const callbackUrl = checkoutPlan ? `/checkout?plan=${checkoutPlan}` : '/dashboard';

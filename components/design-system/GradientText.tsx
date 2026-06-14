@@ -1,11 +1,5 @@
-import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-
-interface GradientTextProps {
-  children: ReactNode;
-  className?: string;
-  as?: "span" | "h1" | "h2" | "h3" | "h4" | "p";
-}
+import type { GradientTextProps } from '@/types/design-system';
 
 export function GradientText({
   children,

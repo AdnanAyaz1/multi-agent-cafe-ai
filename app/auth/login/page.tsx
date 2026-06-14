@@ -1,10 +1,7 @@
 import { Suspense } from 'react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { LoginSearchParams } from '@/components/auth/LoginSearchParams';
-
-interface LoginPageProps {
-  searchParams: Promise<{ checkout?: string }>;
-}
+import type { LoginPageProps } from '@/types/auth';
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
