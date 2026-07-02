@@ -1,8 +1,5 @@
-"use client";
-
 import { FEATURES } from "@/constants/landing";
 import { FEATURE_ICONS } from "@/constants/icons";
-import { motion } from "framer-motion";
 
 export function FeaturesSection() {
   return (
@@ -11,13 +8,7 @@ export function FeaturesSection() {
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-20 lg:mb-28"
-        >
+        <div className="reveal mb-20 lg:mb-28">
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px w-10" style={{ background: "linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.3))" }} />
             <p className="text-[10px] uppercase tracking-[0.3em] font-semibold"
@@ -33,40 +24,21 @@ export function FeaturesSection() {
             style={{ color: "rgba(184, 176, 168, 0.9)" }}>
             Three powerful modules working together to give your cafe an unfair advantage.
           </p>
-        </motion.div>
+        </div>
 
         {/* Asymmetric bento grid */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
           {/* Large feature — spans 3 cols */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, filter: "blur(4px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-3 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
+          <div
+            className="reveal-scale lg:col-span-3 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default transition-all duration-500 hover:border-[rgba(224,120,80,0.12)]"
             style={{
               background: "linear-gradient(160deg, rgba(30, 27, 24, 0.95), rgba(20, 18, 16, 0.9))",
               border: "1px solid rgba(224, 120, 80, 0.15)",
-              backdropFilter: "blur(20px)",
             }}
           >
             {/* Hover glow orb */}
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-all duration-1000 pointer-events-none"
               style={{ background: "rgba(224, 120, 80, 0.06)" }} />
-            {/* Hover border glow */}
-            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-              style={{
-                background: "linear-gradient(135deg, rgba(224, 120, 80, 0.08), transparent 40%, transparent 60%, rgba(200, 160, 112, 0.04))",
-                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                maskComposite: "exclude",
-                WebkitMaskComposite: "xor",
-                padding: "1px",
-              }}
-            />
-            {/* Shimmer sweep */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.03), transparent)" }} />
 
             <div className="relative z-10">
               <div className="flex items-start gap-6">
@@ -82,35 +54,18 @@ export function FeaturesSection() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Smaller feature — spans 2 cols, offset down */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, filter: "blur(4px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden lg:mt-12 cursor-default"
+          <div
+            className="reveal-scale lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden lg:mt-12 cursor-default transition-all duration-500 hover:border-[rgba(200,160,112,0.12)]"
             style={{
               background: "linear-gradient(160deg, rgba(30, 27, 24, 0.95), rgba(20, 18, 16, 0.9))",
               border: "1px solid rgba(200, 160, 112, 0.15)",
-              backdropFilter: "blur(20px)",
             }}
           >
             <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-all duration-1000 pointer-events-none"
               style={{ background: "rgba(200, 160, 112, 0.06)" }} />
-            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-              style={{
-                background: "linear-gradient(135deg, rgba(200, 160, 112, 0.08), transparent 40%, transparent 60%, rgba(224, 120, 80, 0.04))",
-                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                maskComposite: "exclude",
-                WebkitMaskComposite: "xor",
-                padding: "1px",
-              }}
-            />
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(200, 160, 112, 0.03), transparent)" }} />
 
             <div className="relative z-10">
               <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(200,160,112,0.25)] transition-all duration-500"
@@ -122,35 +77,18 @@ export function FeaturesSection() {
               <p className="leading-relaxed text-sm"
                 style={{ color: "rgba(184, 176, 168, 0.85)" }}>{FEATURES[1].description}</p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Third feature — spans 2 cols */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, filter: "blur(4px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
+          <div
+            className="reveal-scale lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default transition-all duration-500 hover:border-[rgba(224,120,80,0.12)]"
             style={{
               background: "linear-gradient(160deg, rgba(30, 27, 24, 0.95), rgba(20, 18, 16, 0.9))",
               border: "1px solid rgba(224, 120, 80, 0.15)",
-              backdropFilter: "blur(20px)",
             }}
           >
             <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-all duration-1000 pointer-events-none"
               style={{ background: "rgba(224, 120, 80, 0.05)" }} />
-            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-              style={{
-                background: "linear-gradient(135deg, rgba(224, 120, 80, 0.08), transparent 40%, transparent 60%, rgba(200, 160, 112, 0.04))",
-                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                maskComposite: "exclude",
-                WebkitMaskComposite: "xor",
-                padding: "1px",
-              }}
-            />
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.03), transparent)" }} />
 
             <div className="relative z-10">
               <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(224,120,80,0.25)] transition-all duration-500"
@@ -162,22 +100,16 @@ export function FeaturesSection() {
               <p className="leading-relaxed text-sm"
                 style={{ color: "rgba(184, 176, 168, 0.85)" }}>{FEATURES[2].description}</p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Bottom banner — full width */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
+          <div
+            className="reveal lg:col-span-5 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default transition-all duration-500 hover:border-[rgba(224,120,80,0.1)]"
             style={{
               background: "linear-gradient(135deg, rgba(224, 120, 80, 0.1), rgba(200, 160, 112, 0.06))",
               border: "1px solid rgba(224, 120, 80, 0.12)",
             }}
           >
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(224, 120, 80, 0.02), transparent)" }} />
             <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
                 <p className="text-sm font-semibold mb-1" style={{ color: "#e07850", fontFamily: "var(--font-sora)" }}>
@@ -196,7 +128,7 @@ export function FeaturesSection() {
                 </svg>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

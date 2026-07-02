@@ -1,8 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useInView } from "framer-motion";
-import type { CountingNumberProps } from '@/types/landing';
+
+interface CountingNumberProps {
+  target: number;
+  duration?: number;
+  delay?: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  className?: string;
+}
 
 export function CountingNumber({
   target,
@@ -15,35 +23,46 @@ export function CountingNumber({
 }: CountingNumberProps) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
   const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (!isInView || hasAnimated.current) return;
-    hasAnimated.current = true;
+    const el = ref.current;
+    if (!el) return;
 
-    const startTime = performance.now();
-    const delayMs = delay * 1000;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
 
-    const timer = setTimeout(() => {
-      const animate = (currentTime: number) => {
-        const elapsed = (currentTime - startTime - delayMs) / 1000;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const current = eased * target;
+          const startTime = performance.now();
+          const delayMs = delay * 1000;
 
-        setCount(current);
+          const timer = setTimeout(() => {
+            const animate = (currentTime: number) => {
+              const elapsed = (currentTime - startTime - delayMs) / 1000;
+              const progress = Math.min(elapsed / duration, 1);
+              const eased = 1 - Math.pow(1 - progress, 3);
+              const current = eased * target;
 
-        if (progress < 1) {
-          requestAnimationFrame(animate);
+              setCount(current);
+
+              if (progress < 1) {
+                requestAnimationFrame(animate);
+              }
+            };
+
+            requestAnimationFrame(animate);
+          }, delayMs);
+
+          return () => clearTimeout(timer);
         }
-      };
+      },
+      { threshold: 0.3, rootMargin: "-50px 0px" }
+    );
 
-      requestAnimationFrame(animate);
-    }, delayMs);
-
-    return () => clearTimeout(timer);
-  }, [isInView, target, duration, delay]);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration, delay]);
 
   const formatted = decimals > 0
     ? count.toFixed(decimals)

@@ -10,27 +10,30 @@ import { CTASection } from "./CTASection";
 import { FAQSection } from "./FAQSection";
 import { Footer } from "./Footer";
 import { SplashScreen } from "./SplashScreen";
+import { ScrollRevealProvider } from "./ScrollRevealProvider";
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <SplashScreen />
-      <ParticleBackground />
+    <ScrollRevealProvider>
+      <div className="min-h-screen relative overflow-hidden">
+        <SplashScreen />
+        <ParticleBackground />
 
-      <Navbar />
+        <Navbar />
 
-      <main>
-        <HeroSection />
-        <StatsSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <TestimonialsSection />
-        <PricingSection />
-        <FAQSection />
-        <CTASection />
-      </main>
+        <main>
+          <HeroSection />
+          <StatsSection />
+          <FeaturesSection />
+          <HowItWorksSection />
+          <TestimonialsSection />
+          <PricingSection />
+          <FAQSection />
+          <CTASection />
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </ScrollRevealProvider>
   );
 }
