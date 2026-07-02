@@ -3,20 +3,15 @@
 import { Clock } from 'lucide-react';
 import { AGENT_DISPLAY_ORDER } from '@/constants/agents';
 import { type PipelineRunStatus } from '@/constants/pipeline';
-import type { PipelineAgentRun } from '@/hooks/useAnalysis';
 import { PipelineStatusBadge } from '../PipelineStatusBadge';
 import { AgentTimelineConnector } from './AgentTimelineConnector';
 import { AGENT_TIMELINE_META } from './agent-timeline-meta';
 import { cn } from '@/lib/utils';
 import type { AgentTimelineProps } from '@/types/dashboard';
+import { groupRunsByAgent } from '@/lib/pipeline-utils';
 
 export function AgentTimeline({ runs }: AgentTimelineProps) {
-  const byAgent = new Map<string, PipelineAgentRun[]>();
-  for (const run of runs) {
-    const list = byAgent.get(run.agentName) ?? [];
-    list.push(run);
-    byAgent.set(run.agentName, list);
-  }
+  const { byAgent } = groupRunsByAgent(runs);
 
   return (
     <div className="space-y-3">

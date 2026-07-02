@@ -1,9 +1,6 @@
 import { IMPACT_MESSAGES } from '@/utils/weather';
 import { IMPACT_ACTIONS } from '@/constants/weather-display';
-
-interface WeatherImpactSidebarProps {
-  impact: 'low' | 'medium' | 'high';
-}
+import type { WeatherImpactSidebarProps } from '@/types/component-props';
 
 export function WeatherImpactSidebar({ impact }: WeatherImpactSidebarProps) {
   return (

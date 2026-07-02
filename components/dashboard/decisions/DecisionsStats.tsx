@@ -1,10 +1,5 @@
 import { ShieldCheck, History, Clock } from 'lucide-react';
-
-interface DecisionsStatsProps {
-  pendingCount: number;
-  decidedCount: number;
-  total: number;
-}
+import type { DecisionsStatsProps } from '@/types/component-props';
 
 export function DecisionsStats({ pendingCount, decidedCount, total }: DecisionsStatsProps) {
   return (

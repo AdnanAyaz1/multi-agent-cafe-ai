@@ -1,9 +1,5 @@
 import { ConditionIcon } from './ConditionIcon';
-import type { WeatherData } from '@/lib/types';
-
-interface WeatherHeroProps {
-  weather: WeatherData;
-}
+import type { WeatherHeroProps } from '@/types/component-props';
 
 export function WeatherHero({ weather }: WeatherHeroProps) {
   return (

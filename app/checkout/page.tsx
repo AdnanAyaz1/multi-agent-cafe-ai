@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Shield, CheckCircle2 } from 'lucide-react';
 import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { CHECKOUT_PLAN_DETAILS } from '@/constants/checkout';
+import { CHECKOUT_BADGES } from '@/constants/icons';
 import { useCheckoutPage } from '@/hooks/useCheckoutPage';
 
 function CheckoutForm({ plan }: { plan: string }) {
@@ -139,7 +140,7 @@ function CheckoutContent() {
           </div>
 
           <div className="flex items-center justify-center gap-4 mt-6">
-            {['256-bit SSL', 'PCI Compliant', 'Cancel anytime'].map((badge) => (
+            {CHECKOUT_BADGES.map((badge) => (
               <div key={badge} className="flex items-center gap-1.5 text-[10px] text-zinc-600">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>{badge}</span>

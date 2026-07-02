@@ -1,15 +1,14 @@
 'use client';
 
-import { Coffee, IceCreamBowl, Sandwich, CakeSlice, Sparkles, Bot, BotOff, Eye, EyeOff } from 'lucide-react';
+import { Coffee, Sparkles, Bot, BotOff, Eye, EyeOff } from 'lucide-react';
 import { CATEGORY_CONFIG, TAG_COLORS } from '@/constants/menu-display';
+import { MENU_CATEGORY_ICON_MAP } from '@/constants/icons';
 import { Toggle } from '@/components/ui/Toggle';
 import type { MenuItemCardProps } from '@/types/dashboard-home';
 
-const ICON_MAP: Record<string, typeof Coffee> = { Coffee, IceCreamBowl, Sandwich, CakeSlice };
-
-export function MenuItemCard({ item, isControlled, isUnavailable, onToggleControlled, onToggleUnavailable, index }: MenuItemCardProps) {
+export function MenuItemCard({ item, isControlled, isUnavailable, onToggleControlled, onToggleUnavailable }: MenuItemCardProps) {
   const cat = CATEGORY_CONFIG[item.category];
-  const CatIcon = ICON_MAP[cat.icon] ?? Coffee;
+  const CatIcon = MENU_CATEGORY_ICON_MAP[cat.icon] ?? Coffee;
   const isSignature = item.tags?.includes('signature');
 
   return (

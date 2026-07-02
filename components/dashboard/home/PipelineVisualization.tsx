@@ -1,25 +1,13 @@
 'use client';
 
 import { CheckCircle2, Loader2, AlertCircle, Clock, ChevronRight } from 'lucide-react';
-import type { PipelineAgentRun } from '@/hooks/useAnalysis';
 import { AGENT_DISPLAY_ORDER, AGENT_CONFIG } from '@/constants/agents';
 import { AGENT_COLORS, AGENT_BG } from '@/constants/agent-config';
 import type { PipelineVisualizationProps } from '@/types/dashboard-home';
+import { groupRunsByAgent, computeAgentStepStatus } from '@/lib/pipeline-utils';
 
 export function PipelineVisualization({ runs, isRunning }: PipelineVisualizationProps) {
-  const byAgent = new Map<string, PipelineAgentRun[]>();
-  for (const run of runs) {
-    const list = byAgent.get(run.agentName) ?? [];
-    list.push(run);
-    byAgent.set(run.agentName, list);
-  }
-
-  const completedCount = AGENT_DISPLAY_ORDER.filter((role) => {
-    const agentRuns = byAgent.get(role) ?? [];
-    return agentRuns.length > 0 && agentRuns.every((r) => r.status === 'complete');
-  }).length;
-
-  const progress = (completedCount / AGENT_DISPLAY_ORDER.length) * 100;
+  const { byAgent, completedCount, progress } = groupRunsByAgent(runs);
 
   return (
     <div className="glass-card rounded-xl overflow-hidden">
@@ -68,20 +56,8 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
             const agentRuns = byAgent.get(role) ?? [];
             const config = AGENT_CONFIG[role];
             const color = AGENT_COLORS[role];
-            const isComplete = agentRuns.length > 0 && agentRuns.every((r) => r.status === 'complete');
-            const isAgentRunning = agentRuns.some((r) => r.status === 'running');
-            const isFailed = agentRuns.some((r) => r.status === 'failed');
+            const status = computeAgentStepStatus(role, byAgent, isRunning, i);
             const hasRun = agentRuns.length > 0;
-
-            const isFirstPending = isRunning && !hasRun && !AGENT_DISPLAY_ORDER.slice(0, i).some((prevRole) => {
-              const prevRuns = byAgent.get(prevRole) ?? [];
-              return prevRuns.length === 0 || prevRuns.some((r) => r.status === 'running' || r.status === 'pending');
-            }) && AGENT_DISPLAY_ORDER.slice(0, i).every((prevRole) => {
-              const prevRuns = byAgent.get(prevRole) ?? [];
-              return prevRuns.length > 0 && prevRuns.every((r) => r.status === 'complete');
-            });
-
-            const status = isComplete ? 'complete' : isAgentRunning || isFirstPending ? 'active' : isFailed ? 'failed' : 'pending';
 
             const totalTokens = agentRuns.reduce((sum, r) => sum + (r.tokenCount ?? 0), 0);
             const totalDuration = agentRuns.reduce((sum, r) => sum + (r.durationMs ?? 0), 0);

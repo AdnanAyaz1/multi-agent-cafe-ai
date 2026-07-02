@@ -1,16 +1,7 @@
 'use client';
 
 import { ListChecks, ArrowRight, Zap, CheckCircle2, XCircle, TrendingDown } from 'lucide-react';
-import type { PipelineRecommendation } from '@/hooks/useAnalysis';
-import type { Decision } from '@/types/decisions';
-
-interface RecommendationActionsProps {
-  recommendation: PipelineRecommendation;
-  getDecisionForAction: (actionId: string) => Decision | undefined;
-  onSelectDecision: (decision: Decision | null) => void;
-  onApprove: (decisionId: string, actionItem?: string) => void;
-  onReject: (decisionId: string, actionItem?: string) => void;
-}
+import type { RecommendationActionsProps } from '@/types/component-props';
 
 export function RecommendationActions({
   recommendation,

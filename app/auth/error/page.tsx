@@ -3,24 +3,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-
-const errors: Record<string, string> = {
-  Configuration: "There is a problem with the server configuration.",
-  AccessDenied: "You do not have permission to sign in.",
-  Verification: "The verification link may have expired or already been used.",
-  OAuthSignin: "Error starting the OAuth sign-in flow.",
-  OAuthCallback: "Error handling the OAuth sign-in callback.",
-  OAuthCreateAccount: "Could not create an OAuth account.",
-  EmailCreateAccount: "Could not create an email account.",
-  Callback: "Error in the OAuth callback handler.",
-  OAuthAccountNotLinked: "This email is already associated with another account.",
-  Default: "An unexpected error occurred.",
-};
+import { AUTH_ERROR_MESSAGES } from "@/constants/icons";
 
 function AuthErrorContent() {
   const searchParams = useSearchParams();
   const errorType = searchParams.get("error") || "Default";
-  const errorMessage = errors[errorType] || errors.Default;
+  const errorMessage = AUTH_ERROR_MESSAGES[errorType] || AUTH_ERROR_MESSAGES.Default;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0e0c0a] relative overflow-hidden">

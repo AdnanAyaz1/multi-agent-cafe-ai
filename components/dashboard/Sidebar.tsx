@@ -3,27 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Store, LogOut } from 'lucide-react';
-import { toast } from 'sonner';
 import { MAIN_NAV, BOTTOM_NAV } from '@/constants/navigation';
+import { signOut } from '@/lib/auth-utils';
 
 export function Sidebar() {
   const pathname = usePathname();
-
-  const handleLogout = async () => {
-    try {
-      const csrfRes = await fetch('/api/auth/csrf');
-      const { csrfToken } = await csrfRes.json();
-      await fetch('/api/auth/signout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ csrfToken }),
-      });
-      toast.success('Signed out successfully');
-      window.location.href = '/';
-    } catch {
-      toast.error('Failed to sign out');
-    }
-  };
 
   return (
     <aside
@@ -96,7 +80,7 @@ export function Sidebar() {
           );
         })}
         <button
-          onClick={handleLogout}
+          onClick={() => signOut()}
           className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-150 w-full text-left text-zinc-400 hover:bg-red-500/10 hover:text-red-400 group"
         >
           <LogOut className="w-[18px] h-[18px] group-hover:text-red-400" />

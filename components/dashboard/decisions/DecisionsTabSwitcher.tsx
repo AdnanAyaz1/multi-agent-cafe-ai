@@ -1,10 +1,5 @@
 import { Clock, History } from 'lucide-react';
-
-interface DecisionsTabSwitcherProps {
-  activeTab: 'pending' | 'history';
-  onTabChange: (tab: 'pending' | 'history') => void;
-  pendingCount: number;
-}
+import type { DecisionsTabSwitcherProps } from '@/types/component-props';
 
 export function DecisionsTabSwitcher({ activeTab, onTabChange, pendingCount }: DecisionsTabSwitcherProps) {
   return (

@@ -36,7 +36,7 @@ export function StatsSection() {
                       <CountingNumber target={stat.value} suffix={stat.suffix} duration={2} delay={0.2 + i * 0.15} />
                     </div>
                     <div className="text-[9px] uppercase tracking-[0.25em] mt-1"
-                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.6)" }}>
+                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(184, 176, 168, 0.8)" }}>
                       {stat.label}
                     </div>
                   </div>

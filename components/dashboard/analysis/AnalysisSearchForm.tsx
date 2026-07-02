@@ -2,17 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, Loader2, Sparkles } from 'lucide-react';
-import type { UseFormReturn } from 'react-hook-form';
-import type { AnalysisFormInput } from '@/lib/validators/analysis';
-
-interface AnalysisSearchFormProps {
-  form: UseFormReturn<AnalysisFormInput>;
-  isRunning: boolean;
-  loading: boolean;
-  error: string | null;
-  onSubmit: () => void;
-  onCancel: () => void;
-}
+import type { AnalysisSearchFormProps } from '@/types/component-props';
 
 export function AnalysisSearchForm({
   form,

@@ -39,7 +39,7 @@ dev.err.log
 dev.out.log
 
 # content folder
-content/
+context/
 
 # env files: ignore real ones, keep .env.example (template) tracked
 .env
@@ -54,3 +54,4 @@ content/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+

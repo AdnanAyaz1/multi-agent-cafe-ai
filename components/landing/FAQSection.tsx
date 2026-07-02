@@ -16,12 +16,12 @@ function FAQItem({ faq, index }: { faq: (typeof LANDING_FAQS)[number]; index: nu
       <button onClick={() => setOpen(!open)} className="w-full text-left group cursor-pointer" aria-expanded={open}>
         <div className="flex items-start gap-4 py-5 px-6 rounded-2xl transition-all duration-400"
           style={{
-            background: open ? "rgba(224, 120, 80, 0.03)" : "transparent",
-            border: `1px solid ${open ? "rgba(224, 120, 80, 0.06)" : "transparent"}`,
+            background: open ? "rgba(224, 120, 80, 0.06)" : "transparent",
+            border: `1px solid ${open ? "rgba(224, 120, 80, 0.12)" : "transparent"}`,
           }}>
           <div className="mt-0.5 flex-shrink-0">
             <div className="w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-300"
-                style={{ background: open ? "rgba(224, 120, 80, 0.1)" : "rgba(255,255,255,0.04)" }}>
+                style={{ background: open ? "rgba(224, 120, 80, 0.15)" : "rgba(255,255,255,0.06)" }}>
               <svg className={`w-3.5 h-3.5 transition-all duration-300 ${open ? "rotate-45" : ""}`}
                 fill="none" viewBox="0 0 24 24" stroke="currentColor"
                 style={{ color: open ? "#e07850" : "rgba(138, 132, 124, 0.35)" }}>
@@ -43,7 +43,7 @@ function FAQItem({ faq, index }: { faq: (typeof LANDING_FAQS)[number]; index: nu
                   transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   className="overflow-hidden"
                 >
-                  <p className="text-sm leading-relaxed mt-3 pr-4" style={{ color: "rgba(160, 152, 144, 0.6)" }}>
+                  <p className="text-sm leading-relaxed mt-3 pr-4" style={{ color: "rgba(184, 176, 168, 0.8)" }}>
                     {faq.a}
                   </p>
                 </motion.div>
@@ -80,7 +80,7 @@ export function FAQSection() {
             Common <span className="gradient-text">questions</span>
           </h2>
           <p className="text-lg max-w-xl leading-relaxed"
-            style={{ color: "rgba(160, 152, 144, 0.7)" }}>
+            style={{ color: "rgba(184, 176, 168, 0.9)" }}>
             Everything you need to know before getting started.
           </p>
         </motion.div>
@@ -89,7 +89,7 @@ export function FAQSection() {
         </div>
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }} className="text-center mt-12">
-          <p className="text-sm" style={{ color: "rgba(160, 152, 144, 0.7)" }}>
+          <p className="text-sm" style={{ color: "rgba(184, 176, 168, 0.9)" }}>
             Still have questions?{" "}
             <a href="mailto:support@cafepromo.ai" className="font-medium transition-colors duration-300"
               style={{ color: "#e07850" }}>Contact us</a>

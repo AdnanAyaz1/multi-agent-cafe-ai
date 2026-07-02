@@ -1,11 +1,6 @@
 import { MENU_CATEGORIES } from '@/constants/menu';
 import { CATEGORY_CONFIG } from '@/constants/menu-display';
-import type { MenuCategory } from '@/constants/menu';
-
-interface MenuHeaderProps {
-  loading: boolean;
-  onRefresh: () => void;
-}
+import type { MenuHeaderProps, MenuStatsProps, MenuSearchBarProps, MenuCategoryTabsProps } from '@/types/component-props';
 
 export function MenuHeader({ loading, onRefresh }: MenuHeaderProps) {
   return (
@@ -30,12 +25,6 @@ export function MenuHeader({ loading, onRefresh }: MenuHeaderProps) {
   );
 }
 
-interface MenuStatsProps {
-  totalItems: number;
-  controlledCount: number;
-  unavailableCount: number;
-}
-
 export function MenuStats({ totalItems, controlledCount, unavailableCount }: MenuStatsProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -52,13 +41,6 @@ export function MenuStats({ totalItems, controlledCount, unavailableCount }: Men
       ))}
     </div>
   );
-}
-
-interface MenuSearchBarProps {
-  search: string;
-  onSearchChange: (value: string) => void;
-  onControlAll: () => void;
-  onReleaseAll: () => void;
 }
 
 export function MenuSearchBar({ search, onSearchChange, onControlAll, onReleaseAll }: MenuSearchBarProps) {
@@ -83,13 +65,6 @@ export function MenuSearchBar({ search, onSearchChange, onControlAll, onReleaseA
       </div>
     </div>
   );
-}
-
-interface MenuCategoryTabsProps {
-  activeCategory: MenuCategory | 'all';
-  onCategoryChange: (category: MenuCategory | 'all') => void;
-  itemCounts: Record<string, number>;
-  totalItems: number;
 }
 
 export function MenuCategoryTabs({ activeCategory, onCategoryChange, itemCounts, totalItems }: MenuCategoryTabsProps) {

@@ -1,11 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-interface DecisionsPaginationProps {
-  page: number;
-  totalPages: number;
-  total: number;
-  onPageChange: (page: number) => void;
-}
+import type { DecisionsPaginationProps } from '@/types/component-props';
 
 export function DecisionsPagination({ page, totalPages, total, onPageChange }: DecisionsPaginationProps) {
   if (totalPages <= 1) return null;

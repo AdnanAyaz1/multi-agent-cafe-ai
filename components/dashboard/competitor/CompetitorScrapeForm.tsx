@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Globe, Loader2, RotateCw, Send } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { COMPETITOR_FORM_DEFAULTS, COMPETITOR_URL_OVERRIDE_PLACEHOLDER } from '@/constants/competitor';
-import type { RefreshOptions } from '@/hooks/useCompetitorSnapshots';
+import { competitorRefreshRequestSchema } from '@/lib/validators/competitor';
 import type { CompetitorScrapeFormProps } from '@/types/dashboard';
+
+type CompetitorScrapeFormInput = { url?: string };
 
 export function CompetitorScrapeForm({
   businessId,
@@ -14,12 +17,14 @@ export function CompetitorScrapeForm({
   busy,
   onSubmit,
 }: CompetitorScrapeFormProps) {
-  const [url, setUrl] = useState<string>('');
+  const form = useForm<CompetitorScrapeFormInput>({
+    resolver: zodResolver(competitorRefreshRequestSchema.partial()),
+    defaultValues: { url: '' },
+  });
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = (data: CompetitorScrapeFormInput) => {
     onSubmit({
-      ...(url.trim() ? { url: url.trim() } : {}),
+      ...(data.url?.trim() ? { url: data.url.trim() } : {}),
       timeoutMs: COMPETITOR_FORM_DEFAULTS.timeoutMs,
       maxTextLength: COMPETITOR_FORM_DEFAULTS.maxTextLength,
     });
@@ -27,7 +32,7 @@ export function CompetitorScrapeForm({
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={form.handleSubmit(handleSubmit)}
       className="space-y-3 rounded-lg border border-border bg-muted/30 p-4"
     >
       <div className="flex flex-col gap-1.5">
@@ -44,11 +49,9 @@ export function CompetitorScrapeForm({
           />
           <Input
             id="competitor-url"
-            name="url"
             type="url"
             inputMode="url"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
+            {...form.register('url')}
             placeholder={COMPETITOR_URL_OVERRIDE_PLACEHOLDER}
             className="pl-9"
             disabled={busy}
@@ -66,7 +69,7 @@ export function CompetitorScrapeForm({
           {busy ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              {url.trim() ? 'Scraping…' : 'Enqueueing all URLs…'}
+              {form.watch('url')?.trim() ? 'Scraping…' : 'Enqueueing all URLs…'}
             </>
           ) : (
             <>

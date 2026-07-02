@@ -3,21 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { HOW_IT_WORKS_STEPS } from "@/constants/steps";
-
-const STEP_ICONS = [
-  <svg key="store" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.015A3.001 3.001 0 0021 9.349" />
-  </svg>,
-  <svg key="beaker" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5" />
-  </svg>,
-  <svg key="bulb" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-  </svg>,
-  <svg key="check" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>,
-];
+import { HOW_IT_WORKS_STEP_ICONS } from "@/constants/icons";
 
 export function HowItWorksSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -53,7 +39,7 @@ export function HowItWorksSection() {
             From sign-up to daily briefings
           </h2>
           <p className="text-lg max-w-xl leading-relaxed"
-            style={{ color: "rgba(160, 152, 144, 0.7)" }}>
+            style={{ color: "rgba(184, 176, 168, 0.9)" }}>
             Four simple steps to AI-powered cafe management.
           </p>
         </motion.div>
@@ -62,7 +48,7 @@ export function HowItWorksSection() {
         <div ref={containerRef} className="relative max-w-5xl">
           {/* Animated vertical line */}
           <div className="hidden lg:block absolute left-[60px] top-0 bottom-0 w-px"
-            style={{ background: "rgba(224, 120, 80, 0.06)" }}>
+            style={{ background: "rgba(224, 120, 80, 0.12)" }}>
             <motion.div
               className="w-full origin-top"
               style={{
@@ -92,15 +78,15 @@ export function HowItWorksSection() {
                   {/* Number box */}
                   <div className="w-[120px] h-[120px] rounded-2xl flex flex-col items-center justify-center gap-2 transition-all duration-500 group-hover:scale-105 relative"
                     style={{
-                      background: `linear-gradient(135deg, ${step.accent}08, ${step.accent}03)`,
-                      border: `1px solid ${step.accent}12`,
+                      background: `linear-gradient(135deg, ${step.accent}14, ${step.accent}06)`,
+                      border: `1px solid ${step.accent}22`,
                     }}
                   >
                     <span className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-sora)", color: `${step.accent}40` }}>
                       {step.number}
                     </span>
                     <div style={{ color: `${step.accent}60` }}>
-                      {STEP_ICONS[i]}
+                      {HOW_IT_WORKS_STEP_ICONS[i]}
                     </div>
 
                     {/* Pulse ring */}
@@ -115,8 +101,8 @@ export function HowItWorksSection() {
                 <div className="flex-1 pt-2">
                   <div className="rounded-2xl p-6 lg:p-8 transition-all duration-500 group-hover:translate-x-1"
                     style={{
-                      background: "linear-gradient(160deg, rgba(20, 18, 16, 0.6), rgba(14, 12, 10, 0.3))",
-                      border: "1px solid rgba(255, 255, 255, 0.03)",
+                      background: "linear-gradient(160deg, rgba(30, 27, 24, 0.8), rgba(20, 18, 16, 0.5))",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
                     }}
                   >
                     {/* Shimmer on hover */}
@@ -132,7 +118,7 @@ export function HowItWorksSection() {
                       {step.title}
                     </h3>
                     <p className="text-sm lg:text-[15px] leading-relaxed max-w-lg"
-                      style={{ color: "rgba(160, 152, 144, 0.65)" }}>
+                      style={{ color: "rgba(184, 176, 168, 0.85)" }}>
                       {step.description}
                     </p>
 

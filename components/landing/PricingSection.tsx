@@ -32,7 +32,7 @@ export function PricingSection() {
             Simple, transparent <span className="gradient-text">pricing</span>
           </h2>
           <p className="text-lg max-w-xl leading-relaxed"
-            style={{ color: "rgba(160, 152, 144, 0.7)" }}>
+            style={{ color: "rgba(184, 176, 168, 0.9)" }}>
             Start free. Upgrade when you&apos;re ready to scale.
           </p>
         </motion.div>
@@ -55,10 +55,11 @@ export function PricingSection() {
               )}
 
               <div className={`rounded-3xl p-8 lg:p-10 relative overflow-hidden transition-all duration-500 ${
-                plan.popular ? "animated-border" : "glass-card"
+                plan.popular ? "" : "glass-card"
               }`}
                 style={plan.popular ? {
-                  background: "linear-gradient(160deg, rgba(224, 120, 80, 0.06), rgba(20, 18, 16, 0.9))",
+                  background: "linear-gradient(160deg, rgba(224, 120, 80, 0.1), rgba(30, 27, 24, 0.95))",
+                  border: "1px solid rgba(224, 120, 80, 0.2)",
                 } : undefined}>
 
                 {plan.popular && (
@@ -70,14 +71,14 @@ export function PricingSection() {
                   <h3 className="text-xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-sora)" }}>
                     {plan.name}
                   </h3>
-                  <p className="text-sm mb-8" style={{ color: "rgba(160, 152, 144, 0.75)" }}>{plan.description}</p>
+                  <p className="text-sm mb-8" style={{ color: "rgba(184, 176, 168, 0.95)" }}>{plan.description}</p>
 
                   <div className="flex items-baseline gap-1 mb-10">
-                    <span className="text-sm" style={{ color: "rgba(160, 152, 144, 0.7)" }}>$</span>
+                    <span className="text-sm" style={{ color: "rgba(184, 176, 168, 0.9)" }}>$</span>
                     <span className="text-6xl font-extrabold text-white tracking-tight" style={{ fontFamily: "var(--font-sora)" }}>
                       {plan.price}
                     </span>
-                    <span className="text-sm ml-1" style={{ color: "rgba(160, 152, 144, 0.7)" }}>{plan.period}</span>
+                    <span className="text-sm ml-1" style={{ color: "rgba(184, 176, 168, 0.9)" }}>{plan.period}</span>
                   </div>
 
                   {plan.href ? (
@@ -87,7 +88,7 @@ export function PricingSection() {
                       }`}
                       style={plan.popular
                         ? { background: "linear-gradient(135deg, #e07850, #c86040)" }
-                        : { border: "1px solid rgba(224, 120, 80, 0.08)", background: "rgba(255,255,255,0.02)", color: "rgba(200, 180, 160, 0.7)" }
+                        : { border: "1px solid rgba(224, 120, 80, 0.15)", background: "rgba(255,255,255,0.04)", color: "rgba(200, 180, 160, 0.9)" }
                       }>
                       {plan.cta}
                     </Link>
@@ -100,7 +101,7 @@ export function PricingSection() {
                       }`}
                       style={plan.popular
                         ? { background: "linear-gradient(135deg, #e07850, #c86040)" }
-                        : { border: "1px solid rgba(224, 120, 80, 0.08)", background: "rgba(255,255,255,0.02)", color: "rgba(200, 180, 160, 0.7)" }
+                        : { border: "1px solid rgba(224, 120, 80, 0.15)", background: "rgba(255,255,255,0.04)", color: "rgba(200, 180, 160, 0.9)" }
                       }>
                       {loading === plan.planKey ? 'Redirecting...' : plan.cta}
                     </button>
@@ -110,13 +111,13 @@ export function PricingSection() {
                     {plan.features.map((feature) => (
                       <div key={feature} className="flex items-center gap-3">
                         <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ background: plan.popular ? "rgba(224, 120, 80, 0.12)" : "rgba(224, 120, 80, 0.05)" }}>
+                          style={{ background: plan.popular ? "rgba(224, 120, 80, 0.15)" : "rgba(224, 120, 80, 0.08)" }}>
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             strokeWidth={2.5} style={{ color: plan.popular ? "#e07850" : "rgba(224, 120, 80, 0.5)" }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
-                        <span className="text-sm" style={{ color: "rgba(200, 180, 160, 0.6)" }}>{feature}</span>
+                        <span className="text-sm" style={{ color: "rgba(200, 180, 160, 0.8)" }}>{feature}</span>
                       </div>
                     ))}
                   </div>

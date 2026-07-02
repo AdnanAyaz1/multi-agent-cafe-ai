@@ -1,26 +1,8 @@
 "use client";
 
 import { FEATURES } from "@/constants/landing";
+import { FEATURE_ICONS } from "@/constants/icons";
 import { motion } from "framer-motion";
-
-const iconMap = {
-  weather: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-    </svg>
-  ),
-  competitor: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ),
-  agents: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
-    </svg>
-  ),
-} as const;
 
 export function FeaturesSection() {
   return (
@@ -48,7 +30,7 @@ export function FeaturesSection() {
             Everything you need to <span className="gradient-text">stay ahead</span>
           </h2>
           <p className="text-lg max-w-xl leading-relaxed"
-            style={{ color: "rgba(160, 152, 144, 0.7)" }}>
+            style={{ color: "rgba(184, 176, 168, 0.9)" }}>
             Three powerful modules working together to give your cafe an unfair advantage.
           </p>
         </motion.div>
@@ -63,8 +45,8 @@ export function FeaturesSection() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-3 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
             style={{
-              background: "linear-gradient(160deg, rgba(20, 18, 16, 0.8), rgba(14, 12, 10, 0.6))",
-              border: "1px solid rgba(224, 120, 80, 0.06)",
+              background: "linear-gradient(160deg, rgba(30, 27, 24, 0.95), rgba(20, 18, 16, 0.9))",
+              border: "1px solid rgba(224, 120, 80, 0.15)",
               backdropFilter: "blur(20px)",
             }}
           >
@@ -90,13 +72,13 @@ export function FeaturesSection() {
               <div className="flex items-start gap-6">
                 <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(224,120,80,0.25)] transition-all duration-500"
                   style={{ background: "rgba(224, 120, 80, 0.08)", border: "1px solid rgba(224, 120, 80, 0.12)", color: "#e07850" }}>
-                  {iconMap.weather}
+                  {FEATURE_ICONS.weather}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl lg:text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-[#f5dcc8] transition-colors duration-500"
                     style={{ fontFamily: "var(--font-sora)" }}>{FEATURES[0].title}</h3>
                   <p className="leading-relaxed text-sm lg:text-[15px]"
-                    style={{ color: "rgba(160, 152, 144, 0.65)" }}>{FEATURES[0].description}</p>
+                    style={{ color: "rgba(184, 176, 168, 0.85)" }}>{FEATURES[0].description}</p>
                 </div>
               </div>
             </div>
@@ -110,8 +92,8 @@ export function FeaturesSection() {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden lg:mt-12 cursor-default"
             style={{
-              background: "linear-gradient(160deg, rgba(20, 18, 16, 0.8), rgba(14, 12, 10, 0.6))",
-              border: "1px solid rgba(200, 160, 112, 0.06)",
+              background: "linear-gradient(160deg, rgba(30, 27, 24, 0.95), rgba(20, 18, 16, 0.9))",
+              border: "1px solid rgba(200, 160, 112, 0.15)",
               backdropFilter: "blur(20px)",
             }}
           >
@@ -133,12 +115,12 @@ export function FeaturesSection() {
             <div className="relative z-10">
               <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(200,160,112,0.25)] transition-all duration-500"
                 style={{ background: "rgba(200, 160, 112, 0.08)", border: "1px solid rgba(200, 160, 112, 0.12)", color: "#c8a070" }}>
-                {iconMap.competitor}
+                {FEATURE_ICONS.competitor}
               </div>
               <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-[#f5dcc8] transition-colors duration-500"
                 style={{ fontFamily: "var(--font-sora)" }}>{FEATURES[1].title}</h3>
               <p className="leading-relaxed text-sm"
-                style={{ color: "rgba(160, 152, 144, 0.65)" }}>{FEATURES[1].description}</p>
+                style={{ color: "rgba(184, 176, 168, 0.85)" }}>{FEATURES[1].description}</p>
             </div>
           </motion.div>
 
@@ -150,8 +132,8 @@ export function FeaturesSection() {
             transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-2 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
             style={{
-              background: "linear-gradient(160deg, rgba(20, 18, 16, 0.8), rgba(14, 12, 10, 0.6))",
-              border: "1px solid rgba(224, 120, 80, 0.06)",
+              background: "linear-gradient(160deg, rgba(30, 27, 24, 0.95), rgba(20, 18, 16, 0.9))",
+              border: "1px solid rgba(224, 120, 80, 0.15)",
               backdropFilter: "blur(20px)",
             }}
           >
@@ -173,12 +155,12 @@ export function FeaturesSection() {
             <div className="relative z-10">
               <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(224,120,80,0.25)] transition-all duration-500"
                 style={{ background: "rgba(224, 120, 80, 0.08)", border: "1px solid rgba(224, 120, 80, 0.12)", color: "#e07850" }}>
-                {iconMap.agents}
+                {FEATURE_ICONS.agents}
               </div>
               <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-[#f5dcc8] transition-colors duration-500"
                 style={{ fontFamily: "var(--font-sora)" }}>{FEATURES[2].title}</h3>
               <p className="leading-relaxed text-sm"
-                style={{ color: "rgba(160, 152, 144, 0.65)" }}>{FEATURES[2].description}</p>
+                style={{ color: "rgba(184, 176, 168, 0.85)" }}>{FEATURES[2].description}</p>
             </div>
           </motion.div>
 
@@ -190,8 +172,8 @@ export function FeaturesSection() {
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-5 rounded-3xl p-8 lg:p-10 group relative overflow-hidden cursor-default"
             style={{
-              background: "linear-gradient(135deg, rgba(224, 120, 80, 0.06), rgba(200, 160, 112, 0.03))",
-              border: "1px solid rgba(224, 120, 80, 0.06)",
+              background: "linear-gradient(135deg, rgba(224, 120, 80, 0.1), rgba(200, 160, 112, 0.06))",
+              border: "1px solid rgba(224, 120, 80, 0.12)",
             }}
           >
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1.2s] ease-in-out pointer-events-none"
@@ -201,7 +183,7 @@ export function FeaturesSection() {
                 <p className="text-sm font-semibold mb-1" style={{ color: "#e07850", fontFamily: "var(--font-sora)" }}>
                   All three work together
                 </p>
-                <p className="text-sm" style={{ color: "rgba(160, 152, 144, 0.6)" }}>
+                <p className="text-sm" style={{ color: "rgba(184, 176, 168, 0.8)" }}>
                   Weather triggers pricing. Competitors inform strategy. AI agents execute the plan — daily.
                 </p>
               </div>

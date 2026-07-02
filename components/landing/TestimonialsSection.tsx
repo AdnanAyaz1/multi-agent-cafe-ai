@@ -44,7 +44,7 @@ export function TestimonialsSection() {
             Loved by cafe <span className="gradient-text">owners</span>
           </h2>
           <p className="text-lg max-w-xl leading-relaxed"
-            style={{ color: "rgba(160, 152, 144, 0.7)" }}>
+            style={{ color: "rgba(184, 176, 168, 0.9)" }}>
             Join hundreds of cafes already using AI to boost their revenue.
           </p>
         </motion.div>
@@ -69,7 +69,7 @@ export function TestimonialsSection() {
                       {t.metric}
                     </span>
                     <span className="block text-[9px] uppercase tracking-[0.2em] mt-0.5"
-                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.7)" }}>
+                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(184, 176, 168, 0.9)" }}>
                       {t.metricLabel}
                     </span>
                   </div>
@@ -92,9 +92,9 @@ export function TestimonialsSection() {
                   </div>
                   <div>
                     <p className="text-white font-semibold text-sm">{t.author}</p>
-                    <p className="text-sm" style={{ color: "rgba(160, 152, 144, 0.75)" }}>{t.role}</p>
+                    <p className="text-sm" style={{ color: "rgba(184, 176, 168, 0.95)" }}>{t.role}</p>
                     <p className="text-[9px] uppercase tracking-[0.15em] mt-0.5"
-                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.6)" }}>
+                      style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(184, 176, 168, 0.8)" }}>
                       {t.location}
                     </p>
                   </div>
@@ -107,13 +107,13 @@ export function TestimonialsSection() {
             <div className="flex items-center gap-2">
               <button onClick={() => { setDirection(-1); setActive((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length); }}
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer"
-                style={{ border: "1px solid rgba(224, 120, 80, 0.08)", color: "rgba(138, 132, 124, 0.4)" }}
+                style={{ border: "1px solid rgba(224, 120, 80, 0.15)", color: "rgba(138, 132, 124, 0.5)" }}
                 aria-label="Previous testimonial">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
               </button>
               <button onClick={() => { setDirection(1); setActive((prev) => (prev + 1) % TESTIMONIALS.length); }}
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 cursor-pointer"
-                style={{ border: "1px solid rgba(224, 120, 80, 0.08)", color: "rgba(138, 132, 124, 0.4)" }}
+                style={{ border: "1px solid rgba(224, 120, 80, 0.15)", color: "rgba(138, 132, 124, 0.5)" }}
                 aria-label="Next testimonial">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </button>
@@ -125,7 +125,7 @@ export function TestimonialsSection() {
                   className="h-1 rounded-full transition-all duration-500 cursor-pointer relative"
                   style={{
                     width: i === active ? "32px" : "6px",
-                    background: i === active ? "linear-gradient(90deg, #e07850, #c8a070)" : "rgba(224, 120, 80, 0.12)",
+                    background: i === active ? "linear-gradient(90deg, #e07850, #c8a070)" : "rgba(224, 120, 80, 0.2)",
                   }}
                   aria-label={`Go to testimonial ${i + 1}`}>
                   <span className="absolute inset-0 -m-2" />
@@ -134,7 +134,7 @@ export function TestimonialsSection() {
             </div>
 
             <span className="text-[10px] tabular-nums"
-              style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(160, 152, 144, 0.7)" }}>
+              style={{ fontFamily: "var(--font-jetbrains-mono)", color: "rgba(184, 176, 168, 0.9)" }}>
               {String(active + 1).padStart(2, "0")} / {String(TESTIMONIALS.length).padStart(2, "0")}
             </span>
           </div>

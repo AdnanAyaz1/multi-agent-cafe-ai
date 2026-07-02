@@ -32,13 +32,13 @@ export function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-1 rounded-full px-2 py-1.5"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.03)" }}>
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
             {NAV_LINKS.map((link) => (
               <a key={link.href} href={link.href}
                 className="px-4 py-2 text-[13px] rounded-full transition-all duration-300"
-                style={{ color: "rgba(200, 180, 160, 0.6)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#ede8e2"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(200, 180, 160, 0.6)"; e.currentTarget.style.background = "transparent"; }}
+                style={{ color: "rgba(200, 180, 160, 0.8)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#ede8e2"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(200, 180, 160, 0.8)"; e.currentTarget.style.background = "transparent"; }}
               >
                 {link.label}
               </a>
@@ -47,7 +47,7 @@ export function Navbar() {
 
           <div className="hidden md:flex items-center gap-3">
             <Link href="/auth/login" className="text-[13px] px-4 py-2 transition-colors duration-300"
-              style={{ color: "rgba(200, 180, 160, 0.6)" }}>
+              style={{ color: "rgba(200, 180, 160, 0.8)" }}>
               Sign in
             </Link>
             <Link href="/auth/register"
@@ -65,11 +65,11 @@ export function Navbar() {
           <button className="md:hidden p-2 cursor-pointer" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
             <div className="w-6 h-5 relative flex flex-col justify-between">
               <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "rotate-45 translate-y-[9px]" : ""}`}
-                style={{ background: "rgba(200, 180, 160, 0.5)" }} />
+                style={{ background: "rgba(200, 180, 160, 0.7)" }} />
               <span className={`w-full h-0.5 rounded-full transition-all duration-300 ${mobileOpen ? "opacity-0 scale-0" : ""}`}
-                style={{ background: "rgba(200, 180, 160, 0.5)" }} />
+                style={{ background: "rgba(200, 180, 160, 0.7)" }} />
               <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "-rotate-45 -translate-y-[9px]" : ""}`}
-                style={{ background: "rgba(200, 180, 160, 0.5)" }} />
+                style={{ background: "rgba(200, 180, 160, 0.7)" }} />
             </div>
           </button>
         </div>
@@ -87,14 +87,14 @@ export function Navbar() {
                 {NAV_LINKS.map((link) => (
                   <a key={link.href} href={link.href}
                     className="text-sm rounded-xl px-4 py-3 transition-all duration-200"
-                    style={{ color: "rgba(200, 180, 160, 0.6)" }}
+                    style={{ color: "rgba(200, 180, 160, 0.8)" }}
                     onClick={() => setMobileOpen(false)}>
                     {link.label}
                   </a>
                 ))}
-                <div className="flex flex-col gap-2 pt-2 mt-1" style={{ borderTop: "1px solid rgba(224, 120, 80, 0.06)" }}>
+                <div className="flex flex-col gap-2 pt-2 mt-1" style={{ borderTop: "1px solid rgba(224, 120, 80, 0.12)" }}>
                   <Link href="/auth/login" className="text-sm rounded-xl px-4 py-3 transition-colors duration-200"
-                    style={{ color: "rgba(200, 180, 160, 0.6)" }} onClick={() => setMobileOpen(false)}>
+                    style={{ color: "rgba(200, 180, 160, 0.8)" }} onClick={() => setMobileOpen(false)}>
                     Sign in
                   </Link>
                   <Link href="/auth/register"

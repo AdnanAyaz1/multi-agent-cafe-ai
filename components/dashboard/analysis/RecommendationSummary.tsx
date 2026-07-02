@@ -1,10 +1,6 @@
 import { Lightbulb } from 'lucide-react';
 import { RecommendationMarkdown } from './RecommendationMarkdown';
-import type { PipelineRecommendation } from '@/hooks/useAnalysis';
-
-interface RecommendationSummaryProps {
-  recommendation: PipelineRecommendation;
-}
+import type { RecommendationSummaryProps } from '@/types/component-props';
 
 export function RecommendationSummary({ recommendation }: RecommendationSummaryProps) {
   return (

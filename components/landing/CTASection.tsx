@@ -24,7 +24,7 @@ export function CTASection() {
 
           {/* Border */}
           <div className="absolute inset-0 rounded-[2rem] pointer-events-none"
-            style={{ border: "1px solid rgba(224, 120, 80, 0.06)" }} />
+            style={{ border: "1px solid rgba(224, 120, 80, 0.12)" }} />
 
           {/* Content */}
           <div className="relative text-center py-20 lg:py-24 px-8 lg:px-16 z-10">
@@ -41,7 +41,7 @@ export function CTASection() {
                 <span className="gradient-text">your cafe?</span>
               </h2>
               <p className="text-lg max-w-lg mx-auto mb-12 leading-relaxed"
-                style={{ color: "rgba(200, 180, 160, 0.55)" }}>
+                style={{ color: "rgba(200, 180, 160, 0.75)" }}>
                 Join cafes using AI to make smarter decisions every day. Start your free
                 trial — no credit card required.
               </p>
@@ -59,9 +59,9 @@ export function CTASection() {
                 <Link href="/auth/login"
                   className="px-12 py-4 rounded-full font-medium text-base transition-all duration-400 cursor-pointer"
                   style={{
-                    border: "1px solid rgba(255,255,255,0.06)",
-                    background: "rgba(255,255,255,0.02)",
-                    color: "rgba(200, 180, 160, 0.65)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "rgba(255,255,255,0.04)",
+                    color: "rgba(200, 180, 160, 0.85)",
                   }}>
                   Sign in
                 </Link>

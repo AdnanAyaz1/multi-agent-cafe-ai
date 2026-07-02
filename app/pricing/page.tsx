@@ -62,11 +62,12 @@ export default function PricingPage() {
               key={plan.name}
               className={`relative rounded-3xl p-8 transition-all duration-500 ${
                 plan.popular
-                  ? 'animated-border md:-mt-4 md:mb-4'
+                  ? 'md:-mt-4 md:mb-4'
                   : 'dash-glass'
               }`}
               style={plan.popular ? {
-                background: 'linear-gradient(160deg, rgba(224, 120, 80, 0.06), rgba(20, 18, 16, 0.9))',
+                background: 'linear-gradient(160deg, rgba(224, 120, 80, 0.1), rgba(30, 27, 24, 0.95))',
+                border: '1px solid rgba(224, 120, 80, 0.2)',
               } : undefined}
             >
               {plan.popular && (

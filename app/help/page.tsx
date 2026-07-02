@@ -1,8 +1,13 @@
-'use client';
-
 import Link from 'next/link';
 import { ArrowLeft, HelpCircle, Mail, MessageSquare, BookOpen } from 'lucide-react';
 import { HELP_FAQS } from '@/constants/faqs';
+import { HELP_QUICK_LINKS } from '@/constants/icons';
+
+const HELP_LINK_ICONS: Record<string, React.ElementType> = {
+  BookOpen,
+  MessageSquare,
+  Mail,
+};
 
 export default function HelpPage() {
   return (
@@ -38,22 +43,21 @@ export default function HelpPage() {
 
         {/* Quick links */}
         <div className="grid grid-cols-3 gap-4 mb-10">
-          {[
-            { icon: BookOpen, label: 'Docs', href: '#' },
-            { icon: MessageSquare, label: 'Feedback', href: '#' },
-            { icon: Mail, label: 'Contact', href: 'mailto:support@cafepromo.ai' },
-          ].map(({ icon: Icon, label, href }) => (
-            <Link
-              key={label}
-              href={href}
-              className="dash-glass rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-[#e07850]/20 transition-colors"
-            >
-              <div className="icon-glow w-10 h-10 rounded-xl bg-[#e07850]/10 border border-[#e07850]/20 flex items-center justify-center">
-                <Icon className="w-5 h-5 text-[#e07850]" />
-              </div>
-              <span className="text-white text-sm font-semibold">{label}</span>
-            </Link>
-          ))}
+          {HELP_QUICK_LINKS.map(({ iconKey, label, href }) => {
+            const Icon = HELP_LINK_ICONS[iconKey];
+            return (
+              <Link
+                key={label}
+                href={href}
+                className="dash-glass rounded-2xl p-5 flex flex-col items-center gap-3 hover:border-[#e07850]/20 transition-colors"
+              >
+                <div className="icon-glow w-10 h-10 rounded-xl bg-[#e07850]/10 border border-[#e07850]/20 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-[#e07850]" />
+                </div>
+                <span className="text-white text-sm font-semibold">{label}</span>
+              </Link>
+            );
+          })}
         </div>
 
         {/* FAQ */}
