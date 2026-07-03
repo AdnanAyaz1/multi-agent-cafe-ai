@@ -90,6 +90,8 @@ export function useAnalysis() {
 
       let pollCount = 0;
       const maxPolls = 30;
+      let retriesAfterComplete = 0;
+      const maxRetriesAfterComplete = 5;
 
       const interval = setInterval(async () => {
         pollCount++;
@@ -118,6 +120,13 @@ export function useAnalysis() {
             recommendation: statusData.recommendation ?? undefined,
           });
           if (statusData.status === 'complete' || statusData.status === 'failed') {
+            // If complete but recommendation is missing, keep polling briefly
+            // to handle the race window between synthesizer completion and
+            // recommendation persistence.
+            if (statusData.status === 'complete' && !statusData.recommendation && retriesAfterComplete < maxRetriesAfterComplete) {
+              retriesAfterComplete++;
+              return;
+            }
             clearInterval(interval);
             intervalRef.current = null;
             setLoading(false);
@@ -139,7 +148,9 @@ export function useAnalysis() {
   const cancel = useCallback(() => {
     stopPolling();
     setLoading(false);
-    setStatus((prev) => (prev ? { ...prev, status: 'cancelled' } : null));
+    setError(null);
+    setPipelineId(null);
+    setStatus(null);
   }, [stopPolling]);
 
   return {

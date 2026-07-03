@@ -43,10 +43,15 @@ export function useAnalysisPage() {
       toast.success('Pipeline complete — recommendation ready!', { id: 'pipeline' });
     } else if (current === 'failed') {
       toast.error('Pipeline failed — please try again.', { id: 'pipeline' });
-    } else if (current === 'cancelled') {
-      toast.info('Pipeline cancelled.', { id: 'pipeline' });
     }
   }, [status?.status]);
+
+  // Reset prevStatusRef when status is cleared (cancel)
+  useEffect(() => {
+    if (!status) {
+      prevStatusRef.current = null;
+    }
+  }, [status]);
 
   const prevErrorRef = useRef<string | null>(null);
   useEffect(() => {

@@ -73,15 +73,7 @@ export async function GET(
       }
     }
 
-    const derivedStatus = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT);
-
-    // If all agent runs are complete but the recommendation hasn't been
-    // persisted yet (race window between synthesizer completion and
-    // persistRecommendation), keep reporting 'running' so the client
-    // continues polling instead of stopping early with no recommendation.
-    const status: PipelineStatus =
-      derivedStatus === 'complete' && !recommendation ? 'running' : derivedStatus;
-
+    const status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT);
     const startedAt = runs[0]?.startedAt?.toISOString() ?? null;
     const completedAt =
       status === 'complete'
