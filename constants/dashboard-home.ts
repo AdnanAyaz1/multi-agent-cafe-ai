@@ -1,4 +1,4 @@
-import { Cloud, Zap, TrendingUp } from 'lucide-react';
+import { Cloud, Zap, TrendingUp, CloudSun, BarChart3, Megaphone, Tag, Thermometer, Activity, Users } from 'lucide-react';
 
 export const STATS = [
   { icon: Zap, label: 'Pipeline runs today', value: '3', color: 'text-amber-500' },
@@ -8,21 +8,35 @@ export const STATS = [
 
 export const ACCENT_MAP = {
   blue: {
-    bg: 'bg-[#e07850]/10',
-    border: 'border-[#e07850]/20',
+    bg: 'bg-white/[0.04]',
+    border: 'border-white/[0.06]',
     icon: 'text-[#e07850]',
     positive: 'text-green-500',
   },
   green: {
-    bg: 'bg-green-500/10',
-    border: 'border-green-500/20',
+    bg: 'bg-white/[0.04]',
+    border: 'border-white/[0.06]',
     icon: 'text-green-500',
     positive: 'text-green-500',
   },
   amber: {
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
+    bg: 'bg-white/[0.04]',
+    border: 'border-white/[0.06]',
     icon: 'text-amber-500',
     positive: 'text-green-500',
   },
+} as const;
+
+export const STAT_WIDGET_ICONS = {
+  weather: { icon: CloudSun, accentColor: 'blue' as const },
+  items: { icon: BarChart3, accentColor: 'green' as const },
+  promos: { icon: Megaphone, accentColor: 'amber' as const },
+  discount: { icon: Tag, accentColor: 'blue' as const },
+} as const;
+
+export const MENU_STATS_ICONS = {
+  total: { icon: BarChart3, color: 'text-[#e07850]' },
+  controlled: { icon: Users, color: 'text-green-500' },
+  unavailable: { icon: Activity, color: 'text-red-400' },
+  categories: { icon: Thermometer, color: 'text-amber-500' },
 } as const;

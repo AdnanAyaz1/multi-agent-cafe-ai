@@ -23,12 +23,12 @@ export function AgentPipelineWidget() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="icon-glow w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-              <Brain className="w-5 h-5 text-[#e89070]" />
+            <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+              <Brain className="w-4 h-4 text-zinc-400" />
             </div>
             <div>
               <p className="text-white text-sm font-bold">AI Pipeline</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Chain of thought</p>
+              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">Chain of thought</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">

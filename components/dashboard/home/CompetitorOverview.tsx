@@ -9,12 +9,12 @@ export function CompetitorOverview() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="icon-glow w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-              <Eye className="w-5 h-5 text-[#e07850]" />
+            <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+              <Eye className="w-4 h-4 text-zinc-400" />
             </div>
             <div>
               <p className="text-white text-sm font-bold">Competitor Watch</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Price movements</p>
+              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">Price movements</p>
             </div>
           </div>
           <span className="text-[10px] text-zinc-500">4 competitors</span>

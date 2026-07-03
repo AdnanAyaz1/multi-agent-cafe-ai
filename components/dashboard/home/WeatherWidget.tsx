@@ -15,12 +15,12 @@ export function WeatherWidget({ data }: WeatherWidgetProps) {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="icon-glow w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-              <Cloud className="w-5 h-5 text-[#e07850]" />
+            <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+              <Cloud className="w-4 h-4 text-zinc-400" />
             </div>
             <div>
               <p className="text-white text-sm font-bold">Local Weather</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{data.city}</p>
+              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">{data.city}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e07850]/10 border border-[#e07850]/20">
@@ -42,10 +42,10 @@ export function WeatherWidget({ data }: WeatherWidgetProps) {
             { icon: Droplets, label: 'Humidity', value: `${data.humidity}%` },
             { icon: Wind, label: 'Wind', value: `${data.windSpeed} m/s` },
           ].map((stat) => (
-            <div key={stat.label} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center icon-glow">
-              <stat.icon className="w-4 h-4 text-[#e07850] mx-auto mb-1.5" />
-              <p className="text-white text-sm font-semibold font-mono">{stat.value}</p>
-              <p className="text-[9px] text-zinc-500 uppercase tracking-wider">{stat.label}</p>
+            <div key={stat.label} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
+              <stat.icon className="w-4 h-4 text-zinc-400 mx-auto mb-1.5" />
+              <p className="text-white text-sm font-bold font-mono">{stat.value}</p>
+              <p className="text-[9px] text-zinc-400 uppercase tracking-wider">{stat.label}</p>
             </div>
           ))}
         </div>

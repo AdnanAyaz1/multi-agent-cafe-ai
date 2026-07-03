@@ -1,5 +1,6 @@
 import { MENU_CATEGORIES } from '@/constants/menu';
 import { CATEGORY_CONFIG } from '@/constants/menu-display';
+import { MENU_STATS_ICONS } from '@/constants/dashboard-home';
 import type { MenuHeaderProps, MenuStatsProps, MenuSearchBarProps, MenuCategoryTabsProps } from '@/types/component-props';
 
 export function MenuHeader({ loading, onRefresh }: MenuHeaderProps) {
@@ -14,7 +15,7 @@ export function MenuHeader({ loading, onRefresh }: MenuHeaderProps) {
           <h1 className="text-3xl lg:text-5xl font-extrabold text-white mb-3 tracking-tight">
             Your Menu Items
           </h1>
-          <p className="text-zinc-400 text-sm lg:text-base max-w-lg">Control which items the AI pipeline can optimize. Toggle AI control and availability per item.</p>
+          <p className="text-zinc-300 text-sm lg:text-base max-w-lg leading-relaxed">Control which items the AI pipeline can optimize. Toggle AI control and availability per item.</p>
         </div>
         <button onClick={onRefresh} disabled={loading} className="px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 text-sm font-medium hover:bg-zinc-800 hover:text-white disabled:opacity-50 transition-all duration-150 flex items-center gap-2 flex-shrink-0">
           <span className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -26,17 +27,22 @@ export function MenuHeader({ loading, onRefresh }: MenuHeaderProps) {
 }
 
 export function MenuStats({ totalItems, controlledCount, unavailableCount }: MenuStatsProps) {
+  const stats = [
+    { label: 'Total Items', value: String(totalItems), icon: MENU_STATS_ICONS.total.icon, color: MENU_STATS_ICONS.total.color },
+    { label: 'AI Controlled', value: String(controlledCount), icon: MENU_STATS_ICONS.controlled.icon, color: MENU_STATS_ICONS.controlled.color },
+    { label: 'Unavailable', value: String(unavailableCount), icon: MENU_STATS_ICONS.unavailable.icon, color: MENU_STATS_ICONS.unavailable.color },
+    { label: 'Categories', value: String(MENU_CATEGORIES.length), icon: MENU_STATS_ICONS.categories.icon, color: MENU_STATS_ICONS.categories.color },
+  ];
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {[
-        { label: 'Total Items', value: String(totalItems) },
-        { label: 'AI Controlled', value: String(controlledCount) },
-        { label: 'Unavailable', value: String(unavailableCount) },
-        { label: 'Categories', value: String(MENU_CATEGORIES.length) },
-      ].map((stat) => (
+      {stats.map((stat) => (
         <div key={stat.label} className="glass-card rounded-2xl p-4">
-          <p className="text-[10px] text-zinc-400 uppercase tracking-[0.15em] font-semibold">{stat.label}</p>
-          <p className="text-2xl font-extrabold text-white mt-1">{stat.value}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] text-zinc-400 uppercase tracking-[0.15em] font-semibold">{stat.label}</p>
+            <stat.icon className={`w-4 h-4 ${stat.color}`} />
+          </div>
+          <p className="text-2xl font-extrabold text-white tracking-tight">{stat.value}</p>
         </div>
       ))}
     </div>
@@ -89,6 +95,7 @@ export function MenuCategoryTabs({ activeCategory, onCategoryChange, itemCounts,
               activeCategory === cat ? 'bg-zinc-800 border border-zinc-700 text-white' : 'bg-zinc-900 border border-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
             }`}
           >
+            <cfg.Icon className="w-3.5 h-3.5" />
             {cfg.label} ({count})
           </button>
         );

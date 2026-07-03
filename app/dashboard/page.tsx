@@ -8,7 +8,7 @@ import { AgentPipelineWidget } from '@/components/dashboard/home/AgentPipelineWi
 import { RecommendationWidget } from '@/components/dashboard/home/RecommendationWidget';
 import { RecentActivity } from '@/components/dashboard/home/RecentActivity';
 import { CompetitorOverview } from '@/components/dashboard/home/CompetitorOverview';
-import { CloudRain, BarChart3, Megaphone, Tag } from 'lucide-react';
+import { STAT_WIDGET_ICONS } from '@/constants/dashboard-home';
 
 export default function DashboardPage() {
   const { weather, loading } = useHomeDashboard();
@@ -22,32 +22,32 @@ export default function DashboardPage() {
           label="Current Weather"
           value={weather ? `${weather.temperature}°C` : '—'}
           change={weather ? weather.condition : undefined}
-          icon={CloudRain}
-          accentColor="blue"
+          icon={STAT_WIDGET_ICONS.weather.icon}
+          accentColor={STAT_WIDGET_ICONS.weather.accentColor}
         />
         <StatWidget
           label="Items Analyzed"
           value="24"
           change="+6 this week"
           changeType="positive"
-          icon={BarChart3}
-          accentColor="green"
+          icon={STAT_WIDGET_ICONS.items.icon}
+          accentColor={STAT_WIDGET_ICONS.items.accentColor}
         />
         <StatWidget
           label="Active Promos"
           value="3"
           change="1 expiring soon"
           changeType="neutral"
-          icon={Megaphone}
-          accentColor="amber"
+          icon={STAT_WIDGET_ICONS.promos.icon}
+          accentColor={STAT_WIDGET_ICONS.promos.accentColor}
         />
         <StatWidget
           label="Avg. Discount"
           value="12%"
           change="-2% from last week"
           changeType="negative"
-          icon={Tag}
-          accentColor="blue"
+          icon={STAT_WIDGET_ICONS.discount.icon}
+          accentColor={STAT_WIDGET_ICONS.discount.accentColor}
         />
       </div>
 

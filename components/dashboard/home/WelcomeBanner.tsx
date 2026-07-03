@@ -1,6 +1,6 @@
 'use client';
 
-import { Cloud } from 'lucide-react';
+import { CloudSun } from 'lucide-react';
 import { getGreeting } from '@/utils/greeting';
 import type { WelcomeBannerProps } from '@/types/dashboard-home';
 import { STATS } from '@/constants/dashboard-home';
@@ -14,19 +14,19 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
             <div className="h-px w-10 bg-zinc-700" />
             <p className="text-[11px] text-[#e07850] uppercase tracking-[0.2em] font-semibold">Dashboard</p>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 tracking-tight">
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-white mb-2 tracking-tight">
             {getGreeting()}, Boss
           </h1>
-          <p className="text-zinc-400 text-sm lg:text-base max-w-lg">Your AI agents are analyzing weather, competitors, and your menu to maximize revenue today.</p>
+          <p className="text-zinc-300 text-sm lg:text-base max-w-lg leading-relaxed">Your AI agents are analyzing weather, competitors, and your menu to maximize revenue today.</p>
         </div>
 
         <div className="flex items-center gap-3 flex-shrink-0">
           {weather && (
-            <div className="icon-glow flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-              <Cloud className="w-4 h-4 text-[#e07850]" />
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <CloudSun className="w-4 h-4 text-zinc-400" />
               <div>
-                <p className="text-white text-sm font-semibold">{weather.temperature}°C</p>
-                <p className="text-zinc-500 text-[10px] uppercase tracking-wider">{weather.condition}</p>
+                <p className="text-white text-sm font-bold">{weather.temperature}°C</p>
+                <p className="text-zinc-400 text-[10px] uppercase tracking-wider">{weather.condition}</p>
               </div>
             </div>
           )}
@@ -42,8 +42,8 @@ export function WelcomeBanner({ weather }: WelcomeBannerProps) {
           <div key={stat.label} className="flex items-center gap-2.5">
             <stat.icon className={`w-4 h-4 ${stat.color}`} />
             <div>
-              <p className="text-white text-sm font-semibold">{stat.value}</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{stat.label}</p>
+              <p className="text-white text-sm font-bold">{stat.value}</p>
+              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">{stat.label}</p>
             </div>
           </div>
         ))}

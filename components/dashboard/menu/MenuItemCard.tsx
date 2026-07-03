@@ -15,12 +15,12 @@ export function MenuItemCard({ item, isControlled, isUnavailable, onToggleContro
     <div className={`glass-card rounded-2xl overflow-hidden transition-all duration-150 ${isUnavailable ? 'opacity-50' : ''}`}>
       <div className="relative z-10 p-5">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${cat.color}12`, border: `1px solid ${cat.color}18` }}>
-            <CatIcon className="w-5 h-5" style={{ color: cat.color }} />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/[0.04] border border-white/[0.06]">
+            <CatIcon className="w-4 h-4 text-zinc-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-white text-sm font-bold truncate">{item.name}</h3>
+              <h3 className="text-white text-sm font-extrabold truncate tracking-tight">{item.name}</h3>
               {isSignature && <Sparkles className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />}
             </div>
             <p className="text-zinc-400 text-[10px] uppercase tracking-wider">{cat.label}</p>
