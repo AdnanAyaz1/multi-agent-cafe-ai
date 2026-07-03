@@ -1,10 +1,14 @@
 import { z } from 'zod';
 
+export const pipelineTypeEnum = z.enum(['weather', 'competitor']);
+export type PipelineType = z.infer<typeof pipelineTypeEnum>;
+
 export const analysisRunRequestSchema = z.object({
   businessId: z
     .string({ message: 'businessId is required' })
     .min(1, 'businessId cannot be empty')
     .max(64, 'businessId is too long'),
+  pipelineType: pipelineTypeEnum.default('weather'),
 });
 
 export type AnalysisRunRequest = z.infer<typeof analysisRunRequestSchema>;

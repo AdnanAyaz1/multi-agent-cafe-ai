@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+export type PipelineType = 'weather' | 'competitor';
+
 export interface PipelineAgentRun {
   id: string;
   agentName: string;
@@ -16,6 +18,11 @@ export interface PipelineRecommendation {
   summary: string;
   reasoning: string;
   confidence: string;
+  category: string;
+  priority: number;
+  status: string;
+  createdAt: string;
+  criticNotes?: unknown;
   actions: Array<{
     id: string;
     actionType: string;
@@ -30,6 +37,7 @@ export interface PipelineRecommendation {
 
 export interface PipelineStatus {
   status: string;
+  pipelineType?: PipelineType;
   agentRuns: PipelineAgentRun[];
   recommendation?: PipelineRecommendation;
 }
@@ -40,6 +48,7 @@ export function useAnalysis() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activePipelineRef = useRef<string | null>(null);
 
   const stopPolling = useCallback(() => {
     if (intervalRef.current) {
@@ -52,7 +61,7 @@ export function useAnalysis() {
     return () => stopPolling();
   }, [stopPolling]);
 
-  const run = useCallback(async (businessId: string) => {
+  const run = useCallback(async (businessId: string, pipelineType: PipelineType = 'weather') => {
     try {
       setLoading(true);
       setError(null);
@@ -61,16 +70,18 @@ export function useAnalysis() {
       const res = await fetch('/api/analysis/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessId }),
+        body: JSON.stringify({ businessId, pipelineType }),
       });
 
       if (!res.ok) throw new Error('Failed to start analysis');
 
       const data = await res.json();
       setPipelineId(data.pipelineId);
+      activePipelineRef.current = data.pipelineId;
 
       setStatus({
         status: 'running',
+        pipelineType: data.pipelineType,
         agentRuns: [],
       });
 
@@ -80,6 +91,7 @@ export function useAnalysis() {
           const statusData = await statusRes.json();
           setStatus({
             status: statusData.status,
+            pipelineType: data.pipelineType,
             agentRuns: statusData.agentRuns ?? [],
             recommendation: statusData.recommendation ?? undefined,
           });
@@ -92,11 +104,12 @@ export function useAnalysis() {
       const maxPolls = 30;
       let retriesAfterComplete = 0;
       const maxRetriesAfterComplete = 5;
+      const activePipelineId = data.pipelineId;
 
       const interval = setInterval(async () => {
         pollCount++;
         try {
-          const statusRes = await fetch(`/api/analysis/${data.pipelineId}`);
+          const statusRes = await fetch(`/api/analysis/${activePipelineId}`);
           if (statusRes.status === 404) {
             if (pollCount >= maxPolls) {
               clearInterval(interval);
@@ -114,8 +127,17 @@ export function useAnalysis() {
             return;
           }
           const statusData = await statusRes.json();
+
+          // If pipeline was cancelled (ref cleared), stop this interval.
+          if (activePipelineRef.current !== activePipelineId) {
+            clearInterval(interval);
+            intervalRef.current = null;
+            return;
+          }
+
           setStatus({
             status: statusData.status,
+            pipelineType: data.pipelineType,
             agentRuns: statusData.agentRuns ?? [],
             recommendation: statusData.recommendation ?? undefined,
           });
@@ -147,6 +169,7 @@ export function useAnalysis() {
 
   const cancel = useCallback(() => {
     stopPolling();
+    activePipelineRef.current = null;
     setLoading(false);
     setError(null);
     setPipelineId(null);

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { useAnalysis } from '@/hooks/useAnalysis';
+import { useAnalysis, type PipelineType } from '@/hooks/useAnalysis';
 import { useDecisions } from '@/hooks/useDecisions';
 import { analysisFormSchema, type AnalysisFormInput } from '@/lib/validators/analysis';
 import type { Decision } from '@/types/decisions';
@@ -13,6 +13,7 @@ import type { Decision } from '@/types/decisions';
 export function useAnalysisPage() {
   const { status, loading, error, run, cancel } = useAnalysis();
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [pipelineType, setPipelineType] = useState<PipelineType>('weather');
   const prevStatusRef = useRef<string | null>(null);
 
   const form = useForm<AnalysisFormInput>({
@@ -27,7 +28,7 @@ export function useAnalysisPage() {
   const recommendation = status?.recommendation;
 
   const handleRun = form.handleSubmit((data) => {
-    run(data.businessId);
+    run(data.businessId, pipelineType);
   });
 
   useEffect(() => {
@@ -37,14 +38,15 @@ export function useAnalysisPage() {
     if (prev === current) return;
     prevStatusRef.current = current;
 
+    const pipelineLabel = status.pipelineType === 'competitor' ? 'Competitor' : 'Weather';
     if (current === 'running' && prev !== 'running') {
-      toast.loading('Pipeline started — agents are working...', { id: 'pipeline' });
+      toast.loading(`${pipelineLabel} pipeline started — agents are working...`, { id: 'pipeline' });
     } else if (current === 'complete') {
-      toast.success('Pipeline complete — recommendation ready!', { id: 'pipeline' });
+      toast.success(`${pipelineLabel} pipeline complete — recommendation ready!`, { id: 'pipeline' });
     } else if (current === 'failed') {
-      toast.error('Pipeline failed — please try again.', { id: 'pipeline' });
+      toast.error(`${pipelineLabel} pipeline failed — please try again.`, { id: 'pipeline' });
     }
-  }, [status?.status]);
+  }, [status?.status, status?.pipelineType]);
 
   // Reset prevStatusRef when status is cleared (cancel)
   useEffect(() => {
@@ -104,5 +106,7 @@ export function useAnalysisPage() {
     handleApprove,
     handleReject,
     getDecisionForAction,
+    pipelineType,
+    setPipelineType,
   };
 }

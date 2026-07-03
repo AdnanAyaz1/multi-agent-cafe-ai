@@ -13,28 +13,38 @@ const isVercel = !!process.env.VERCEL;
 
 export async function POST(request: NextRequest) {
   try {
-    const { businessId } = await parseBody(request, analysisRunRequestSchema);
+    const { businessId, pipelineType } = await parseBody(request, analysisRunRequestSchema);
 
     const business = await prisma.business.findUnique({
       where: { id: businessId },
-      select: { id: true, city: true },
+      select: { id: true, city: true, config: true },
     });
     if (!business) throw new NotFoundError('Business');
-    if (!business.city) {
+
+    if (pipelineType === 'weather' && !business.city) {
       throw new ValidationError('Business has no city configured');
+    }
+
+    if (pipelineType === 'competitor') {
+      const config = business.config as Record<string, unknown> | null;
+      const urls = config?.competitorUrls;
+      if (!Array.isArray(urls) || urls.length === 0) {
+        throw new ValidationError('Business has no competitor URLs configured');
+      }
     }
 
     const pipelineId = randomUUID();
 
     if (isVercel) {
-      const { runAnalysisPipeline } = await import('@/lib/agents/orchestrator');
+      const { runPipeline } = await import('@/lib/pipelines');
 
       Promise.resolve()
-        .then(() => runAnalysisPipeline({ businessId, pipelineId }))
+        .then(() => runPipeline({ businessId, pipelineId, pipelineType }))
         .then((result) => {
           log.info('pipeline completed inline (Vercel)', {
             pipelineId,
             businessId,
+            pipelineType,
             recommendationId: result.recommendationId,
             durationMs: result.durationMs,
           });
@@ -43,6 +53,7 @@ export async function POST(request: NextRequest) {
           log.error('pipeline failed inline (Vercel)', {
             pipelineId,
             businessId,
+            pipelineType,
             error: err instanceof Error ? err.message : String(err),
           });
         });
@@ -50,13 +61,14 @@ export async function POST(request: NextRequest) {
       const { aiAnalysisQueue } = await import('@/lib/queues/data-queue');
       const job = await aiAnalysisQueue.add(
         'full-pipeline',
-        { businessId, pipelineId },
+        { businessId, pipelineId, pipelineType },
         { priority: 2 }
       );
 
       log.info('pipeline enqueued', {
         pipelineId,
         businessId,
+        pipelineType,
         jobId: job.id,
       });
     }
@@ -64,6 +76,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         pipelineId,
+        pipelineType,
         status: 'queued',
         statusUrl: `/api/analysis/${pipelineId}`,
       },

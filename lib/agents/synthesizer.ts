@@ -28,7 +28,7 @@ export async function runSynthesizer(
   return withAgentRun({
     agentName: 'synthesizer',
     model: getModel('synthesizer'),
-    system: SYNTHESIZER_SYSTEM,
+    instructions: SYNTHESIZER_SYSTEM,
     prompt: buildSynthesizerPrompt({
       menuAnalysis: input.menuAnalysis,
       weatherAnalysis: input.weatherAnalysis,

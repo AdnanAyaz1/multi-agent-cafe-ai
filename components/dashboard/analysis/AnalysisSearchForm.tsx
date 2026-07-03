@@ -42,6 +42,7 @@ export function AnalysisSearchForm({
           </button>
         )}
       </form>
+
       <AnimatePresence>
         {error && (
           <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="px-4 pb-2 text-sm text-red-400">

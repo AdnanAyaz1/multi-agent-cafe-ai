@@ -1,20 +1,22 @@
-import { generateText, stepCountIs } from 'ai';
-import { createGroq } from '@ai-sdk/groq';
+import { generateText, isStepCount, type LanguageModel } from 'ai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { weatherTool } from '@/lib/agents/tools/weatherTool';
 import { WeatherData, WeatherResult } from '@/lib/types';
 
-const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_AI_API_KEY,
+});
 
 export async function getWeatherData(city: string): Promise<WeatherResult> {
-  const model = process.env.GROQ_MODEL ?? 'llama-3.1-8b-instant';
+  const model = process.env.GOOGLE_MODEL ?? 'gemini-2.5-flash';
 
   try {
     const result = await generateText({
-      model: groq(model),
+      model: google(model) as unknown as LanguageModel,
       tools: { weather: weatherTool },
       toolChoice: 'required',
       prompt: `Get the current weather for ${city}.`,
-      stopWhen: stepCountIs(2),
+      stopWhen: isStepCount(2),
     });
 
     const step = result.steps.at(-1);

@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { getMenuForBusiness } from '@/lib/menu';
 import { NotFoundError } from '@/lib/errors';
 import { ensureWeatherSnapshot } from '@/lib/services/weather/snapshot';
-import type { WeatherData } from '@/lib/types';
+import type { WeatherData, CompetitorData } from '@/lib/types';
 import { runMenuAnalyst } from './menu-analyst';
 import { runWeatherAnalyst } from './weather-analyst';
 import { runStrategist } from './strategist';
@@ -46,7 +46,7 @@ export async function runAnalysisPipeline(
   const start = Date.now();
   log.info('pipeline start', { ...context });
 
-  const { weather, menu } = await loadInputs(context);
+  const { weather, menu, competitors } = await loadInputs(context);
 
   const [menuAnalysis, weatherAnalysis] = await Promise.all([
     runMenuAnalyst({ menu }, context).then((r) => r.output),
@@ -55,7 +55,7 @@ export async function runAnalysisPipeline(
 
   let strategist: StrategistOutput = (
     await runStrategist(
-      { menuAnalysis, weatherAnalysis, rawMenu: menu, revision: 0 },
+      { menuAnalysis, weatherAnalysis, rawMenu: menu, competitorData: competitors, revision: 0 },
       context
     )
   ).output;
@@ -82,6 +82,7 @@ export async function runAnalysisPipeline(
           menuAnalysis,
           weatherAnalysis,
           rawMenu: menu,
+          competitorData: competitors,
           criticFeedback: critic,
           revision: revisions,
         },
@@ -139,6 +140,7 @@ export async function runAnalysisPipeline(
 interface PipelineInputs {
   weather: WeatherData;
   menu: Awaited<ReturnType<typeof getMenuForBusiness>>;
+  competitors: CompetitorData[];
 }
 
 async function loadInputs(context: PipelineContext): Promise<PipelineInputs> {
@@ -155,7 +157,20 @@ async function loadInputs(context: PipelineContext): Promise<PipelineInputs> {
   });
 
   const menu = await getMenuForBusiness(context.businessId);
-  return { weather, menu };
+
+  // Load latest competitor snapshots (non-expired) for context
+  const snapshots = await prisma.dataSnapshot.findMany({
+    where: {
+      businessId: context.businessId,
+      source: 'competitors',
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { collectedAt: 'desc' },
+    take: 5,
+  });
+  const competitors = snapshots.map((s) => s.data as unknown as CompetitorData);
+
+  return { weather, menu, competitors };
 }
 
 interface PersistArgs {

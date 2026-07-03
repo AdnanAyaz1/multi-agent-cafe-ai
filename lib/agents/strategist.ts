@@ -4,17 +4,21 @@ import {
   type MenuAnalystOutput,
   type WeatherAnalystOutput,
   type CriticOutput,
+  type CompetitorAnalystOutput,
   type PipelineContext,
 } from './types';
 import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
 import { STRATEGIST_SYSTEM, buildStrategistPrompt } from './prompts';
 import type { Menu } from '@/lib/menu/types';
+import type { CompetitorData } from '@/lib/types';
 
 export interface StrategistInput {
   menuAnalysis: MenuAnalystOutput;
   weatherAnalysis: WeatherAnalystOutput;
   rawMenu: Menu;
+  competitorData?: CompetitorData[];
+  competitorAnalysis?: CompetitorAnalystOutput;
   criticFeedback?: CriticOutput;
   revision: number;
 }
@@ -34,11 +38,13 @@ export async function runStrategist(
   return withAgentRun({
     agentName: 'strategist',
     model: getModel('strategist'),
-    system: STRATEGIST_SYSTEM,
+    instructions: STRATEGIST_SYSTEM,
     prompt: buildStrategistPrompt({
       menuAnalysis: input.menuAnalysis,
       weatherAnalysis: input.weatherAnalysis,
       rawMenu: compactMenu,
+      competitorData: input.competitorData,
+      competitorAnalysis: input.competitorAnalysis,
       criticFeedback: input.criticFeedback,
       revision: input.revision,
     }),
@@ -48,6 +54,8 @@ export async function runStrategist(
     inputSnapshot: {
       revision: input.revision,
       hasCriticFeedback: Boolean(input.criticFeedback),
+      hasCompetitorData: Boolean(input.competitorData?.length),
+      hasCompetitorAnalysis: Boolean(input.competitorAnalysis),
     },
     retries: 1,
   });

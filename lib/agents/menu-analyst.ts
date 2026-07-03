@@ -18,7 +18,7 @@ export async function runMenuAnalyst(
   return withAgentRun({
     agentName: 'menu-analyst',
     model: getModel('menu-analyst'),
-    system: MENU_ANALYST_SYSTEM,
+    instructions: MENU_ANALYST_SYSTEM,
     prompt: buildMenuAnalystPrompt(input),
     schema: menuAnalystOutputSchema,
     schemaName: 'MenuAnalysis',

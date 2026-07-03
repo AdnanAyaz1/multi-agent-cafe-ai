@@ -32,8 +32,26 @@ export async function GET(
       orderBy: { createdAt: 'asc' },
     }) as unknown as RawAgentRun[];
 
-    if (runs.length === 0) throw new NotFoundError('Pipeline');
+    // Find the recommendation for this pipeline
+    const rec = await findRecommendationForPipeline(validId);
 
+    // If no agent runs and no recommendation, pipeline doesn't exist
+    if (runs.length === 0 && !rec) throw new NotFoundError('Pipeline');
+
+    // For competitor pipelines (no agent runs), derive status from recommendation
+    if (runs.length === 0 && rec) {
+      const body: PipelineStatusResponse = {
+        pipelineId: validId,
+        status: 'complete',
+        startedAt: rec.date.toISOString(),
+        completedAt: rec.date.toISOString(),
+        agentRuns: [],
+        recommendation: formatRecommendation(rec),
+      };
+      return NextResponse.json(body);
+    }
+
+    // For weather pipelines (has agent runs)
     const agentRuns: AgentRunSummary[] = runs.map((r) => ({
       id: r.id,
       agentName: r.agentName as AgentName,
@@ -50,27 +68,8 @@ export async function GET(
     const completedSynthesizer = runs.find(
       (r) => r.agentName === 'synthesizer' && r.status === 'complete'
     );
-    if (completedSynthesizer) {
-      const rec = await findRecommendationForPipeline(validId);
-      if (rec) {
-        recommendation = {
-          id: rec.id,
-          summary: rec.summary,
-          reasoning: rec.reasoning,
-          confidence: rec.confidence,
-          category: rec.category,
-          priority: rec.priority,
-          status: rec.status,
-          createdAt: rec.date.toISOString(),
-          criticNotes: rec.criticNotes,
-          actions: rec.actions.map((a) => ({
-            id: a.id,
-            actionType: a.actionType,
-            item: a.item,
-            details: a.details,
-          })),
-        };
-      }
+    if (completedSynthesizer && rec) {
+      recommendation = formatRecommendation(rec);
     }
 
     const status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT);
@@ -103,6 +102,26 @@ function derivePipelineStatus(
   const completed = runStatuses.filter((s) => s === 'complete').length;
   if (completed >= expectedMin) return 'complete';
   return 'running';
+}
+
+function formatRecommendation(rec: RawRecommendation): RecommendationSummary {
+  return {
+    id: rec.id,
+    summary: rec.summary,
+    reasoning: rec.reasoning,
+    confidence: rec.confidence,
+    category: rec.category,
+    priority: rec.priority,
+    status: rec.status,
+    createdAt: rec.date.toISOString(),
+    criticNotes: rec.criticNotes,
+    actions: rec.actions.map((a) => ({
+      id: a.id,
+      actionType: a.actionType,
+      item: a.item,
+      details: a.details,
+    })),
+  };
 }
 
 async function findRecommendationForPipeline(pipelineId: string): Promise<RawRecommendation | null> {

@@ -18,7 +18,7 @@ export async function runCompetitorParser(
   return withAgentRun({
     agentName: 'competitor-parser',
     model: getModel('competitor-parser'),
-    system: COMPETITOR_PARSER_SYSTEM,
+    instructions: COMPETITOR_PARSER_SYSTEM,
     prompt: buildCompetitorParserPrompt(input),
     schema: competitorParserOutputSchema,
     schemaName: 'CompetitorParse',

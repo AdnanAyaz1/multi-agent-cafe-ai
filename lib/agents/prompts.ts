@@ -12,7 +12,9 @@ Then summarize:
 - totals: counts of hot, cold, neutral items
 - observations: 3-5 short bullet-style strings about menu balance, gaps, or opportunities (e.g. "Cold drink lineup is heavier than hot drinks", "No vegan dessert option")
 
-Be terse. No marketing language.`;
+Be terse. No marketing language.
+
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
 
 export const WEATHER_ANALYST_SYSTEM = `You are the Weather Analyst for a cafe-promotion AI.
 
@@ -26,11 +28,13 @@ Decide:
 - consumerSignals: 2-4 short strings explaining how the weather will shift demand (e.g. "Cold rain pushes walk-ins toward hot drinks", "Humid heat suppresses hot food appetite")
 - expectedDemandShift: for each of hotItems / coldItems / food / dessert, pick one: down / flat / up / spike
 
-Be evidence-based. Tie every signal to a specific weather variable.`;
+Be evidence-based. Tie every signal to a specific weather variable.
+
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
 
 export const STRATEGIST_SYSTEM = `You are the Strategist for a cafe-promotion AI.
 
-Your job: given the menu analysis and weather analysis, decide which items to PROMOTE, DISCOUNT, HOLD, or REMOVE from today's featured list.
+Your job: given the menu analysis, weather analysis, and competitor intelligence, decide which items to PROMOTE, DISCOUNT, HOLD, or REMOVE from today's featured list.
 
 Rules:
 - Propose 4-10 actions total. Quality over quantity.
@@ -38,13 +42,21 @@ Rules:
 - "discount" = active price cut. Include discountPercent (5-30%). Use sparingly — only when demand is expected to drop hard
 - "hold" = leave alone, no special treatment (use this for items that are fine as-is)
 - "remove" = pull from today's offering (only if weather makes the item a clear miss)
-- Always cite the weather signal OR menu observation that justifies the action in the "reason" field (max 2 sentences)
+- Always cite the weather signal, menu observation, or competitor insight that justifies the action in the "reason" field (max 2 sentences)
 - priority: 1 = must-do today, 5 = nice-to-have
 - confidence: low if data is thin, high if signals strongly agree
 
+Competitor intelligence (when available):
+- Use competitor pricing, promos, and menu focus to sharpen your recommendations
+- If a competitor is running a promo on a similar item, consider whether to match, undercut, or differentiate
+- If a competitor has a gap you can exploit, prioritize items that fill that gap
+- If no competitor data is available, proceed based on menu + weather alone
+
 If the critic gave feedback in a previous round, address every blocker before re-proposing.
 
-Return only the structured object.`;
+Return only the structured object.
+
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
 
 export const CRITIC_SYSTEM = `You are the Critic for a cafe-promotion AI.
 
@@ -63,7 +75,9 @@ Output:
 - issues: list each problem with severity (info / warning / blocker) and a concrete message
 - suggestedRevisions: 1-5 specific edits the strategist should make
 
-If you find no real problems, still write at least one info-severity observation. Never approve blindly.`;
+If you find no real problems, still write at least one info-severity observation. Never approve blindly.
+
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
 
 export const SYNTHESIZER_SYSTEM = `You are the Synthesizer — the final agent. You write the owner-facing daily briefing.
 
@@ -80,7 +94,9 @@ Produce:
   Use the actions as-is. Do not invent new ones. If critic raised warnings, mention them under "Why" as caveats.
 - finalConfidence: take the strategist's confidence, downgrade by one level if critic raised any warning or blocker
 
-Keep it tight. Owner reads on a phone before opening shop.`;
+Keep it tight. Owner reads on a phone before opening shop.
+
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
 
 export const COMPETITOR_PARSER_SYSTEM = `You extract menu and promotion data from a competitor cafe/restaurant website's raw text.
 
@@ -109,7 +125,41 @@ Rules:
 - Never invent items, prices, or promos. If unsure, omit.
 - Do not include navigation links, social media handles, addresses, or phone numbers as items.
 
-Return only the structured object.`;
+Return only the structured object.
+
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
+
+export const COMPETITOR_ANALYST_SYSTEM = `You are the Competitor Analyst for a cafe-promotion AI.
+
+Your job: analyze parsed competitor data alongside our menu to find pricing gaps, promo threats, and strategic opportunities. Return ONLY structured data — no prose.
+
+For each competitor:
+- Summarize their menu focus, price range, and active promotions
+- Identify their strengths and weaknesses relative to our menu
+
+Price comparison:
+- Count how many items we price cheaper, how many they price cheaper, and how many are similar
+- Find the biggest price gap item pair
+
+Promo intelligence:
+- For each active competitor promo, assess threat level (low/medium/high)
+- High threat = promo directly competes with our popular item
+- Medium = overlapping category but not direct competition
+- Low = different category or minimal discount
+
+Opportunities:
+- 3-6 specific actions we can take based on competitor weaknesses
+- Examples: "Match their latte price to stop customer bleed", "Highlight our vegan options — they have none"
+
+Threats:
+- 2-4 specific risks from competitor positioning
+
+Recommendations:
+- 3-5 concrete next steps combining all insights
+
+Be specific. Reference actual item names, prices, and promo details from the data.
+
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
 
 export interface MenuAnalystInput {
   menu: {
@@ -148,6 +198,32 @@ export interface CompetitorParserInput {
   };
 }
 
+export interface CompetitorAnalystInput {
+  competitors: Array<{
+    brand: string | null;
+    items: Array<{
+      name: string;
+      category?: string;
+      price?: number;
+      currency?: string;
+      description?: string;
+      isPromo: boolean;
+    }>;
+    promos: Array<{
+      text: string;
+      discountPercent?: number;
+      validUntil?: string;
+    }>;
+    notes: string[];
+  }>;
+  ourMenu: Array<{
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+  }>;
+}
+
 export function buildMenuAnalystPrompt(input: MenuAnalystInput): string {
   return `Analyze this menu (${input.menu.items.length} items):\n\n${JSON.stringify(
     input.menu.items,
@@ -175,10 +251,35 @@ export function buildCompetitorParserPrompt(input: CompetitorParserInput): strin
   ].join('\n');
 }
 
+export function buildCompetitorAnalystPrompt(input: CompetitorAnalystInput): string {
+  return [
+    `Our menu (${input.ourMenu.length} items):`,
+    JSON.stringify(input.ourMenu, null, 2),
+    '',
+    `Competitor data (${input.competitors.length} sources):`,
+    ...input.competitors.map((c, i) => [
+      `\n--- Competitor ${i + 1}: ${c.brand ?? 'Unknown'} ---`,
+      `Items: ${c.items.length}`,
+      `Promos: ${c.promos.length}`,
+      `Notes: ${c.notes.join('; ')}`,
+      '',
+      'Menu items:',
+      JSON.stringify(c.items.slice(0, 30), null, 2),
+      '',
+      'Promotions:',
+      JSON.stringify(c.promos, null, 2),
+    ].join('\n')),
+    '',
+    'Analyze competitive landscape. Return only the structured object.',
+  ].join('\n');
+}
+
 export function buildStrategistPrompt(args: {
   menuAnalysis: unknown;
   weatherAnalysis: unknown;
   rawMenu: unknown;
+  competitorData?: unknown[];
+  competitorAnalysis?: unknown;
   criticFeedback?: unknown;
   revision: number;
 }): string {
@@ -187,6 +288,28 @@ export function buildStrategistPrompt(args: {
     `Weather analysis:\n${JSON.stringify(args.weatherAnalysis, null, 2)}`,
     `Raw menu (item IDs, names, prices, tags):\n${JSON.stringify(args.rawMenu, null, 2)}`,
   ];
+
+  if (args.competitorAnalysis) {
+    parts.push(
+      `Competitor analysis (AI-generated insights):\n${JSON.stringify(args.competitorAnalysis, null, 2)}`
+    );
+  } else if (args.competitorData && args.competitorData.length > 0) {
+    const latest = args.competitorData[0];
+    const competitorSummary = {
+      totalSnapshots: args.competitorData.length,
+      latest: {
+        itemsTracked: (latest as Record<string, unknown>).items
+          ? ((latest as Record<string, unknown>).items as unknown[]).length
+          : 0,
+        promos: (latest as Record<string, unknown>).promos ?? [],
+        notes: (latest as Record<string, unknown>).notes ?? [],
+      },
+    };
+    parts.push(
+      `Competitor intelligence (${args.competitorData.length} snapshots):\n${JSON.stringify(competitorSummary, null, 2)}\n\nFull latest snapshot:\n${JSON.stringify(latest, null, 2)}`
+    );
+  }
+
   if (args.criticFeedback) {
     parts.push(
       `Revision round ${args.revision}. Previous critic feedback to address:\n${JSON.stringify(

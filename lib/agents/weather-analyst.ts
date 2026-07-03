@@ -18,7 +18,7 @@ export async function runWeatherAnalyst(
   return withAgentRun({
     agentName: 'weather-analyst',
     model: getModel('weather-analyst'),
-    system: WEATHER_ANALYST_SYSTEM,
+    instructions: WEATHER_ANALYST_SYSTEM,
     prompt: buildWeatherAnalystPrompt(input),
     schema: weatherAnalystOutputSchema,
     schemaName: 'WeatherAnalysis',

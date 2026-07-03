@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { CompetitorData } from '@/lib/types';
+import { COMPETITOR_POLL_INTERVAL_MS, COMPETITOR_POLL_TIMEOUT_MS } from '@/constants/competitor';
 
 export interface RefreshOptions {
   url?: string;
@@ -38,6 +39,7 @@ export function useCompetitorSnapshots(businessId: string) {
   }, [stopPolling]);
 
   const loadSnapshots = useCallback(async () => {
+    if (!businessId) return;
     try {
       setLoading(true);
       const res = await fetch(`/api/competitor/${businessId}`);
@@ -73,7 +75,18 @@ export function useCompetitorSnapshots(businessId: string) {
       setPolling(true);
       toast.loading('Scrape job started — waiting for results...', { id: 'scrape' });
 
+      const startTime = Date.now();
       const interval = setInterval(async () => {
+        // Timeout: stop polling after COMPETITOR_POLL_TIMEOUT_MS
+        if (Date.now() - startTime > COMPETITOR_POLL_TIMEOUT_MS) {
+          clearInterval(interval);
+          intervalRef.current = null;
+          setPolling(false);
+          setRefreshing(false);
+          toast.error('Scrape timed out — try again or check worker status.', { id: 'scrape' });
+          return;
+        }
+
         try {
           const res = await fetch(`/api/competitor/${businessId}`);
           const data = await res.json();
@@ -81,17 +94,19 @@ export function useCompetitorSnapshots(businessId: string) {
 
           if (data.snapshots.length > oldSnapshotCount) {
             clearInterval(interval);
+            intervalRef.current = null;
             setPolling(false);
             setRefreshing(false);
             toast.success('New competitor data available!', { id: 'scrape' });
           }
         } catch {
           clearInterval(interval);
+          intervalRef.current = null;
           setPolling(false);
           setRefreshing(false);
           toast.error('Failed to fetch updated snapshots', { id: 'scrape' });
         }
-      }, 3000);
+      }, COMPETITOR_POLL_INTERVAL_MS);
 
       intervalRef.current = interval;
     } catch (err) {

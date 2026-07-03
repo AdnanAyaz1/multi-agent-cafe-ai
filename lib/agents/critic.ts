@@ -23,7 +23,7 @@ export async function runCritic(
   return withAgentRun({
     agentName: 'critic',
     model: getModel('critic'),
-    system: CRITIC_SYSTEM,
+    instructions: CRITIC_SYSTEM,
     prompt: buildCriticPrompt(input),
     schema: criticOutputSchema,
     schemaName: 'CriticReview',

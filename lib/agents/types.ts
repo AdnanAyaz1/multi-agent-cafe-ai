@@ -95,28 +95,68 @@ export type SynthesizerOutput = z.infer<typeof synthesizerOutputSchema>;
 // ─── Competitor Parser output ───────────────────────────────────
 export const competitorMenuItemSchema = z.object({
   name: z.string().min(1).max(160),
-  category: z.string().max(60).optional(),
-  price: z.number().nonnegative().optional(),
-  currency: z.string().max(8).optional(),
-  description: z.string().max(240).optional(),
-  isPromo: z.boolean(),
+  category: z.string().max(60).nullable().optional(),
+  price: z.number().nonnegative().nullable().optional(),
+  currency: z.string().max(8).nullable().optional(),
+  description: z.string().max(240).nullable().optional(),
+  isPromo: z.boolean().nullable().optional().default(false),
 });
 export type CompetitorMenuItemParsed = z.infer<typeof competitorMenuItemSchema>;
 
 export const competitorPromoSchema = z.object({
   text: z.string().min(1).max(240),
-  discountPercent: z.number().int().min(1).max(99).optional(),
-  validUntil: z.string().max(40).optional(),
+  discountPercent: z.number().int().min(1).max(99).nullable().optional(),
+  validUntil: z.string().max(40).nullable().optional(),
 });
 export type CompetitorPromoParsed = z.infer<typeof competitorPromoSchema>;
 
 export const competitorParserOutputSchema = z.object({
-  brand: z.string().max(120).optional(),
+  brand: z.string().max(120).nullable().optional(),
   items: z.array(competitorMenuItemSchema).max(60),
   promos: z.array(competitorPromoSchema).max(15),
   notes: z.array(z.string().max(200)).max(6),
 });
 export type CompetitorParserOutput = z.infer<typeof competitorParserOutputSchema>;
+
+// ─── Competitor Analyst output ──────────────────────────────────
+export const competitorAnalystOutputSchema = z.object({
+  competitors: z.array(
+    z.object({
+      brand: z.string().max(120),
+      totalItems: z.number().int().nonnegative(),
+      priceRange: z.object({
+        min: z.number().nonnegative(),
+        max: z.number().nonnegative(),
+        average: z.number().nonnegative(),
+      }),
+      categories: z.array(z.string().max(60)),
+      activePromos: z.number().int().nonnegative(),
+      promoHighlights: z.array(z.string().max(200)).max(5),
+      strengths: z.array(z.string().max(200)).max(5),
+      weaknesses: z.array(z.string().max(200)).max(5),
+    })
+  ),
+  priceComparison: z.object({
+    ourCheaperCount: z.number().int().nonnegative(),
+    theirCheaperCount: z.number().int().nonnegative(),
+    samePriceCount: z.number().int().nonnegative(),
+    biggestGap: z.object({
+      ourItem: z.string(),
+      theirItem: z.string(),
+      difference: z.number(),
+    }).optional(),
+  }),
+  promoIntelligence: z.array(z.object({
+    competitor: z.string(),
+    promo: z.string(),
+    discountPercent: z.number().int().optional(),
+    threat: z.enum(['low', 'medium', 'high']),
+  })),
+  opportunities: z.array(z.string().max(280)).min(1).max(8),
+  threats: z.array(z.string().max(280)).max(6),
+  recommendations: z.array(z.string().max(280)).min(1).max(8),
+});
+export type CompetitorAnalystOutput = z.infer<typeof competitorAnalystOutputSchema>;
 
 // ─── Pipeline-level types ───────────────────────────────────────
 export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed'] as const;
@@ -130,15 +170,26 @@ export const PIPELINE_AGENT_NAMES = [
   'synthesizer',
 ] as const;
 
+export const COMPETITOR_PIPELINE_AGENT_NAMES = [
+  'competitor-parser',
+  'competitor-analyst',
+  'menu-analyst',
+  'strategist',
+  'critic',
+  'synthesizer',
+] as const;
+
 export const STANDALONE_AGENT_NAMES = ['competitor-parser'] as const;
 
 export const AGENT_NAMES = [
   ...PIPELINE_AGENT_NAMES,
+  ...COMPETITOR_PIPELINE_AGENT_NAMES,
   ...STANDALONE_AGENT_NAMES,
 ] as const;
 export type AgentName = (typeof AGENT_NAMES)[number];
 
 export const PIPELINE_AGENT_COUNT = PIPELINE_AGENT_NAMES.length;
+export const COMPETITOR_PIPELINE_AGENT_COUNT = COMPETITOR_PIPELINE_AGENT_NAMES.length;
 
 export interface PipelineContext {
   pipelineId: string;

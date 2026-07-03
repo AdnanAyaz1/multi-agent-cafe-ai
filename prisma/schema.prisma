@@ -75,6 +75,7 @@ model Business {
   name            String
   type            String
   city            String
+  cities          Json             @default("[]")
   latitude        Float?
   longitude       Float?
   timezone        String           @default("UTC")
@@ -86,6 +87,8 @@ model Business {
   user            User?            @relation(fields: [userId], references: [id])
   dataSnapshots   DataSnapshot[]
   recommendations Recommendation[]
+
+  @@index([userId])
 }
 
 model DataSnapshot {

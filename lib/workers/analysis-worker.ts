@@ -1,12 +1,14 @@
 import 'server-only';
 import { Worker, type Job } from 'bullmq';
-import { runAnalysisPipeline } from '@/lib/agents/orchestrator';
+import { runPipeline } from '@/lib/pipelines';
 import { logger } from '@/lib/logger';
 import { redisConnection } from '@/lib/queues/connection';
+import type { PipelineType } from '@/lib/pipelines';
 
 export interface AnalysisJobData {
   businessId: string;
   pipelineId: string;
+  pipelineType: PipelineType;
 }
 
 const globalForWorker = globalThis as unknown as {
@@ -19,10 +21,10 @@ function createWorker(): Worker<AnalysisJobData> {
   const worker = new Worker<AnalysisJobData>(
     'ai-analysis',
     async (job: Job<AnalysisJobData>) => {
-      const { businessId, pipelineId } = job.data;
-      job.log(`Pipeline ${pipelineId} for ${businessId} starting`);
+      const { businessId, pipelineId, pipelineType } = job.data;
+      job.log(`Pipeline ${pipelineId} (${pipelineType}) for ${businessId} starting`);
 
-      const result = await runAnalysisPipeline({ businessId, pipelineId });
+      const result = await runPipeline({ businessId, pipelineId, pipelineType });
 
       job.log(`Pipeline ${pipelineId} complete, rec ${result.recommendationId}`);
       return result;
