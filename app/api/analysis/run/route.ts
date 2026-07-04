@@ -5,6 +5,7 @@ import { analysisRunRequestSchema } from '@/lib/validators/analysis';
 import { parseBody } from '@/lib/validators';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
+import { inngest } from '@/lib/inngest/client';
 import { logger } from '@/lib/logger';
 
 const log = logger.child('api:analysis/run');
@@ -33,21 +34,15 @@ export async function POST(request: NextRequest) {
 
     const pipelineId = randomUUID();
 
-    // Always enqueue via BullMQ — no more Vercel fire-and-forget.
-    // This ensures the same execution path in all environments and gives
-    // the frontend reliable status polling via the DB.
-    const { aiAnalysisQueue } = await import('@/lib/queues/data-queue');
-    const job = await aiAnalysisQueue.add(
-      'full-pipeline',
-      { businessId, pipelineId, pipelineType },
-      { priority: 2 }
-    );
+    await inngest.send({
+      name: 'pipeline/run',
+      data: { businessId, pipelineId, pipelineType },
+    });
 
-    log.info('pipeline enqueued', {
+    log.info('pipeline dispatched', {
       pipelineId,
       businessId,
       pipelineType,
-      jobId: job.id,
     });
 
     return NextResponse.json(

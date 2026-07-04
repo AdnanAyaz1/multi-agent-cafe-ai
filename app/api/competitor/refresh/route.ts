@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/db';
-import { competitorCollectQueue } from '@/lib/queues/data-queue';
 import { competitorRefreshRequestSchema } from '@/lib/validators/competitor';
 import { parseBody } from '@/lib/validators';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
+import { inngest } from '@/lib/inngest/client';
 import type { EnqueueResult } from '@/types/competitor';
 
 function extractCompetitorUrls(config: unknown): string[] {
@@ -37,19 +37,23 @@ export async function POST(request: NextRequest) {
 
     const pipelineId = randomUUID();
     const enqueued: EnqueueResult[] = [];
-    for (const target of urls) {
-      const job = await competitorCollectQueue.add(
-        'competitor-scrape',
-        {
+
+    // Send one event per URL
+    await inngest.send(
+      urls.map((target) => ({
+        name: 'competitor/scrape' as const,
+        data: {
           businessId,
           url: target,
           pipelineId,
           timeoutMs,
           maxTextLength,
         },
-        { priority: 1 }
-      );
-      enqueued.push({ jobId: job.id, url: target });
+      }))
+    );
+
+    for (const target of urls) {
+      enqueued.push({ jobId: `inngest-${pipelineId}`, url: target });
     }
 
     return NextResponse.json(

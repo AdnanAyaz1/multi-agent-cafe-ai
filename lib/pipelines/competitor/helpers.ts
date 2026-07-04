@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { getMenuForBusiness } from '@/lib/menu';
 import { NotFoundError, ValidationError } from '@/lib/errors';
-import { competitorCollectQueue } from '@/lib/queues/data-queue';
+import { inngest } from '@/lib/inngest/client';
 import type { CompetitorData } from '@/lib/types';
 import type { CompetitorAnalystOutput, WeatherAnalystOutput } from '@/lib/agents/types';
 import type { PipelineContext, CompetitorPipelineInputs } from '@/lib/pipelines/shared/types';
@@ -46,14 +46,13 @@ export async function loadInputs(
 
   const menu = await getMenuForBusiness(context.businessId);
 
-  for (const url of urls) {
-    await competitorCollectQueue.add(
-      'competitor-scrape',
-      { businessId: context.businessId, url, pipelineId: context.pipelineId },
-      { priority: 1 }
-    );
-  }
-  log.info('scrape jobs enqueued', { pipelineId: context.pipelineId, urlCount: urls.length });
+  await inngest.send(
+    urls.map((url) => ({
+      name: 'competitor/scrape' as const,
+      data: { businessId: context.businessId, url, pipelineId: context.pipelineId },
+    }))
+  );
+  log.info('scrape events dispatched', { pipelineId: context.pipelineId, urlCount: urls.length });
 
   const timeoutMs = 2 * 60 * 1000;
   const pollInterval = 3000;
