@@ -3,6 +3,7 @@ import {
   Hourglass,
   Loader2,
   XCircle,
+  Ban,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -17,6 +18,14 @@ export function PipelineStatusBadge({ status }: PipelineStatusBadgeProps) {
       <Badge className={className}>
         <CheckCircle2 className="size-3 text-success" aria-hidden />
         {STATUS_LABEL.complete}
+      </Badge>
+    );
+  }
+  if (status === 'cancelled') {
+    return (
+      <Badge className={className}>
+        <Ban className="size-3" aria-hidden />
+        {STATUS_LABEL.cancelled}
       </Badge>
     );
   }

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { pipelineIdSchema } from '@/lib/validators/analysis';
 import { NotFoundError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
+import { cancelPipeline } from '@/lib/pipelines/cancel';
 import type {
   AgentName,
   PipelineStatus,
@@ -72,7 +73,7 @@ export async function GET(
       recommendation = formatRecommendation(rec);
     }
 
-    const status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT);
+    const status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT, runs);
     const startedAt = runs[0]?.startedAt?.toISOString() ?? null;
     const completedAt =
       status === 'complete'
@@ -93,12 +94,46 @@ export async function GET(
   }
 }
 
+export async function DELETE(
+  _request: NextRequest,
+  ctx: RouteContext<'/api/analysis/[pipelineId]'>
+) {
+  try {
+    const { pipelineId } = await ctx.params;
+    const validId = pipelineIdSchema.parse(pipelineId);
+
+    const cancelled = await cancelPipeline(validId);
+
+    log.info('pipeline cancel requested', {
+      pipelineId: validId,
+      cancelled,
+    });
+
+    return NextResponse.json({ success: true, cancelled });
+  } catch (error) {
+    return handleError(error) as NextResponse;
+  }
+}
+
 function derivePipelineStatus(
   runStatuses: string[],
-  expectedMin: number
+  expectedMin: number,
+  agentRuns?: RawAgentRun[]
 ): PipelineStatus {
-  if (runStatuses.some((s) => s === 'failed')) return 'failed';
-  if (runStatuses.some((s) => s === 'running' || s === 'pending')) return 'running';
+  const hasFailed = runStatuses.some((s) => s === 'failed');
+  const hasCompleted = runStatuses.some((s) => s === 'complete');
+  const hasRunning = runStatuses.some((s) => s === 'running' || s === 'pending');
+
+  // Detect user cancellation: all failed runs have the cancellation message
+  if (hasFailed && !hasCompleted && !hasRunning && agentRuns) {
+    const allCancelled = agentRuns
+      .filter((r) => r.status === 'failed')
+      .every((r) => r.error === 'Pipeline cancelled by user');
+    if (allCancelled) return 'cancelled' as PipelineStatus;
+  }
+
+  if (hasFailed) return 'failed';
+  if (hasRunning) return 'running';
   const completed = runStatuses.filter((s) => s === 'complete').length;
   if (completed >= expectedMin) return 'complete';
   return 'running';

@@ -11,6 +11,7 @@ import { runStrategist } from '@/lib/agents/strategist';
 import { runCritic, criticHasBlockers } from '@/lib/agents/critic';
 import { runSynthesizer, deriveFinalConfidence } from '@/lib/agents/synthesizer';
 import { MAX_REVISIONS } from '@/lib/agents/models';
+import { isPipelineCancelled, clearCancellationFlag } from '@/lib/pipelines/cancel';
 import type {
   StrategistOutput,
   CriticOutput,
@@ -133,94 +134,135 @@ export async function runWeatherPipeline(
   const start = Date.now();
   log.info('weather pipeline start', { ...context });
 
-  const { weather, menu, competitors } = await loadInputs(context);
+  try {
+    const { weather, menu, competitors } = await loadInputs(context);
 
-  const [menuAnalysis, weatherAnalysis] = await Promise.all([
-    runMenuAnalyst({ menu }, context).then((r) => r.output),
-    runWeatherAnalyst({ weather }, context).then((r) => r.output),
-  ]);
+      // Check cancellation after data loading
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
 
-  let strategist: StrategistOutput = (
-    await runStrategist(
-      { menuAnalysis, weatherAnalysis, rawMenu: menu, competitorData: competitors, revision: 0 },
-      context
-    )
-  ).output;
+    const [menuAnalysis, weatherAnalysis] = await Promise.all([
+      runMenuAnalyst({ menu }, context).then((r) => r.output),
+      runWeatherAnalyst({ weather }, context).then((r) => r.output),
+    ]);
 
-  let critic: CriticOutput = (
-    await runCritic(
-      { menuAnalysis, weatherAnalysis, strategistOutput: strategist },
-      context
-    )
-  ).output;
+    // Check cancellation after parallel analysts
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
 
-  let revisions = 0;
-  while (criticHasBlockers(critic) && revisions < MAX_REVISIONS) {
-    revisions += 1;
-    log.info('revision triggered', {
-      pipelineId: context.pipelineId,
-      round: revisions,
-      blockers: critic.issues.filter((i) => i.severity === 'blocker').length,
-    });
-
-    strategist = (
+    let strategist: StrategistOutput = (
       await runStrategist(
-        {
-          menuAnalysis,
-          weatherAnalysis,
-          rawMenu: menu,
-          competitorData: competitors,
-          criticFeedback: critic,
-          revision: revisions,
-        },
+        { menuAnalysis, weatherAnalysis, rawMenu: menu, competitorData: competitors, revision: 0 },
         context
       )
     ).output;
 
-    critic = (
+    // Check cancellation after strategist
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    let critic: CriticOutput = (
       await runCritic(
         { menuAnalysis, weatherAnalysis, strategistOutput: strategist },
         context
       )
     ).output;
+
+    let revisions = 0;
+    while (criticHasBlockers(critic) && revisions < MAX_REVISIONS) {
+      revisions += 1;
+      log.info('revision triggered', {
+        pipelineId: context.pipelineId,
+        round: revisions,
+        blockers: critic.issues.filter((i) => i.severity === 'blocker').length,
+      });
+
+      // Check cancellation before each revision
+      if (await isPipelineCancelled(context.pipelineId)) {
+        throw 'Pipeline cancelled by user';
+      }
+
+      strategist = (
+        await runStrategist(
+          {
+            menuAnalysis,
+            weatherAnalysis,
+            rawMenu: menu,
+            competitorData: competitors,
+            criticFeedback: critic,
+            revision: revisions,
+          },
+          context
+        )
+      ).output;
+
+      // Check cancellation after strategist revision
+      if (await isPipelineCancelled(context.pipelineId)) {
+        throw 'Pipeline cancelled by user';
+      }
+
+      critic = (
+        await runCritic(
+          { menuAnalysis, weatherAnalysis, strategistOutput: strategist },
+          context
+        )
+      ).output;
+    }
+
+    // Check cancellation before synthesizer
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    const synthesizer: SynthesizerOutput = (
+      await runSynthesizer(
+        {
+          menuAnalysis,
+          weatherAnalysis,
+          strategistOutput: strategist,
+          criticOutput: critic,
+        },
+        context
+      )
+    ).output;
+
+    const finalConfidence = deriveFinalConfidence(strategist.confidence, critic);
+
+    const recommendation = await persistRecommendation(context, {
+      menuAnalysis,
+      weatherAnalysis,
+      strategist,
+      critic,
+      synthesizer,
+      finalConfidence,
+    });
+
+    const durationMs = Date.now() - start;
+    log.info('weather pipeline complete', {
+      pipelineId: context.pipelineId,
+      recommendationId: recommendation.id,
+      revisions,
+      durationMs,
+    });
+
+    // Clear Redis cancellation flag only on full success.
+    // On cancellation, the flag stays so BullMQ worker knows not to retry.
+    await clearCancellationFlag(context.pipelineId);
+
+    return {
+      pipelineId: context.pipelineId,
+      recommendationId: recommendation.id,
+      revisions,
+      durationMs,
+      pipelineType: 'weather',
+    };
+  } catch (error) {
+    // Don't clear Redis flag on cancellation — let it stay so BullMQ
+    // worker knows this was cancelled and doesn't re-run on retry.
+    // Flag auto-expires after 10 minutes.
+    throw error;
   }
-
-  const synthesizer: SynthesizerOutput = (
-    await runSynthesizer(
-      {
-        menuAnalysis,
-        weatherAnalysis,
-        strategistOutput: strategist,
-        criticOutput: critic,
-      },
-      context
-    )
-  ).output;
-
-  const finalConfidence = deriveFinalConfidence(strategist.confidence, critic);
-
-  const recommendation = await persistRecommendation(context, {
-    menuAnalysis,
-    weatherAnalysis,
-    strategist,
-    critic,
-    synthesizer,
-    finalConfidence,
-  });
-
-  const durationMs = Date.now() - start;
-  log.info('weather pipeline complete', {
-    pipelineId: context.pipelineId,
-    recommendationId: recommendation.id,
-    revisions,
-    durationMs,
-  });
-
-  return {
-    pipelineId: context.pipelineId,
-    recommendationId: recommendation.id,
-    revisions,
-    durationMs,
-    pipelineType: 'weather',
-  };
 }

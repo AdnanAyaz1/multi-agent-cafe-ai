@@ -49,8 +49,12 @@ export default function CompetitorPipelinePage() {
       toast.loading('Competitor pipeline started — agents are working...', { id: 'pipeline' });
     } else if (current === 'complete') {
       toast.success('Competitor pipeline complete — recommendation ready!', { id: 'pipeline' });
+    } else if (current === 'cancelled') {
+      toast.error('Pipeline cancelled by user.', { id: 'pipeline' });
     } else if (current === 'failed') {
-      toast.error('Competitor pipeline failed — please try again.', { id: 'pipeline' });
+      const failedRun = status.agentRuns.find((r) => r.status === 'failed' && r.error);
+      const msg = failedRun?.error ?? 'Competitor pipeline failed — please try again.';
+      toast.error(msg, { id: 'pipeline' });
     }
   }, [status?.status]);
 

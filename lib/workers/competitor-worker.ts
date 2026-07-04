@@ -63,9 +63,20 @@ function createWorker(): Worker<CompetitorJobData, CompetitorJobResult> {
       const data: CompetitorData = {
         url: scrape.url,
         finalUrl: scrape.finalUrl,
-        brand: parsed.output.brand,
-        items: parsed.output.items,
-        promos: parsed.output.promos,
+        brand: parsed.output.brand ?? undefined,
+        items: parsed.output.items.map((item) => ({
+          ...item,
+          isPromo: item.isPromo ?? false,
+          category: item.category ?? undefined,
+          price: item.price ?? undefined,
+          currency: item.currency ?? undefined,
+          description: item.description ?? undefined,
+        })),
+        promos: parsed.output.promos.map((promo) => ({
+          ...promo,
+          discountPercent: promo.discountPercent ?? undefined,
+          validUntil: promo.validUntil ?? undefined,
+        })),
         notes: parsed.output.notes,
         scrapedAt: scrape.scrapedAt,
       };

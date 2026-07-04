@@ -6,11 +6,12 @@ export const POLL_INTERVAL_MS = 1_500
 
 export const POLL_TIMEOUT_MS = 5 * 60_000
 
-export type PipelineRunStatus = 'pending' | 'running' | 'complete' | 'failed'
+export type PipelineRunStatus = 'pending' | 'running' | 'complete' | 'failed' | 'cancelled'
 
 export const PIPELINE_RUN_STATUSES: readonly PipelineRunStatus[] = [
   'pending',
   'running',
   'complete',
   'failed',
+  'cancelled',
 ] as const

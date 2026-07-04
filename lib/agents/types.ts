@@ -159,7 +159,7 @@ export const competitorAnalystOutputSchema = z.object({
 export type CompetitorAnalystOutput = z.infer<typeof competitorAnalystOutputSchema>;
 
 // ─── Pipeline-level types ───────────────────────────────────────
-export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed'] as const;
+export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed', 'cancelled'] as const;
 export type PipelineStatus = (typeof PIPELINE_STATUSES)[number];
 
 export const PIPELINE_AGENT_NAMES = [

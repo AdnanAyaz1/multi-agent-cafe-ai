@@ -48,8 +48,13 @@ export default function WeatherPipelinePage() {
       toast.loading('Weather pipeline started — agents are working...', { id: 'pipeline' });
     } else if (current === 'complete') {
       toast.success('Weather pipeline complete — recommendation ready!', { id: 'pipeline' });
+    } else if (current === 'cancelled') {
+      toast.error('Pipeline cancelled by user.', { id: 'pipeline' });
     } else if (current === 'failed') {
-      toast.error('Weather pipeline failed — please try again.', { id: 'pipeline' });
+      // Find the first agent error to show a meaningful message
+      const failedRun = status.agentRuns.find((r) => r.status === 'failed' && r.error);
+      const msg = failedRun?.error ?? 'Weather pipeline failed — please try again.';
+      toast.error(msg, { id: 'pipeline' });
     }
   }, [status?.status]);
 

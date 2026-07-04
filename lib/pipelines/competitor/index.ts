@@ -11,6 +11,7 @@ import { runStrategist } from '@/lib/agents/strategist';
 import { runCritic, criticHasBlockers } from '@/lib/agents/critic';
 import { runSynthesizer, deriveFinalConfidence } from '@/lib/agents/synthesizer';
 import { MAX_REVISIONS } from '@/lib/agents/models';
+import { isPipelineCancelled, clearCancellationFlag } from '@/lib/pipelines/cancel';
 import type { CompetitorData } from '@/lib/types';
 import type {
   CompetitorParserOutput,
@@ -172,119 +173,97 @@ export async function runCompetitorPipeline(
   const start = Date.now();
   log.info('competitor pipeline start', { ...context });
 
-  const business = await prisma.business.findUnique({
-    where: { id: context.businessId },
-    select: { id: true, config: true },
-  });
-  if (!business) throw new NotFoundError('Business');
+  try {
+    const business = await prisma.business.findUnique({
+      where: { id: context.businessId },
+      select: { id: true, config: true },
+    });
+    if (!business) throw new NotFoundError('Business');
 
-  const urls = extractCompetitorUrls(business.config);
-  if (urls.length === 0) {
-    throw new ValidationError('No competitor URLs configured for this business');
-  }
+    const urls = extractCompetitorUrls(business.config);
+    if (urls.length === 0) {
+      throw new ValidationError('No competitor URLs configured for this business');
+    }
 
-  // Step 1: Load menu + scrape competitors
-  const { menu, competitorSnapshots } = await loadInputs(context, urls);
-  log.info('competitor data collected', {
-    pipelineId: context.pipelineId,
-    snapshotCount: competitorSnapshots.length,
-  });
-
-  // Step 2: Parse each competitor via competitor-parser agent (parallel)
-  const parsedCompetitors: CompetitorParserOutput[] = await Promise.all(
-    competitorSnapshots.map((snap) =>
-      runCompetitorParser(
-        {
-          scrape: {
-            url: snap.url,
-            finalUrl: snap.finalUrl,
-            title: snap.brand ?? '',
-            text: snap.notes.join('. '),
-            scrapedAt: snap.scrapedAt,
-          },
-        },
-        context
-      ).then((r) => r.output)
-    )
-  );
-  log.info('competitors parsed', {
-    pipelineId: context.pipelineId,
-    parsedCount: parsedCompetitors.length,
-  });
-
-  // Step 3: Run competitor-analyst agent
-  const ourMenuItems = menu.items.map((i) => ({
-    id: i.id,
-    name: i.name,
-    category: i.category,
-    price: i.price,
-  }));
-
-  const competitorAnalysis: CompetitorAnalystOutput = (
-    await runCompetitorAnalyst(
-      {
-        competitors: competitorSnapshots.map((snap, i) => ({
-          brand: snap.brand ?? parsedCompetitors[i]?.brand ?? null,
-          items: snap.items,
-          promos: snap.promos,
-          notes: snap.notes,
-        })),
-        ourMenu: ourMenuItems,
-      },
-      context
-    )
-  ).output;
-
-  // Step 4: Run menu-analyst agent
-  const menuAnalysis: MenuAnalystOutput = (
-    await runMenuAnalyst({ menu }, context)
-  ).output;
-
-  // Step 5: Run strategist with competitor analysis
-  let strategist: StrategistOutput = (
-    await runStrategist(
-      {
-        menuAnalysis,
-        weatherAnalysis: {
-          headline: competitorAnalysis.recommendations[0] ?? 'Competitor analysis complete',
-          tempBucket: 'mild',
-          precipitation: 'none',
-          comfortIndex: 'pleasant',
-          consumerSignals: competitorAnalysis.opportunities.slice(0, 4),
-          expectedDemandShift: {
-            hotItems: 'flat',
-            coldItems: 'flat',
-            food: 'flat',
-            dessert: 'flat',
-          },
-        },
-        rawMenu: menu,
-        competitorData: competitorSnapshots,
-        competitorAnalysis,
-        revision: 0,
-      },
-      context
-    )
-  ).output;
-
-  // Step 6: Critic loop
-  let critic: CriticOutput = (
-    await runCritic(
-      { menuAnalysis, weatherAnalysis: { headline: '', tempBucket: 'mild', precipitation: 'none', comfortIndex: 'pleasant', consumerSignals: [], expectedDemandShift: { hotItems: 'flat', coldItems: 'flat', food: 'flat', dessert: 'flat' } }, strategistOutput: strategist },
-      context
-    )
-  ).output;
-
-  let revisions = 0;
-  while (criticHasBlockers(critic) && revisions < MAX_REVISIONS) {
-    revisions += 1;
-    log.info('revision triggered', {
+    // Step 1: Load menu + scrape competitors
+    const { menu, competitorSnapshots } = await loadInputs(context, urls);
+    log.info('competitor data collected', {
       pipelineId: context.pipelineId,
-      round: revisions,
-      blockers: critic.issues.filter((i) => i.severity === 'blocker').length,
+      snapshotCount: competitorSnapshots.length,
     });
 
-    strategist = (
+    // Check cancellation after data loading
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    // Step 2: Parse each competitor via competitor-parser agent (parallel)
+    const parsedCompetitors: CompetitorParserOutput[] = await Promise.all(
+      competitorSnapshots.map((snap) =>
+        runCompetitorParser(
+          {
+            scrape: {
+              url: snap.url,
+              finalUrl: snap.finalUrl,
+              title: snap.brand ?? '',
+              text: snap.notes.join('. '),
+              scrapedAt: snap.scrapedAt,
+            },
+          },
+          context
+        ).then((r) => r.output)
+      )
+    );
+    log.info('competitors parsed', {
+      pipelineId: context.pipelineId,
+      parsedCount: parsedCompetitors.length,
+    });
+
+    // Check cancellation after parsing
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    // Step 3: Run competitor-analyst agent
+    const ourMenuItems = menu.items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      category: i.category,
+      price: i.price,
+    }));
+
+    const competitorAnalysis: CompetitorAnalystOutput = (
+      await runCompetitorAnalyst(
+        {
+          competitors: competitorSnapshots.map((snap, i) => ({
+            brand: snap.brand ?? parsedCompetitors[i]?.brand ?? null,
+            items: snap.items,
+            promos: snap.promos,
+            notes: snap.notes,
+          })),
+          ourMenu: ourMenuItems,
+        },
+        context
+      )
+    ).output;
+
+    // Check cancellation after competitor analysis
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    // Step 4: Run menu-analyst agent
+    const menuAnalysis: MenuAnalystOutput = (
+      await runMenuAnalyst({ menu }, context)
+    ).output;
+
+    // Check cancellation after menu analysis
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    // Step 5: Run strategist with competitor analysis
+    let strategist: StrategistOutput = (
       await runStrategist(
         {
           menuAnalysis,
@@ -304,70 +283,141 @@ export async function runCompetitorPipeline(
           rawMenu: menu,
           competitorData: competitorSnapshots,
           competitorAnalysis,
-          criticFeedback: critic,
-          revision: revisions,
+          revision: 0,
         },
         context
       )
     ).output;
 
-    critic = (
+    // Check cancellation after strategist
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    // Step 6: Critic loop
+    let critic: CriticOutput = (
       await runCritic(
         { menuAnalysis, weatherAnalysis: { headline: '', tempBucket: 'mild', precipitation: 'none', comfortIndex: 'pleasant', consumerSignals: [], expectedDemandShift: { hotItems: 'flat', coldItems: 'flat', food: 'flat', dessert: 'flat' } }, strategistOutput: strategist },
         context
       )
     ).output;
-  }
 
-  // Step 7: Synthesizer
-  const synthesizer: SynthesizerOutput = (
-    await runSynthesizer(
-      {
-        menuAnalysis,
-        weatherAnalysis: {
-          headline: 'Competitor intelligence gathered',
-          tempBucket: 'mild',
-          precipitation: 'none',
-          comfortIndex: 'pleasant',
-          consumerSignals: competitorAnalysis.recommendations.slice(0, 4),
-          expectedDemandShift: {
-            hotItems: 'flat',
-            coldItems: 'flat',
-            food: 'flat',
-            dessert: 'flat',
+    let revisions = 0;
+    while (criticHasBlockers(critic) && revisions < MAX_REVISIONS) {
+      revisions += 1;
+      log.info('revision triggered', {
+        pipelineId: context.pipelineId,
+        round: revisions,
+        blockers: critic.issues.filter((i) => i.severity === 'blocker').length,
+      });
+
+      // Check cancellation before each revision
+      if (await isPipelineCancelled(context.pipelineId)) {
+        throw 'Pipeline cancelled by user';
+      }
+
+      strategist = (
+        await runStrategist(
+          {
+            menuAnalysis,
+            weatherAnalysis: {
+              headline: competitorAnalysis.recommendations[0] ?? 'Competitor analysis complete',
+              tempBucket: 'mild',
+              precipitation: 'none',
+              comfortIndex: 'pleasant',
+              consumerSignals: competitorAnalysis.opportunities.slice(0, 4),
+              expectedDemandShift: {
+                hotItems: 'flat',
+                coldItems: 'flat',
+                food: 'flat',
+                dessert: 'flat',
+              },
+            },
+            rawMenu: menu,
+            competitorData: competitorSnapshots,
+            competitorAnalysis,
+            criticFeedback: critic,
+            revision: revisions,
           },
+          context
+        )
+      ).output;
+
+      // Check cancellation after strategist revision
+      if (await isPipelineCancelled(context.pipelineId)) {
+        throw 'Pipeline cancelled by user';
+      }
+
+      critic = (
+        await runCritic(
+          { menuAnalysis, weatherAnalysis: { headline: '', tempBucket: 'mild', precipitation: 'none', comfortIndex: 'pleasant', consumerSignals: [], expectedDemandShift: { hotItems: 'flat', coldItems: 'flat', food: 'flat', dessert: 'flat' } }, strategistOutput: strategist },
+          context
+        )
+      ).output;
+    }
+
+    // Check cancellation before synthesizer
+    if (await isPipelineCancelled(context.pipelineId)) {
+      throw 'Pipeline cancelled by user';
+    }
+
+    // Step 7: Synthesizer
+    const synthesizer: SynthesizerOutput = (
+      await runSynthesizer(
+        {
+          menuAnalysis,
+          weatherAnalysis: {
+            headline: 'Competitor intelligence gathered',
+            tempBucket: 'mild',
+            precipitation: 'none',
+            comfortIndex: 'pleasant',
+            consumerSignals: competitorAnalysis.recommendations.slice(0, 4),
+            expectedDemandShift: {
+              hotItems: 'flat',
+              coldItems: 'flat',
+              food: 'flat',
+              dessert: 'flat',
+            },
+          },
+          strategistOutput: strategist,
+          criticOutput: critic,
         },
-        strategistOutput: strategist,
-        criticOutput: critic,
-      },
-      context
-    )
-  ).output;
+        context
+      )
+    ).output;
 
-  const finalConfidence = deriveFinalConfidence(strategist.confidence, critic);
+    const finalConfidence = deriveFinalConfidence(strategist.confidence, critic);
 
-  // Step 8: Persist
-  const recommendation = await persistRecommendation(context, {
-    menuAnalysis,
-    competitorAnalysis,
-    strategist,
-    critic,
-    synthesizer,
-    finalConfidence,
-  });
+    // Step 8: Persist
+    const recommendation = await persistRecommendation(context, {
+      menuAnalysis,
+      competitorAnalysis,
+      strategist,
+      critic,
+      synthesizer,
+      finalConfidence,
+    });
 
-  const durationMs = Date.now() - start;
-  log.info('competitor pipeline complete', {
-    pipelineId: context.pipelineId,
-    recommendationId: recommendation.id,
-    durationMs,
-  });
+    const durationMs = Date.now() - start;
+    log.info('competitor pipeline complete', {
+      pipelineId: context.pipelineId,
+      recommendationId: recommendation.id,
+      durationMs,
+    });
 
-  return {
-    pipelineId: context.pipelineId,
-    recommendationId: recommendation.id,
-    revisions,
-    durationMs,
-    pipelineType: 'competitor',
-  };
+    // Clear Redis cancellation flag only on full success.
+    await clearCancellationFlag(context.pipelineId);
+
+    return {
+      pipelineId: context.pipelineId,
+      recommendationId: recommendation.id,
+      revisions,
+      durationMs,
+      pipelineType: 'competitor',
+    };
+  } catch (error) {
+    // Don't clear Redis flag on cancellation — let it stay so BullMQ
+    // worker knows this was cancelled and doesn't re-run on retry.
+    throw error;
+  }
 }

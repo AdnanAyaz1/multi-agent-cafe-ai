@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const pipelineTypeEnum = z.enum(['weather', 'competitor']);
 export type PipelineType = z.infer<typeof pipelineTypeEnum>;
 
-export const pipelineStatusEnum = z.enum(['pending', 'running', 'complete', 'failed']);
+export const pipelineStatusEnum = z.enum(['pending', 'running', 'complete', 'failed', 'cancelled']);
 export type PipelineStatus = z.infer<typeof pipelineStatusEnum>;
 
 export interface PipelineContext {

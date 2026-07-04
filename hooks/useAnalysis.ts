@@ -141,7 +141,7 @@ export function useAnalysis() {
             agentRuns: statusData.agentRuns ?? [],
             recommendation: statusData.recommendation ?? undefined,
           });
-          if (statusData.status === 'complete' || statusData.status === 'failed') {
+          if (statusData.status === 'complete' || statusData.status === 'failed' || statusData.status === 'cancelled') {
             // If complete but recommendation is missing, keep polling briefly
             // to handle the race window between synthesizer completion and
             // recommendation persistence.
@@ -167,7 +167,22 @@ export function useAnalysis() {
     }
   }, [stopPolling]);
 
-  const cancel = useCallback(() => {
+  const cancel = useCallback(async () => {
+    const currentPipelineId = activePipelineRef.current;
+
+    // CRITICAL: Send the DELETE request FIRST, before clearing any state.
+    // If we clear state first, React re-renders, the component may unmount,
+    // and the browser aborts the fetch — the server never receives the cancel.
+    if (currentPipelineId) {
+      try {
+        await fetch(`/api/analysis/${currentPipelineId}`, { method: 'DELETE' });
+      } catch {
+        // Best-effort: if the server call fails, the pipeline will check
+        // the Redis cancellation flag on its next step.
+      }
+    }
+
+    // NOW safe to clear local state
     stopPolling();
     activePipelineRef.current = null;
     setLoading(false);
