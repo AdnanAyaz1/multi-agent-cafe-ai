@@ -1,10 +1,5 @@
 import 'server-only';
-import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { getMenuForBusiness } from '@/lib/menu';
-import { NotFoundError } from '@/lib/errors';
-import { ensureWeatherSnapshot } from '@/lib/services/weather/snapshot';
-import type { WeatherData, CompetitorData } from '@/lib/types';
 import { runMenuAnalyst } from '@/lib/agents/menu-analyst';
 import { runWeatherAnalyst } from '@/lib/agents/weather-analyst';
 import { runStrategist } from '@/lib/agents/strategist';
@@ -12,110 +7,16 @@ import { runCritic, criticHasBlockers } from '@/lib/agents/critic';
 import { runSynthesizer, deriveFinalConfidence } from '@/lib/agents/synthesizer';
 import { MAX_REVISIONS } from '@/lib/agents/models';
 import { isPipelineCancelled, clearCancellationFlag } from '@/lib/pipelines/cancel';
+import { persistRecommendation } from '@/lib/pipelines/shared/helpers';
+import { loadInputs } from './helpers';
 import type {
   StrategistOutput,
   CriticOutput,
-  MenuAnalystOutput,
-  WeatherAnalystOutput,
   SynthesizerOutput,
 } from '@/lib/agents/types';
-import type { PipelineContext } from '@/lib/pipelines/shared/types';
-import type { PipelineResult } from '@/lib/pipelines/shared/types';
+import type { PipelineContext, PipelineResult } from '@/lib/pipelines/shared/types';
 
 const log = logger.child('pipelines.weather');
-
-interface WeatherPipelineInputs {
-  weather: WeatherData;
-  menu: Awaited<ReturnType<typeof getMenuForBusiness>>;
-  competitors: CompetitorData[];
-}
-
-async function loadInputs(context: PipelineContext): Promise<WeatherPipelineInputs> {
-  const business = await prisma.business.findUnique({
-    where: { id: context.businessId },
-  });
-  if (!business) throw new NotFoundError('Business');
-
-  const weather = await ensureWeatherSnapshot({
-    businessId: context.businessId,
-    city: business.city,
-    latitude: business.latitude,
-    longitude: business.longitude,
-  });
-
-  const menu = await getMenuForBusiness(context.businessId);
-
-  const snapshots = await prisma.dataSnapshot.findMany({
-    where: {
-      businessId: context.businessId,
-      source: 'competitors',
-      expiresAt: { gt: new Date() },
-    },
-    orderBy: { collectedAt: 'desc' },
-    take: 5,
-  });
-  const competitors = snapshots.map((s) => s.data as unknown as CompetitorData);
-
-  return { weather, menu, competitors };
-}
-
-interface PersistArgs {
-  menuAnalysis: MenuAnalystOutput;
-  weatherAnalysis: WeatherAnalystOutput;
-  strategist: StrategistOutput;
-  critic: CriticOutput;
-  synthesizer: SynthesizerOutput;
-  finalConfidence: string;
-}
-
-async function persistRecommendation(
-  context: PipelineContext,
-  args: PersistArgs
-): Promise<{ id: string }> {
-  return prisma.recommendation.create({
-    data: {
-      businessId: context.businessId,
-      summary: args.synthesizer.headline,
-      reasoning: args.synthesizer.briefingMarkdown,
-      confidence: args.finalConfidence,
-      category: 'marketing',
-      priority: priorityFromActions(args.strategist),
-      status: 'pending',
-      dataAnalysis: JSON.parse(
-        JSON.stringify({
-          pipelineId: context.pipelineId,
-          pipelineType: 'weather',
-          menuAnalysis: args.menuAnalysis,
-          weatherAnalysis: args.weatherAnalysis,
-        })
-      ) as object,
-      criticNotes: JSON.parse(JSON.stringify(args.critic)) as object,
-      actions: {
-        create: args.strategist.actions.map((a) => ({
-          actionType: a.action,
-          item: a.itemName,
-          details: JSON.parse(
-            JSON.stringify({
-              itemId: a.itemId,
-              priority: a.priority,
-              reason: a.reason,
-              discountPercent: a.discountPercent,
-            })
-          ) as object,
-        })),
-      },
-    },
-    select: { id: true },
-  });
-}
-
-function priorityFromActions(strategist: StrategistOutput): number {
-  const min = strategist.actions.reduce(
-    (acc, a) => Math.min(acc, a.priority),
-    5
-  );
-  return 6 - min;
-}
 
 /**
  * Weather Pipeline
@@ -137,7 +38,6 @@ export async function runWeatherPipeline(
   try {
     const { weather, menu, competitors } = await loadInputs(context);
 
-    // Check cancellation after data loading
     if (await isPipelineCancelled(context.pipelineId)) {
       throw 'Pipeline cancelled by user';
     }
@@ -147,7 +47,6 @@ export async function runWeatherPipeline(
       runWeatherAnalyst({ weather }, context).then((r) => r.output),
     ]);
 
-    // Check cancellation after parallel analysts
     if (await isPipelineCancelled(context.pipelineId)) {
       throw 'Pipeline cancelled by user';
     }
@@ -159,7 +58,6 @@ export async function runWeatherPipeline(
       )
     ).output;
 
-    // Check cancellation after strategist
     if (await isPipelineCancelled(context.pipelineId)) {
       throw 'Pipeline cancelled by user';
     }
@@ -180,7 +78,6 @@ export async function runWeatherPipeline(
         blockers: critic.issues.filter((i) => i.severity === 'blocker').length,
       });
 
-      // Check cancellation before each revision
       if (await isPipelineCancelled(context.pipelineId)) {
         throw 'Pipeline cancelled by user';
       }
@@ -199,7 +96,6 @@ export async function runWeatherPipeline(
         )
       ).output;
 
-      // Check cancellation after strategist revision
       if (await isPipelineCancelled(context.pipelineId)) {
         throw 'Pipeline cancelled by user';
       }
@@ -212,7 +108,6 @@ export async function runWeatherPipeline(
       ).output;
     }
 
-    // Check cancellation before synthesizer
     if (await isPipelineCancelled(context.pipelineId)) {
       throw 'Pipeline cancelled by user';
     }
@@ -231,14 +126,12 @@ export async function runWeatherPipeline(
 
     const finalConfidence = deriveFinalConfidence(strategist.confidence, critic);
 
-    const recommendation = await persistRecommendation(context, {
-      menuAnalysis,
-      weatherAnalysis,
-      strategist,
-      critic,
-      synthesizer,
-      finalConfidence,
-    });
+    const recommendation = await persistRecommendation(
+      context,
+      { strategist, critic, synthesizer, finalConfidence },
+      'marketing',
+      { menuAnalysis, weatherAnalysis }
+    );
 
     const durationMs = Date.now() - start;
     log.info('weather pipeline complete', {
@@ -248,8 +141,6 @@ export async function runWeatherPipeline(
       durationMs,
     });
 
-    // Clear Redis cancellation flag only on full success.
-    // On cancellation, the flag stays so BullMQ worker knows not to retry.
     await clearCancellationFlag(context.pipelineId);
 
     return {
@@ -260,9 +151,6 @@ export async function runWeatherPipeline(
       pipelineType: 'weather',
     };
   } catch (error) {
-    // Don't clear Redis flag on cancellation — let it stay so BullMQ
-    // worker knows this was cancelled and doesn't re-run on retry.
-    // Flag auto-expires after 10 minutes.
     throw error;
   }
 }
