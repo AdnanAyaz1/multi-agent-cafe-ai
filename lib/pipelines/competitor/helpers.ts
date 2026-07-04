@@ -6,7 +6,7 @@ import { NotFoundError, ValidationError } from '@/lib/errors';
 import { competitorCollectQueue } from '@/lib/queues/data-queue';
 import type { CompetitorData } from '@/lib/types';
 import type { CompetitorAnalystOutput, WeatherAnalystOutput } from '@/lib/agents/types';
-import type { PipelineContext } from '@/lib/pipelines/shared/types';
+import type { PipelineContext, CompetitorPipelineInputs } from '@/lib/pipelines/shared/types';
 
 const log = logger.child('pipelines.competitor');
 
@@ -33,11 +33,6 @@ export function extractCompetitorUrls(config: unknown): string[] {
   const raw = (config as Record<string, unknown>).competitorUrls;
   if (!Array.isArray(raw)) return [];
   return raw.filter((u): u is string => typeof u === 'string' && u.length > 0);
-}
-
-export interface CompetitorPipelineInputs {
-  menu: Awaited<ReturnType<typeof getMenuForBusiness>>;
-  competitorSnapshots: CompetitorData[];
 }
 
 export async function loadInputs(

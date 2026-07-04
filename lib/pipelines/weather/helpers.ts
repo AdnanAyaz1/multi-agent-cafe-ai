@@ -3,14 +3,8 @@ import { prisma } from '@/lib/db';
 import { getMenuForBusiness } from '@/lib/menu';
 import { NotFoundError } from '@/lib/errors';
 import { ensureWeatherSnapshot } from '@/lib/services/weather/snapshot';
-import type { WeatherData, CompetitorData } from '@/lib/types';
-import type { PipelineContext } from '@/lib/pipelines/shared/types';
-
-export interface WeatherPipelineInputs {
-  weather: WeatherData;
-  menu: Awaited<ReturnType<typeof getMenuForBusiness>>;
-  competitors: CompetitorData[];
-}
+import type { CompetitorData } from '@/lib/types';
+import type { PipelineContext, WeatherPipelineInputs } from '@/lib/pipelines/shared/types';
 
 export async function loadInputs(context: PipelineContext): Promise<WeatherPipelineInputs> {
   const business = await prisma.business.findUnique({

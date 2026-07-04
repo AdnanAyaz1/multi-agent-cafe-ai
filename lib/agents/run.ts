@@ -1,41 +1,20 @@
 import 'server-only';
 import { generateText } from 'ai';
-import type { LanguageModel } from 'ai';
-import type { ZodType } from 'zod';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { isPipelineCancelled } from '@/lib/pipelines/cancel';
 import { PipelineCancelledError, PipelineTerminalError, classifyLLMError } from '@/lib/pipelines/errors';
 import { sleep as abortableSleep } from '@/lib/pipelines/abort';
-import type { AgentName, PipelineContext } from './types';
+import type { AgentRunArgs, AgentRunResult } from './types';
 import {
   parseJsonFromText,
   markFailed,
   buildRateLimitMessage,
 } from './utils';
 
+export type { AgentRunArgs, AgentRunResult };
+
 const log = logger.child('agents');
-
-export interface AgentRunArgs<Output> {
-  agentName: AgentName;
-  model: LanguageModel;
-  instructions: string;
-  prompt: string;
-  schema: ZodType<Output>;
-  schemaName: string;
-  context: PipelineContext;
-  /** Optional structured input echoed into the AgentRun row for debugging. */
-  inputSnapshot?: unknown;
-  /** Defaults to 0 (no retry). Total attempts = retries + 1. */
-  retries?: number;
-}
-
-export interface AgentRunResult<Output> {
-  agentRunId: string;
-  output: Output;
-  durationMs: number;
-  tokenCount: number;
-}
 
 /**
  * Runs a single agent step:

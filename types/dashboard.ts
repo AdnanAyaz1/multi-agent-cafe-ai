@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import type { PipelineRunStatus } from '@/constants/pipeline';
-import type { PipelineAgentRun, PipelineRecommendation, PipelineStatus } from '@/hooks/useAnalysis';
-import type { RefreshOptions } from '@/hooks/useCompetitorSnapshots';
+import type { PipelineAgentRun, PipelineRecommendation, PipelineStatusResponse } from '@/types/analysis';
+import type { RefreshOptions } from '@/types/analysis';
 import type { CompetitorData, CompetitorMenuItem, CompetitorPromo } from '@/lib/types';
 import type { WeatherData } from '@/lib/types';
 
@@ -139,7 +139,7 @@ export interface WeatherStatsOverviewProps {
 }
 
 export interface AnalysisStatsProps {
-  status: PipelineStatus;
+  status: PipelineStatusResponse;
 }
 
 export interface AnalysisRecommendationProps {

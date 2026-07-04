@@ -1,20 +1,12 @@
 import {
   criticOutputSchema,
   type CriticOutput,
-  type MenuAnalystOutput,
-  type StrategistOutput,
-  type WeatherAnalystOutput,
+  type CriticInput,
   type PipelineContext,
 } from './types';
 import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
 import { CRITIC_SYSTEM, buildCriticPrompt } from './prompts';
-
-export interface CriticInput {
-  menuAnalysis: MenuAnalystOutput;
-  weatherAnalysis: WeatherAnalystOutput;
-  strategistOutput: StrategistOutput;
-}
 
 export async function runCritic(
   input: CriticInput,

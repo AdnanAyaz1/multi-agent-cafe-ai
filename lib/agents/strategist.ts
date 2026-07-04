@@ -1,27 +1,12 @@
 import {
   strategistOutputSchema,
   type StrategistOutput,
-  type MenuAnalystOutput,
-  type WeatherAnalystOutput,
-  type CriticOutput,
-  type CompetitorAnalystOutput,
+  type StrategistInput,
   type PipelineContext,
 } from './types';
 import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
 import { STRATEGIST_SYSTEM, buildStrategistPrompt } from './prompts';
-import type { Menu } from '@/lib/menu/types';
-import type { CompetitorData } from '@/lib/types';
-
-export interface StrategistInput {
-  menuAnalysis: MenuAnalystOutput;
-  weatherAnalysis: WeatherAnalystOutput;
-  rawMenu: Menu;
-  competitorData?: CompetitorData[];
-  competitorAnalysis?: CompetitorAnalystOutput;
-  criticFeedback?: CriticOutput;
-  revision: number;
-}
 
 export async function runStrategist(
   input: StrategistInput,

@@ -5,17 +5,16 @@ import { NotFoundError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
 import { cancelPipeline, getPipelineCancelReason } from '@/lib/pipelines/cancel';
 import type {
-  AgentName,
   PipelineStatus,
 } from '@/lib/agents/types';
 import { PIPELINE_AGENT_COUNT } from '@/lib/agents/types';
 import { logger } from '@/lib/logger';
 import type {
-  AgentRunSummary,
-  RecommendationSummary,
   PipelineStatusResponse,
   RawAgentRun,
   RawRecommendation,
+  PipelineAgentRun,
+  PipelineRecommendation,
 } from '@/types/analysis';
 
 const log = logger.child('api:analysis/status');
@@ -41,31 +40,26 @@ export async function GET(
 
     // For competitor pipelines (no agent runs), derive status from recommendation
     if (runs.length === 0 && rec) {
+      const recFormatted = formatRecommendation(rec);
       const body: PipelineStatusResponse = {
-        pipelineId: validId,
         status: 'complete',
-        startedAt: rec.date.toISOString(),
-        completedAt: rec.date.toISOString(),
         agentRuns: [],
-        recommendation: formatRecommendation(rec),
+        recommendation: recFormatted,
       };
       return NextResponse.json(body);
     }
 
     // For weather pipelines (has agent runs)
-    const agentRuns: AgentRunSummary[] = runs.map((r) => ({
+    const agentRuns: PipelineAgentRun[] = runs.map((r) => ({
       id: r.id,
-      agentName: r.agentName as AgentName,
+      agentName: r.agentName as string,
       status: r.status,
-      durationMs: r.durationMs,
-      tokenCount: r.tokenCount,
-      startedAt: r.startedAt?.toISOString() ?? null,
-      completedAt: r.completedAt?.toISOString() ?? null,
-      error: r.error,
-      output: r.output,
+      durationMs: r.durationMs ?? undefined,
+      tokenCount: r.tokenCount ?? undefined,
+      error: r.error ?? undefined,
     }));
 
-    let recommendation: RecommendationSummary | null = null;
+    let recommendation: PipelineRecommendation | undefined = undefined;
     const completedSynthesizer = runs.find(
       (r) => r.agentName === 'synthesizer' && r.status === 'complete'
     );
@@ -86,17 +80,8 @@ export async function GET(
       status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT, runs);
     }
 
-    const startedAt = runs[0]?.startedAt?.toISOString() ?? null;
-    const completedAt =
-      status === 'complete'
-        ? runs[runs.length - 1]?.completedAt?.toISOString() ?? null
-        : null;
-
     const body: PipelineStatusResponse = {
-      pipelineId: validId,
       status,
-      startedAt,
-      completedAt,
       agentRuns,
       recommendation,
     };
@@ -151,7 +136,7 @@ function derivePipelineStatus(
   return 'running';
 }
 
-function formatRecommendation(rec: RawRecommendation): RecommendationSummary {
+function formatRecommendation(rec: RawRecommendation): PipelineRecommendation {
   return {
     id: rec.id,
     summary: rec.summary,
@@ -166,7 +151,7 @@ function formatRecommendation(rec: RawRecommendation): RecommendationSummary {
       id: a.id,
       actionType: a.actionType,
       item: a.item,
-      details: a.details,
+      details: a.details as PipelineRecommendation['actions'][number]['details'],
     })),
   };
 }

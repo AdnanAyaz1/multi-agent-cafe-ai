@@ -1,4 +1,4 @@
-import type { PipelineRecommendation } from '@/hooks/useAnalysis';
+import type { PipelineRecommendation } from '@/types/analysis';
 import type { Decision } from '@/types/decisions';
 import type { UseFormReturn } from 'react-hook-form';
 import type { AnalysisFormInput } from '@/lib/validators/analysis';

@@ -1,6 +1,11 @@
 import { z } from 'zod';
+import type { LanguageModel } from 'ai';
+import type { ZodType } from 'zod';
+import type { Menu } from '@/lib/menu/types';
+import type { CompetitorData } from '@/lib/types';
 
 export const ACTION_TYPES = ['promote', 'discount', 'hold', 'remove'] as const;
+
 export type ActionType = (typeof ACTION_TYPES)[number];
 
 export const CONFIDENCE_LEVELS = ['low', 'medium', 'high'] as const;
@@ -269,4 +274,52 @@ export interface CompetitorAnalystInput {
     category: string;
     price: number;
   }>;
+}
+
+// ─── Agent run types (moved from run.ts) ────────────────────────────
+
+export interface AgentRunArgs<Output> {
+  agentName: AgentName;
+  model: LanguageModel;
+  instructions: string;
+  prompt: string;
+  schema: ZodType<Output>;
+  schemaName: string;
+  context: PipelineContext;
+  /** Optional structured input echoed into the AgentRun row for debugging. */
+  inputSnapshot?: unknown;
+  /** Defaults to 0 (no retry). Total attempts = retries + 1. */
+  retries?: number;
+}
+
+export interface AgentRunResult<Output> {
+  agentRunId: string;
+  output: Output;
+  durationMs: number;
+  tokenCount: number;
+}
+
+// ─── Composite agent input types (moved from individual agent files) ──
+
+export interface CriticInput {
+  menuAnalysis: MenuAnalystOutput;
+  weatherAnalysis: WeatherAnalystOutput;
+  strategistOutput: StrategistOutput;
+}
+
+export interface SynthesizerInput {
+  menuAnalysis: MenuAnalystOutput;
+  weatherAnalysis: WeatherAnalystOutput;
+  strategistOutput: StrategistOutput;
+  criticOutput: CriticOutput;
+}
+
+export interface StrategistInput {
+  menuAnalysis: MenuAnalystOutput;
+  weatherAnalysis: WeatherAnalystOutput;
+  rawMenu: Menu;
+  competitorData?: CompetitorData[];
+  competitorAnalysis?: CompetitorAnalystOutput;
+  criticFeedback?: CriticOutput;
+  revision: number;
 }

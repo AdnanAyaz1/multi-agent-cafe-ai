@@ -1,4 +1,4 @@
-import type { PipelineAgentRun } from '@/hooks/useAnalysis';
+import type { PipelineAgentRun } from '@/types/analysis';
 import { AGENT_DISPLAY_ORDER, AGENT_CONFIG } from '@/constants/agents';
 import { Card } from '../ui/Card';
 import { CardHeading } from '../ui/CardHeading';

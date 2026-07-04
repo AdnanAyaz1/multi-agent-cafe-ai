@@ -2,7 +2,7 @@
 
 import { TrendingDown, TrendingUp, AlertTriangle, Target, Lightbulb, Sparkles } from 'lucide-react';
 import type { CompetitorData } from '@/lib/types';
-import type { Snapshot } from '@/hooks/useCompetitorSnapshots';
+import type { CompetitorSnapshot as Snapshot } from '@/types/analysis';
 
 interface Suggestion {
   id: string;

@@ -19,7 +19,7 @@ import type {
   SynthesizerOutput,
 } from '@/lib/agents/types';
 import type { PipelineResult } from '@/lib/pipelines/shared/types';
-import type { PipelineRunContext } from '@/lib/pipelines/abort';
+import type { PipelineRunContext } from '@/lib/pipelines/shared/types';
 
 const log = logger.child('pipelines.weather');
 

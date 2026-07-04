@@ -1,39 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { PipelineType, PipelineAgentRun, PipelineRecommendation } from '@/types/analysis';
 
-export type PipelineType = 'weather' | 'competitor';
-
-export interface PipelineAgentRun {
-  id: string;
-  agentName: string;
-  status: string;
-  durationMs?: number;
-  tokenCount?: number;
-  error?: string;
-}
-
-export interface PipelineRecommendation {
-  id: string;
-  summary: string;
-  reasoning: string;
-  confidence: string;
-  category: string;
-  priority: number;
-  status: string;
-  createdAt: string;
-  criticNotes?: unknown;
-  actions: Array<{
-    id: string;
-    actionType: string;
-    item: string;
-    details?: {
-      reason?: string;
-      priority?: number;
-      discountPercent?: number;
-    };
-  }>;
-}
+export type { PipelineType, PipelineAgentRun, PipelineRecommendation };
 
 export interface PipelineStatus {
   status: string;

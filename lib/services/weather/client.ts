@@ -1,23 +1,9 @@
 import { WeatherData } from '@/lib/types';
 import { WMO_CODES } from './wmo-codes';
+import type { GeoResult, OpenMeteoCurrent } from './types';
 
 const GEO_BASE = 'https://geocoding-api.open-meteo.com/v1/search';
 const FORECAST_BASE = 'https://api.open-meteo.com/v1/forecast';
-
-interface GeoResult {
-  name: string;
-  latitude: number;
-  longitude: number;
-  country: string;
-}
-
-interface OpenMeteoCurrent {
-  temperature_2m: number;
-  relative_humidity_2m: number;
-  apparent_temperature: number;
-  weather_code: number;
-  wind_speed_10m: number;
-}
 
 function describeCondition(code: number): string {
   return WMO_CODES[code] ?? 'Unknown';

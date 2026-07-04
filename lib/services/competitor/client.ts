@@ -3,6 +3,7 @@ import { log as crawleeLog } from '@crawlee/core';
 import { chromium } from 'playwright';
 import { UpstreamError } from '@/lib/errors';
 import type { CompetitorScrapeResult } from '@/lib/types';
+import type { ScrapeOptions } from './types';
 
 // ─── Crawlee config (silence its built-in logger, isolate state per run) ────
 crawleeLog.setLevel(crawleeLog.LEVELS.WARNING);
@@ -13,17 +14,6 @@ const DEFAULT_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
   'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 ' +
   'AgenticAI-CompetitorBot/1.0';
-
-export interface ScrapeOptions {
-  /** Per-request hard cap. Defaults to 30s. */
-  timeoutMs?: number;
-  /** Truncate extracted text to this many chars. Defaults to 60k. */
-  maxTextLength?: number;
-  /** Respect robots.txt. Defaults to true. */
-  respectRobots?: boolean;
-  /** Override User-Agent. */
-  userAgent?: string;
-}
 
 /**
  * Scrapes a single competitor URL with Playwright (full JS rendering).

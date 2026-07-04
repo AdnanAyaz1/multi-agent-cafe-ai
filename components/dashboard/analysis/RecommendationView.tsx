@@ -2,7 +2,7 @@
 
 import { Target } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import type { PipelineRecommendation } from '@/hooks/useAnalysis';
+import type { PipelineRecommendation } from '@/types/analysis';
 import { ConfidenceBadge } from '../ConfidenceBadge';
 import { RecommendationActionList } from './RecommendationActionList';
 import type { RecommendationViewProps } from '@/types/dashboard';

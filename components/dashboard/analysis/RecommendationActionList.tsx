@@ -1,4 +1,4 @@
-import type { PipelineRecommendation } from '@/hooks/useAnalysis';
+import type { PipelineRecommendation } from '@/types/analysis';
 import { RecommendationActionItem } from './RecommendationActionItem';
 import type { RecommendationActionDetails, RecommendationActionListProps } from '@/types/dashboard';
 

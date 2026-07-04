@@ -25,7 +25,7 @@ export interface PipelineStep {
 }
 
 export interface PipelineVisualizationProps {
-  runs: import('@/hooks/useAnalysis').PipelineAgentRun[];
+  runs: import('@/types/analysis').PipelineAgentRun[];
   isRunning: boolean;
 }
 

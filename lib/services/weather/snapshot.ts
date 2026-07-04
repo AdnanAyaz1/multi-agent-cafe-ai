@@ -1,15 +1,9 @@
 import { prisma } from '@/lib/db';
 import { fetchWeather } from './client';
 import type { WeatherData } from '@/lib/types';
+import type { EnsureWeatherOptions } from './types';
 
 const SNAPSHOT_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-export interface EnsureWeatherOptions {
-  businessId: string;
-  city: string;
-  latitude?: number | null;
-  longitude?: number | null;
-}
 
 /**
  * Returns a fresh weather snapshot for the business.

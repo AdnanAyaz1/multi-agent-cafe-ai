@@ -5,7 +5,7 @@ import { runCompetitorPipeline } from '@/lib/pipelines/competitor';
 import { getPipelineCancelReason } from '@/lib/pipelines/cancel';
 import { PipelineCancelledError } from '@/lib/pipelines/errors';
 import { buildRunContext } from '@/lib/pipelines/abort';
-import type { PipelineRunContext } from '@/lib/pipelines/abort';
+import type { PipelineRunContext } from '@/lib/pipelines/shared/types';
 import type { PipelineResult, PipelineType } from '@/lib/pipelines/shared/types';
 import { redis } from '@/lib/redis';
 

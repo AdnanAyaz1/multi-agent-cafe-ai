@@ -1,9 +1,7 @@
 import {
   synthesizerOutputSchema,
   type SynthesizerOutput,
-  type MenuAnalystOutput,
-  type WeatherAnalystOutput,
-  type StrategistOutput,
+  type SynthesizerInput,
   type CriticOutput,
   type PipelineContext,
   type ConfidenceLevel,
@@ -13,13 +11,6 @@ import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
 import { SYNTHESIZER_SYSTEM, buildSynthesizerPrompt } from './prompts';
 import { criticHasBlockers, criticHasWarnings } from './critic';
-
-export interface SynthesizerInput {
-  menuAnalysis: MenuAnalystOutput;
-  weatherAnalysis: WeatherAnalystOutput;
-  strategistOutput: StrategistOutput;
-  criticOutput: CriticOutput;
-}
 
 export async function runSynthesizer(
   input: SynthesizerInput,

@@ -1,7 +1,7 @@
 import 'server-only';
 import { logger } from '@/lib/logger';
 import { classifyLLMError, isTerminalReason, PipelineCancelledError } from './errors';
-import type { PipelineAbortReason } from './errors';
+import type { PipelineAbortReason, PipelineRunContext } from './shared/types';
 import { redis } from '@/lib/redis';
 import { prisma } from '@/lib/db';
 
@@ -48,19 +48,6 @@ export function anySignal(signals: AbortSignal[]): AbortSignal {
   }
 
   return controller.signal;
-}
-
-export interface PipelineRunContext {
-  pipelineId: string;
-  businessId: string;
-  pipelineType: 'weather' | 'competitor';
-  signal: AbortSignal;
-
-  /** Abort the entire pipeline with a reason. Updates Redis + DB. */
-  abort(reason: PipelineAbortReason): Promise<void>;
-
-  /** Check Redis cancellation flag and throw if cancelled. */
-  throwIfCancelled(): Promise<void>;
 }
 
 /**

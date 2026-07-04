@@ -1,18 +1,10 @@
 import 'server-only';
 import { prisma } from '@/lib/db';
-import type { StrategistOutput, CriticOutput, SynthesizerOutput } from '@/lib/agents/types';
-import type { PipelineContext } from './types';
+import type { PipelineContext, PersistArgs } from './types';
 
-export function priorityFromActions(strategist: StrategistOutput): number {
+export function priorityFromActions(strategist: PersistArgs['strategist']): number {
   const min = strategist.actions.reduce((acc, a) => Math.min(acc, a.priority), 5);
   return 6 - min;
-}
-
-export interface PersistArgs {
-  strategist: StrategistOutput;
-  critic: CriticOutput;
-  synthesizer: SynthesizerOutput;
-  finalConfidence: string;
 }
 
 export async function persistRecommendation(

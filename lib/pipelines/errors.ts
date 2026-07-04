@@ -1,11 +1,7 @@
 import 'server-only';
+import type { PipelineAbortReason } from './shared/types';
 
-export type PipelineAbortReason =
-  | 'user_cancelled'
-  | 'rate_limit'
-  | 'quota_exceeded'
-  | 'pipeline_failed'
-  | 'timeout';
+export type { PipelineAbortReason };
 
 export class PipelineCancelledError extends Error {
   public readonly reason: PipelineAbortReason;

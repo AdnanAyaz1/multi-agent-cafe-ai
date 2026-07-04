@@ -1,11 +1,7 @@
-import type { PipelineAgentRun } from '@/hooks/useAnalysis';
+import type { PipelineAgentRun, AgentGroupingResult } from '@/types/analysis';
 import { AGENT_DISPLAY_ORDER } from '@/constants/agents';
 
-export interface AgentGroupingResult {
-  byAgent: Map<string, PipelineAgentRun[]>;
-  completedCount: number;
-  progress: number;
-}
+export type { AgentGroupingResult };
 
 export function groupRunsByAgent(runs: PipelineAgentRun[]): AgentGroupingResult {
   const byAgent = new Map<string, PipelineAgentRun[]>();

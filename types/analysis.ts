@@ -1,4 +1,67 @@
-import type { AgentName, PipelineStatus } from '@/lib/agents/types';
+import type { AgentName } from '@/lib/agents/types';
+
+// ─── Pipeline types ────────────────────────────────────────────────
+
+export type PipelineType = 'weather' | 'competitor';
+
+export type PipelineStatusValue = 'pending' | 'running' | 'complete' | 'failed' | 'cancelled' | 'cancelling';
+
+export interface PipelineAgentRun {
+  id: string;
+  agentName: string;
+  status: string;
+  durationMs?: number;
+  tokenCount?: number;
+  error?: string;
+}
+
+export interface PipelineRecommendation {
+  id: string;
+  summary: string;
+  reasoning: string;
+  confidence: string;
+  category: string;
+  priority: number;
+  status: string;
+  createdAt: string;
+  criticNotes?: unknown;
+  actions: Array<{
+    id: string;
+    actionType: string;
+    item: string;
+    details?: {
+      reason?: string;
+      priority?: number;
+      discountPercent?: number;
+    };
+  }>;
+}
+
+export interface PipelineStatusResponse {
+  status: string;
+  pipelineType?: PipelineType;
+  agentRuns: PipelineAgentRun[];
+  recommendation?: PipelineRecommendation;
+}
+
+// ─── Competitor snapshot types ──────────────────────────────────────
+
+import type { CompetitorData } from '@/lib/types';
+
+export interface RefreshOptions {
+  url?: string;
+  timeoutMs?: number;
+  maxTextLength?: number;
+}
+
+export interface CompetitorSnapshot {
+  id: string;
+  data: CompetitorData;
+  collectedAt: string;
+  expiresAt: string;
+}
+
+// ─── API response types ──────────────────────────────────────────────
 
 export interface AgentRunSummary {
   id: string;
@@ -30,9 +93,9 @@ export interface RecommendationSummary {
   criticNotes: unknown;
 }
 
-export interface PipelineStatusResponse {
+export interface PipelineStatusApiResponse {
   pipelineId: string;
-  status: PipelineStatus;
+  status: PipelineStatusValue;
   startedAt: string | null;
   completedAt: string | null;
   agentRuns: AgentRunSummary[];
@@ -67,4 +130,12 @@ export interface RawRecommendation {
     item: string;
     details: unknown;
   }>;
+}
+
+// ─── Pipeline utility types ────────────────────────────────────────
+
+export interface AgentGroupingResult {
+  byAgent: Map<string, PipelineAgentRun[]>;
+  completedCount: number;
+  progress: number;
 }

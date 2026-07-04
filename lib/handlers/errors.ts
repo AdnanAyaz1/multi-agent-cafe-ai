@@ -2,26 +2,11 @@ import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { AppError } from '../errors';
 import { logger } from '../logger';
+import type { ResponseType, ErrorResponseBody, FormattedError, MongoDuplicateKeyError } from './types';
+
+export type { ResponseType };
 
 const log = logger.child('api:errors');
-
-export type ResponseType = 'api' | 'server';
-
-interface ErrorResponseBody {
-  error: string;
-  code: string;
-  details?: unknown;
-}
-
-interface FormattedError {
-  status: number;
-  body: ErrorResponseBody;
-}
-
-interface MongoDuplicateKeyError extends Error {
-  code: number;
-  keyValue: Record<string, unknown>;
-}
 
 const formatResponse = (
   responseType: ResponseType,

@@ -2,21 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import type { CompetitorData } from '@/lib/types';
 import { COMPETITOR_POLL_INTERVAL_MS, COMPETITOR_POLL_TIMEOUT_MS } from '@/constants/competitor';
+import type { RefreshOptions, CompetitorSnapshot } from '@/types/analysis';
 
-export interface RefreshOptions {
-  url?: string;
-  timeoutMs?: number;
-  maxTextLength?: number;
-}
-
-export interface Snapshot {
-  id: string;
-  data: CompetitorData;
-  collectedAt: string;
-  expiresAt: string;
-}
+export type { RefreshOptions };
+export type Snapshot = CompetitorSnapshot;
 
 export function useCompetitorSnapshots(businessId: string) {
   const [businessName, setBusinessName] = useState<string>('');
