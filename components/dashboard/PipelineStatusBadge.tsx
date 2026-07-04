@@ -29,6 +29,14 @@ export function PipelineStatusBadge({ status }: PipelineStatusBadgeProps) {
       </Badge>
     );
   }
+  if (status === 'cancelling') {
+    return (
+      <Badge className={className}>
+        <Loader2 className="size-3 animate-spin" aria-hidden />
+        {STATUS_LABEL.cancelling}
+      </Badge>
+    );
+  }
   if (status === 'failed') {
     return (
       <Badge className={className}>

@@ -1,15 +1,12 @@
 import {
   competitorAnalystOutputSchema,
   type CompetitorAnalystOutput,
+  type CompetitorAnalystInput,
   type PipelineContext,
 } from './types';
 import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
-import {
-  COMPETITOR_ANALYST_SYSTEM,
-  buildCompetitorAnalystPrompt,
-  type CompetitorAnalystInput,
-} from './prompts';
+import { COMPETITOR_ANALYST_SYSTEM, buildCompetitorAnalystPrompt } from './prompts';
 
 export async function runCompetitorAnalyst(
   input: CompetitorAnalystInput,

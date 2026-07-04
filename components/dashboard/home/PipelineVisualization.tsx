@@ -8,7 +8,9 @@ import { groupRunsByAgent, computeAgentStepStatus } from '@/lib/pipeline-utils';
 
 export function PipelineVisualization({ runs, isRunning }: PipelineVisualizationProps) {
   const { byAgent, completedCount, progress } = groupRunsByAgent(runs);
-  const isCancelled = runs.some((r) => r.error === 'Pipeline cancelled by user') && !isRunning;
+  const isCancelled = runs.some((r) =>
+    r.error === 'Pipeline cancelled by user' || r.error?.startsWith('Pipeline cancelled:') || r.error?.startsWith('Pipeline aborted:')
+  ) && !isRunning;
 
   return (
     <div className="glass-card rounded-xl overflow-hidden">
@@ -149,7 +151,7 @@ export function PipelineVisualization({ runs, isRunning }: PipelineVisualization
                         {totalDuration > 0 && (
                           <span className="text-[10px] text-zinc-500 font-mono">{totalDuration}ms</span>
                         )}
-                        {agentRuns[0]?.error && agentRuns[0].error !== 'Pipeline cancelled by user' && (
+                        {agentRuns[0]?.error && !agentRuns[0].error.startsWith('Pipeline cancelled') && !agentRuns[0].error.startsWith('Pipeline aborted') && (
                           <span className="text-[10px] text-red-400">{agentRuns[0].error}</span>
                         )}
                       </div>

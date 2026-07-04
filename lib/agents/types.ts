@@ -159,7 +159,7 @@ export const competitorAnalystOutputSchema = z.object({
 export type CompetitorAnalystOutput = z.infer<typeof competitorAnalystOutputSchema>;
 
 // ─── Pipeline-level types ───────────────────────────────────────
-export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed', 'cancelled'] as const;
+export const PIPELINE_STATUSES = ['pending', 'running', 'complete', 'failed', 'cancelled', 'cancelling'] as const;
 export type PipelineStatus = (typeof PIPELINE_STATUSES)[number];
 
 export const PIPELINE_AGENT_NAMES = [
@@ -194,6 +194,8 @@ export const COMPETITOR_PIPELINE_AGENT_COUNT = COMPETITOR_PIPELINE_AGENT_NAMES.l
 export interface PipelineContext {
   pipelineId: string;
   businessId: string;
+  /** AbortSignal that fires when the pipeline is cancelled or hit a terminal error. */
+  signal?: AbortSignal;
 }
 
 export type {
@@ -204,3 +206,67 @@ export type {
   CompetitorMenuItem,
   CompetitorPromo,
 } from '@/lib/types';
+
+// ─── Agent input types ──────────────────────────────────────────
+export interface MenuAnalystInput {
+  menu: {
+    businessId: string;
+    items: Array<{
+      id: string;
+      name: string;
+      category: string;
+      price: number;
+      tags?: string[];
+      description?: string;
+    }>;
+  };
+}
+
+export interface WeatherAnalystInput {
+  weather: {
+    city: string;
+    country: string;
+    temperature: number;
+    feelsLike: number;
+    humidity: number;
+    condition: string;
+    windSpeed: number;
+    units: string;
+  };
+}
+
+export interface CompetitorParserInput {
+  scrape: {
+    url: string;
+    finalUrl: string;
+    title: string;
+    text: string;
+    scrapedAt: string;
+  };
+}
+
+export interface CompetitorAnalystInput {
+  competitors: Array<{
+    brand: string | null;
+    items: Array<{
+      name: string;
+      category?: string;
+      price?: number;
+      currency?: string;
+      description?: string;
+      isPromo: boolean;
+    }>;
+    promos: Array<{
+      text: string;
+      discountPercent?: number;
+      validUntil?: string;
+    }>;
+    notes: string[];
+  }>;
+  ourMenu: Array<{
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+  }>;
+}

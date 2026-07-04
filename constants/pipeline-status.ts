@@ -10,6 +10,8 @@ export const STATUS_CLASS: Record<PipelineRunStatus, string> = {
   pending: 'gap-1 text-muted-foreground',
   cancelled:
     'gap-1 bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30 hover:bg-amber-500/15',
+  cancelling:
+    'gap-1 bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30 hover:bg-amber-500/15',
 };
 
 export const STATUS_LABEL: Record<PipelineRunStatus, string> = {
@@ -18,4 +20,5 @@ export const STATUS_LABEL: Record<PipelineRunStatus, string> = {
   running: 'Running',
   pending: 'Pending',
   cancelled: 'Cancelled',
+  cancelling: 'Stopping...',
 };

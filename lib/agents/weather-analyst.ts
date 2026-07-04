@@ -1,15 +1,12 @@
 import {
   weatherAnalystOutputSchema,
   type WeatherAnalystOutput,
+  type WeatherAnalystInput,
   type PipelineContext,
 } from './types';
 import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
-import {
-  WEATHER_ANALYST_SYSTEM,
-  buildWeatherAnalystPrompt,
-  type WeatherAnalystInput,
-} from './prompts';
+import { WEATHER_ANALYST_SYSTEM, buildWeatherAnalystPrompt } from './prompts';
 
 export async function runWeatherAnalyst(
   input: WeatherAnalystInput,

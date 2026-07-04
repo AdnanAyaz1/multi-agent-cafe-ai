@@ -1,32 +1,15 @@
 import 'server-only';
 import { randomUUID } from 'crypto';
-import { Worker, type Job } from 'bullmq';
+import { Worker, type Job, UnrecoverableError } from 'bullmq';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { scrapeCompetitorUrl } from '@/lib/services/competitor/client';
 import { runCompetitorParser } from '@/lib/agents/competitor-parser';
+import { PipelineCancelledError } from '@/lib/pipelines/errors';
+import { isPipelineCancelled } from '@/lib/pipelines/cancel';
 import type { CompetitorData } from '@/lib/types';
 import { redisConnection } from '@/lib/queues/connection';
-
-export interface CompetitorJobData {
-  businessId: string;
-  url: string;
-  /** Optional caller-supplied pipeline id (so multiple URLs share one AgentRun group). */
-  pipelineId?: string;
-  /** Optional scrape options forwarded to the scraper. */
-  timeoutMs?: number;
-  maxTextLength?: number;
-}
-
-export interface CompetitorJobResult {
-  success: true;
-  url: string;
-  itemCount: number;
-  promoCount: number;
-  snapshotId: string;
-  scrapeMs: number;
-  parseMs: number;
-}
+import type { CompetitorJobData, CompetitorJobResult } from './types';
 
 const globalForWorker = globalThis as unknown as {
   competitorWorker: Worker<CompetitorJobData, CompetitorJobResult> | undefined;
@@ -42,6 +25,12 @@ function createWorker(): Worker<CompetitorJobData, CompetitorJobResult> {
       const pipelineId = job.data.pipelineId ?? randomUUID();
       job.log(`Scraping ${url} for ${businessId} (pipeline ${pipelineId})`);
 
+      // Check if pipeline was cancelled before we start heavy work
+      if (await isPipelineCancelled(pipelineId)) {
+        log.info('skipping cancelled pipeline scrape', { pipelineId, url });
+        throw new PipelineCancelledError('user_cancelled');
+      }
+
       // 1. Scrape with Crawlee + Playwright (returns raw cleaned text).
       const scrape = await scrapeCompetitorUrl(url, {
         timeoutMs: job.data.timeoutMs,
@@ -50,6 +39,12 @@ function createWorker(): Worker<CompetitorJobData, CompetitorJobResult> {
       job.log(
         `Scrape ok in ${scrape.durationMs}ms (${scrape.text.length} chars) — sending to parser`
       );
+
+      // Check cancellation after scrape (scrape can be slow)
+      if (await isPipelineCancelled(pipelineId)) {
+        log.info('pipeline cancelled after scrape', { pipelineId, url });
+        throw new PipelineCancelledError('user_cancelled');
+      }
 
       // 2. Parse with the competitor-parser agent (LLM extraction, Zod-typed).
       const parseStart = Date.now();
@@ -121,7 +116,24 @@ function createWorker(): Worker<CompetitorJobData, CompetitorJobResult> {
   });
 
   worker.on('failed', (job, err) => {
-    log.error('job failed', err, {
+    const error = err as unknown;
+
+    // Cancellation: remove the job so BullMQ doesn't retry
+    if (error instanceof PipelineCancelledError) {
+      log.info('scrape cancelled', { pipelineId: job?.data?.pipelineId, url: job?.data?.url });
+      job?.remove().catch(() => {});
+      return;
+    }
+
+    if (error instanceof UnrecoverableError) {
+      log.error('scrape failed (unrecoverable)', error, {
+        jobId: job?.id,
+        pipelineId: job?.data?.pipelineId,
+      });
+      return;
+    }
+
+    log.error('job failed', error instanceof Error ? error : new Error(String(error)), {
       jobId: job?.id,
       businessId: job?.data?.businessId,
       url: job?.data?.url,

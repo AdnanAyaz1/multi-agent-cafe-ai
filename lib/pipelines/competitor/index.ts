@@ -9,7 +9,9 @@ import { runStrategist } from '@/lib/agents/strategist';
 import { runCritic, criticHasBlockers } from '@/lib/agents/critic';
 import { runSynthesizer, deriveFinalConfidence } from '@/lib/agents/synthesizer';
 import { MAX_REVISIONS } from '@/lib/agents/models';
-import { isPipelineCancelled, clearCancellationFlag } from '@/lib/pipelines/cancel';
+import { clearCancellationFlag } from '@/lib/pipelines/cancel';
+import { classifyLLMError, isTerminalReason } from '@/lib/pipelines/errors';
+import { runAbortableParallel } from '@/lib/pipelines/abort';
 import { persistRecommendation } from '@/lib/pipelines/shared/helpers';
 import {
   FLAT_DEMAND,
@@ -26,7 +28,8 @@ import type {
   SynthesizerOutput,
   WeatherAnalystOutput,
 } from '@/lib/agents/types';
-import type { PipelineContext, PipelineResult } from '@/lib/pipelines/shared/types';
+import type { PipelineResult } from '@/lib/pipelines/shared/types';
+import type { PipelineRunContext } from '@/lib/pipelines/abort';
 
 const log = logger.child('pipelines.competitor');
 
@@ -35,23 +38,28 @@ const log = logger.child('pipelines.competitor');
  *
  * Flow:
  *   1. Load business menu + scrape competitor URLs
- *   2. Parse each competitor via competitor-parser agent (parallel)
+ *   2. Parse each competitor via competitor-parser agent (abort-aware parallel)
  *   3. Run competitor-analyst agent (analyze all competitors vs our menu)
  *   4. Run menu-analyst agent on our menu
  *   5. Run strategist (with competitor analysis as primary signal)
  *   6. Critic loop -> strategist revisions
  *   7. Synthesizer generates owner briefing
  *   8. Persist Recommendation + RecommendationAction[]
+ *
+ * The pipeline respects the AbortSignal in ctx:
+ *  - All agent calls receive the signal
+ *  - Parallel agents are run via runAbortableParallel (one failure aborts siblings)
+ *  - Sequential steps check throwIfCancelled() between each agent
  */
 export async function runCompetitorPipeline(
-  context: PipelineContext
+  ctx: PipelineRunContext
 ): Promise<PipelineResult> {
   const start = Date.now();
-  log.info('competitor pipeline start', { ...context });
+  log.info('competitor pipeline start', { pipelineId: ctx.pipelineId, businessId: ctx.businessId });
 
   try {
     const business = await prisma.business.findUnique({
-      where: { id: context.businessId },
+      where: { id: ctx.businessId },
       select: { id: true, config: true },
     });
     if (!business) throw new NotFoundError('Business');
@@ -61,18 +69,18 @@ export async function runCompetitorPipeline(
       throw new ValidationError('No competitor URLs configured for this business');
     }
 
-    const { menu, competitorSnapshots } = await loadInputs(context, urls);
+    const { menu, competitorSnapshots } = await loadInputs(ctx, urls);
     log.info('competitor data collected', {
-      pipelineId: context.pipelineId,
+      pipelineId: ctx.pipelineId,
       snapshotCount: competitorSnapshots.length,
     });
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
-    const parsedCompetitors: CompetitorParserOutput[] = await Promise.all(
-      competitorSnapshots.map((snap) =>
+    // Parse all competitors in parallel — if one hits rate limit, all abort
+    const parsedCompetitors: CompetitorParserOutput[] = await runAbortableParallel(
+      ctx,
+      competitorSnapshots.map((snap) => (c) =>
         runCompetitorParser(
           {
             scrape: {
@@ -83,18 +91,16 @@ export async function runCompetitorPipeline(
               scrapedAt: snap.scrapedAt,
             },
           },
-          context
+          c
         ).then((r) => r.output)
       )
     );
     log.info('competitors parsed', {
-      pipelineId: context.pipelineId,
+      pipelineId: ctx.pipelineId,
       parsedCount: parsedCompetitors.length,
     });
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     const competitorAnalysis: CompetitorAnalystOutput = (
       await runCompetitorAnalyst(
@@ -112,21 +118,17 @@ export async function runCompetitorPipeline(
             price: i.price,
           })),
         },
-        context
+        ctx
       )
     ).output;
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     const menuAnalysis: MenuAnalystOutput = (
-      await runMenuAnalyst({ menu }, context)
+      await runMenuAnalyst({ menu }, ctx)
     ).output;
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     const weatherForStrategist = competitorWeatherData(competitorAnalysis);
     const emptyWeather: WeatherAnalystOutput = {
@@ -148,18 +150,16 @@ export async function runCompetitorPipeline(
           competitorAnalysis,
           revision: 0,
         },
-        context
+        ctx
       )
     ).output;
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     let critic: CriticOutput = (
       await runCritic(
         { menuAnalysis, weatherAnalysis: emptyWeather, strategistOutput: strategist },
-        context
+        ctx
       )
     ).output;
 
@@ -167,14 +167,12 @@ export async function runCompetitorPipeline(
     while (criticHasBlockers(critic) && revisions < MAX_REVISIONS) {
       revisions += 1;
       log.info('revision triggered', {
-        pipelineId: context.pipelineId,
+        pipelineId: ctx.pipelineId,
         round: revisions,
         blockers: critic.issues.filter((i) => i.severity === 'blocker').length,
       });
 
-      if (await isPipelineCancelled(context.pipelineId)) {
-        throw 'Pipeline cancelled by user';
-      }
+      await ctx.throwIfCancelled();
 
       strategist = (
         await runStrategist(
@@ -187,25 +185,21 @@ export async function runCompetitorPipeline(
             criticFeedback: critic,
             revision: revisions,
           },
-          context
+          ctx
         )
       ).output;
 
-      if (await isPipelineCancelled(context.pipelineId)) {
-        throw 'Pipeline cancelled by user';
-      }
+      await ctx.throwIfCancelled();
 
       critic = (
         await runCritic(
           { menuAnalysis, weatherAnalysis: emptyWeather, strategistOutput: strategist },
-          context
+          ctx
         )
       ).output;
     }
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     const synthesizer: SynthesizerOutput = (
       await runSynthesizer(
@@ -222,14 +216,14 @@ export async function runCompetitorPipeline(
           strategistOutput: strategist,
           criticOutput: critic,
         },
-        context
+        ctx
       )
     ).output;
 
     const finalConfidence = deriveFinalConfidence(strategist.confidence, critic);
 
     const recommendation = await persistRecommendation(
-      context,
+      ctx,
       { strategist, critic, synthesizer, finalConfidence },
       'competitor',
       { menuAnalysis, competitorAnalysis }
@@ -237,21 +231,26 @@ export async function runCompetitorPipeline(
 
     const durationMs = Date.now() - start;
     log.info('competitor pipeline complete', {
-      pipelineId: context.pipelineId,
+      pipelineId: ctx.pipelineId,
       recommendationId: recommendation.id,
       durationMs,
     });
 
-    await clearCancellationFlag(context.pipelineId);
+    await clearCancellationFlag(ctx.pipelineId);
 
     return {
-      pipelineId: context.pipelineId,
+      pipelineId: ctx.pipelineId,
       recommendationId: recommendation.id,
       revisions,
       durationMs,
       pipelineType: 'competitor',
     };
   } catch (error) {
+    // If this is a terminal error, ensure the whole pipeline is aborted
+    const reason = classifyLLMError(error);
+    if (isTerminalReason(reason) && !ctx.signal.aborted) {
+      await ctx.abort(reason);
+    }
     throw error;
   }
 }

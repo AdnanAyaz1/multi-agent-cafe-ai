@@ -6,15 +6,20 @@ import { runStrategist } from '@/lib/agents/strategist';
 import { runCritic, criticHasBlockers } from '@/lib/agents/critic';
 import { runSynthesizer, deriveFinalConfidence } from '@/lib/agents/synthesizer';
 import { MAX_REVISIONS } from '@/lib/agents/models';
-import { isPipelineCancelled, clearCancellationFlag } from '@/lib/pipelines/cancel';
+import { clearCancellationFlag } from '@/lib/pipelines/cancel';
+import { classifyLLMError, isTerminalReason } from '@/lib/pipelines/errors';
+import { runAbortableTuple } from '@/lib/pipelines/abort';
 import { persistRecommendation } from '@/lib/pipelines/shared/helpers';
 import { loadInputs } from './helpers';
 import type {
+  MenuAnalystOutput,
+  WeatherAnalystOutput,
   StrategistOutput,
   CriticOutput,
   SynthesizerOutput,
 } from '@/lib/agents/types';
-import type { PipelineContext, PipelineResult } from '@/lib/pipelines/shared/types';
+import type { PipelineResult } from '@/lib/pipelines/shared/types';
+import type { PipelineRunContext } from '@/lib/pipelines/abort';
 
 const log = logger.child('pipelines.weather');
 
@@ -23,49 +28,50 @@ const log = logger.child('pipelines.weather');
  *
  * Flow:
  *   1. Load weather snapshot + menu + competitor context
- *   2. Menu Analyst + Weather Analyst (parallel)
+ *   2. Menu Analyst + Weather Analyst (abort-aware parallel)
  *   3. Strategist (with competitor awareness)
  *   4. Critic -> loop back to Strategist if blockers + revisions remain
  *   5. Synthesizer
  *   6. Persist Recommendation + RecommendationAction[] rows
+ *
+ * The pipeline respects the AbortSignal in ctx:
+ *  - All agent calls receive the signal
+ *  - Parallel agents are run via runAbortableParallel (one failure aborts siblings)
+ *  - Sequential steps check throwIfCancelled() between each agent
  */
 export async function runWeatherPipeline(
-  context: PipelineContext
+  ctx: PipelineRunContext
 ): Promise<PipelineResult> {
   const start = Date.now();
-  log.info('weather pipeline start', { ...context });
+  log.info('weather pipeline start', { pipelineId: ctx.pipelineId, businessId: ctx.businessId });
 
   try {
-    const { weather, menu, competitors } = await loadInputs(context);
+    const { weather, menu, competitors } = await loadInputs(ctx);
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
-    const [menuAnalysis, weatherAnalysis] = await Promise.all([
-      runMenuAnalyst({ menu }, context).then((r) => r.output),
-      runWeatherAnalyst({ weather }, context).then((r) => r.output),
-    ]);
+    // Step 2: Run menu analyst + weather analyst in parallel.
+    // If one hits a rate limit, runAbortableTuple aborts the other via combined signal.
+    const [menuAnalysis, weatherAnalysis] = await runAbortableTuple(ctx, [
+      (c) => runMenuAnalyst({ menu }, c).then((r) => r.output),
+      (c) => runWeatherAnalyst({ weather }, c).then((r) => r.output),
+    ]) as [MenuAnalystOutput, WeatherAnalystOutput];
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     let strategist: StrategistOutput = (
       await runStrategist(
         { menuAnalysis, weatherAnalysis, rawMenu: menu, competitorData: competitors, revision: 0 },
-        context
+        ctx
       )
     ).output;
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     let critic: CriticOutput = (
       await runCritic(
         { menuAnalysis, weatherAnalysis, strategistOutput: strategist },
-        context
+        ctx
       )
     ).output;
 
@@ -73,14 +79,12 @@ export async function runWeatherPipeline(
     while (criticHasBlockers(critic) && revisions < MAX_REVISIONS) {
       revisions += 1;
       log.info('revision triggered', {
-        pipelineId: context.pipelineId,
+        pipelineId: ctx.pipelineId,
         round: revisions,
         blockers: critic.issues.filter((i) => i.severity === 'blocker').length,
       });
 
-      if (await isPipelineCancelled(context.pipelineId)) {
-        throw 'Pipeline cancelled by user';
-      }
+      await ctx.throwIfCancelled();
 
       strategist = (
         await runStrategist(
@@ -92,25 +96,21 @@ export async function runWeatherPipeline(
             criticFeedback: critic,
             revision: revisions,
           },
-          context
+          ctx
         )
       ).output;
 
-      if (await isPipelineCancelled(context.pipelineId)) {
-        throw 'Pipeline cancelled by user';
-      }
+      await ctx.throwIfCancelled();
 
       critic = (
         await runCritic(
           { menuAnalysis, weatherAnalysis, strategistOutput: strategist },
-          context
+          ctx
         )
       ).output;
     }
 
-    if (await isPipelineCancelled(context.pipelineId)) {
-      throw 'Pipeline cancelled by user';
-    }
+    await ctx.throwIfCancelled();
 
     const synthesizer: SynthesizerOutput = (
       await runSynthesizer(
@@ -120,14 +120,14 @@ export async function runWeatherPipeline(
           strategistOutput: strategist,
           criticOutput: critic,
         },
-        context
+        ctx
       )
     ).output;
 
     const finalConfidence = deriveFinalConfidence(strategist.confidence, critic);
 
     const recommendation = await persistRecommendation(
-      context,
+      ctx,
       { strategist, critic, synthesizer, finalConfidence },
       'marketing',
       { menuAnalysis, weatherAnalysis }
@@ -135,22 +135,27 @@ export async function runWeatherPipeline(
 
     const durationMs = Date.now() - start;
     log.info('weather pipeline complete', {
-      pipelineId: context.pipelineId,
+      pipelineId: ctx.pipelineId,
       recommendationId: recommendation.id,
       revisions,
       durationMs,
     });
 
-    await clearCancellationFlag(context.pipelineId);
+    await clearCancellationFlag(ctx.pipelineId);
 
     return {
-      pipelineId: context.pipelineId,
+      pipelineId: ctx.pipelineId,
       recommendationId: recommendation.id,
       revisions,
       durationMs,
       pipelineType: 'weather',
     };
   } catch (error) {
+    // If this is a terminal error, ensure the whole pipeline is aborted
+    const reason = classifyLLMError(error);
+    if (isTerminalReason(reason) && !ctx.signal.aborted) {
+      await ctx.abort(reason);
+    }
     throw error;
   }
 }

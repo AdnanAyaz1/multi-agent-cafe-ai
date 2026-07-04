@@ -1,15 +1,12 @@
 import {
   menuAnalystOutputSchema,
   type MenuAnalystOutput,
+  type MenuAnalystInput,
   type PipelineContext,
 } from './types';
 import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
-import {
-  MENU_ANALYST_SYSTEM,
-  buildMenuAnalystPrompt,
-  type MenuAnalystInput,
-} from './prompts';
+import { MENU_ANALYST_SYSTEM, buildMenuAnalystPrompt } from './prompts';
 
 export async function runMenuAnalyst(
   input: MenuAnalystInput,

@@ -141,6 +141,8 @@ export function useAnalysis() {
             agentRuns: statusData.agentRuns ?? [],
             recommendation: statusData.recommendation ?? undefined,
           });
+
+          // Stop polling on terminal states
           if (statusData.status === 'complete' || statusData.status === 'failed' || statusData.status === 'cancelled') {
             // If complete but recommendation is missing, keep polling briefly
             // to handle the race window between synthesizer completion and
@@ -153,6 +155,8 @@ export function useAnalysis() {
             intervalRef.current = null;
             setLoading(false);
           }
+          // Note: 'cancelling' status keeps polling — we don't stop until
+          // the backend confirms the pipeline has fully stopped.
         } catch {
           clearInterval(interval);
           intervalRef.current = null;
@@ -170,6 +174,11 @@ export function useAnalysis() {
   const cancel = useCallback(async () => {
     const currentPipelineId = activePipelineRef.current;
 
+    // Set UI to "cancelling" state immediately so the user sees feedback
+    if (currentPipelineId) {
+      setStatus((prev) => prev ? { ...prev, status: 'cancelling' } : null);
+    }
+
     // CRITICAL: Send the DELETE request FIRST, before clearing any state.
     // If we clear state first, React re-renders, the component may unmount,
     // and the browser aborts the fetch — the server never receives the cancel.
@@ -182,14 +191,13 @@ export function useAnalysis() {
       }
     }
 
-    // NOW safe to clear local state
-    stopPolling();
-    activePipelineRef.current = null;
-    setLoading(false);
-    setError(null);
-    setPipelineId(null);
-    setStatus(null);
-  }, [stopPolling]);
+    // Do NOT stop polling or clear state yet.
+    // The polling loop will detect when the backend status changes to
+    // 'cancelled' or 'failed' and will stop polling + clear loading at that point.
+    //
+    // This ensures the UI stays in sync with the actual backend state
+    // instead of optimistically showing "stopped" while jobs are still running.
+  }, []);
 
   return {
     pipelineId,

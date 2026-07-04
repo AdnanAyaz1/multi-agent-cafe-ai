@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { pipelineIdSchema } from '@/lib/validators/analysis';
 import { NotFoundError } from '@/lib/errors';
 import handleError from '@/lib/handlers/errors';
-import { cancelPipeline } from '@/lib/pipelines/cancel';
+import { cancelPipeline, getPipelineCancelReason } from '@/lib/pipelines/cancel';
 import type {
   AgentName,
   PipelineStatus,
@@ -73,7 +73,19 @@ export async function GET(
       recommendation = formatRecommendation(rec);
     }
 
-    const status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT, runs);
+    // Check Redis for in-progress cancellation
+    const cancelReason = await getPipelineCancelReason(validId);
+    const hasRunning = runs.some((s) => s.status === 'running' || s.status === 'pending');
+
+    let status: PipelineStatus;
+
+    // If Redis says cancelled but pipeline still has running jobs, show "cancelling"
+    if (cancelReason && hasRunning) {
+      status = 'cancelling' as PipelineStatus;
+    } else {
+      status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT, runs);
+    }
+
     const startedAt = runs[0]?.startedAt?.toISOString() ?? null;
     const completedAt =
       status === 'complete'
@@ -102,7 +114,7 @@ export async function DELETE(
     const { pipelineId } = await ctx.params;
     const validId = pipelineIdSchema.parse(pipelineId);
 
-    const cancelled = await cancelPipeline(validId);
+    const cancelled = await cancelPipeline(validId, 'user_cancelled');
 
     log.info('pipeline cancel requested', {
       pipelineId: validId,
@@ -128,7 +140,7 @@ function derivePipelineStatus(
   if (hasFailed && !hasCompleted && !hasRunning && agentRuns) {
     const allCancelled = agentRuns
       .filter((r) => r.status === 'failed')
-      .every((r) => r.error === 'Pipeline cancelled by user');
+      .every((r) => r.error?.startsWith('Pipeline cancelled:') || r.error === 'Pipeline cancelled by user');
     if (allCancelled) return 'cancelled' as PipelineStatus;
   }
 

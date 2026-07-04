@@ -1,3 +1,10 @@
+import type {
+  MenuAnalystInput,
+  WeatherAnalystInput,
+  CompetitorParserInput,
+  CompetitorAnalystInput,
+} from './types';
+
 export const MENU_ANALYST_SYSTEM = `You are the Menu Analyst for a cafe-promotion AI.
 
 Your job: read a cafe's menu and classify each item so the rest of the agents can reason about it. Return ONLY structured data — no prose.
@@ -160,69 +167,6 @@ Recommendations:
 Be specific. Reference actual item names, prices, and promo details from the data.
 
 IMPORTANT: Return raw JSON only. No markdown, no code fences, no bold formatting.`;
-
-export interface MenuAnalystInput {
-  menu: {
-    businessId: string;
-    items: Array<{
-      id: string;
-      name: string;
-      category: string;
-      price: number;
-      tags?: string[];
-      description?: string;
-    }>;
-  };
-}
-
-export interface WeatherAnalystInput {
-  weather: {
-    city: string;
-    country: string;
-    temperature: number;
-    feelsLike: number;
-    humidity: number;
-    condition: string;
-    windSpeed: number;
-    units: string;
-  };
-}
-
-export interface CompetitorParserInput {
-  scrape: {
-    url: string;
-    finalUrl: string;
-    title: string;
-    text: string;
-    scrapedAt: string;
-  };
-}
-
-export interface CompetitorAnalystInput {
-  competitors: Array<{
-    brand: string | null;
-    items: Array<{
-      name: string;
-      category?: string;
-      price?: number;
-      currency?: string;
-      description?: string;
-      isPromo: boolean;
-    }>;
-    promos: Array<{
-      text: string;
-      discountPercent?: number;
-      validUntil?: string;
-    }>;
-    notes: string[];
-  }>;
-  ourMenu: Array<{
-    id: string;
-    name: string;
-    category: string;
-    price: number;
-  }>;
-}
 
 export function buildMenuAnalystPrompt(input: MenuAnalystInput): string {
   return `Analyze this menu (${input.menu.items.length} items):\n\n${JSON.stringify(

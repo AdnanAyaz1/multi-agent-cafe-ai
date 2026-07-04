@@ -1,15 +1,12 @@
 import {
   competitorParserOutputSchema,
   type CompetitorParserOutput,
+  type CompetitorParserInput,
   type PipelineContext,
 } from './types';
 import { withAgentRun, type AgentRunResult } from './run';
 import { getModel } from './models';
-import {
-  COMPETITOR_PARSER_SYSTEM,
-  buildCompetitorParserPrompt,
-  type CompetitorParserInput,
-} from './prompts';
+import { COMPETITOR_PARSER_SYSTEM, buildCompetitorParserPrompt } from './prompts';
 
 export async function runCompetitorParser(
   input: CompetitorParserInput,

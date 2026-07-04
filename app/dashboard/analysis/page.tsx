@@ -30,7 +30,7 @@ export default function WeatherPipelinePage() {
   const businessId = form.watch('businessId');
   const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
 
-  const isRunning = status?.status === 'running';
+  const isRunning = status?.status === 'running' || status?.status === 'cancelling';
   const recommendation = status?.recommendation;
 
   const handleRun = form.handleSubmit((data) => {
@@ -46,6 +46,8 @@ export default function WeatherPipelinePage() {
 
     if (current === 'running' && prev !== 'running') {
       toast.loading('Weather pipeline started — agents are working...', { id: 'pipeline' });
+    } else if (current === 'cancelling' && prev !== 'cancelling') {
+      toast.loading('Stopping pipeline — waiting for agents to finish...', { id: 'pipeline' });
     } else if (current === 'complete') {
       toast.success('Weather pipeline complete — recommendation ready!', { id: 'pipeline' });
     } else if (current === 'cancelled') {
