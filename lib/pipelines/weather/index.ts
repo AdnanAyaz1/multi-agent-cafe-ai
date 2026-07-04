@@ -137,7 +137,7 @@ export async function runWeatherPipeline(
   try {
     const { weather, menu, competitors } = await loadInputs(context);
 
-      // Check cancellation after data loading
+    // Check cancellation after data loading
     if (await isPipelineCancelled(context.pipelineId)) {
       throw 'Pipeline cancelled by user';
     }
