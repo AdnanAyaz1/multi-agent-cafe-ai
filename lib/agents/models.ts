@@ -1,13 +1,13 @@
 import 'server-only';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGroq } from '@ai-sdk/groq';
 import type { LanguageModel } from 'ai';
 import type { AgentName } from './types';
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_AI_API_KEY,
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
 });
 
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 
 const PER_AGENT_MODEL: Record<AgentName, string> = {
   'menu-analyst': process.env.MODEL_MENU_ANALYST ?? DEFAULT_MODEL,
@@ -21,8 +21,8 @@ const PER_AGENT_MODEL: Record<AgentName, string> = {
 
 export function getModel(agentName: AgentName): LanguageModel {
   const modelId =
-    process.env.GOOGLE_MODEL_OVERRIDE ?? PER_AGENT_MODEL[agentName];
-  return google(modelId) as unknown as LanguageModel;
+    process.env.GROQ_MODEL_OVERRIDE ?? PER_AGENT_MODEL[agentName];
+  return groq(modelId) as unknown as LanguageModel;
 }
 
 export const MAX_REVISIONS = parseInt(process.env.MAX_REVISIONS ?? '1', 10);
