@@ -8,7 +8,7 @@ const groq = createGroq({
 });
 
 export async function getWeatherData(city: string): Promise<WeatherResult> {
-  const model = process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile';
+  const model = process.env.GROQ_MODEL ?? 'llama-3.1-8b-instant';
 
   try {
     const result = await generateText({

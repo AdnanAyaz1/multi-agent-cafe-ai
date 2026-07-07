@@ -7,7 +7,8 @@ const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
+// llama-3.1-8b-instant: fastest, most free quota (14k req/min on free tier)
+const DEFAULT_MODEL = 'llama-3.1-8b-instant';
 
 const PER_AGENT_MODEL: Record<AgentName, string> = {
   'menu-analyst': process.env.MODEL_MENU_ANALYST ?? DEFAULT_MODEL,
