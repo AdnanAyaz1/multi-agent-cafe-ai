@@ -1,3 +1,4 @@
+import 'server-only';
 import { WeatherData } from '@/lib/types';
 import { WMO_CODES } from './wmo-codes';
 import type { GeoResult, OpenMeteoCurrent } from './types';

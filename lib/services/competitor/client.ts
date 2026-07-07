@@ -1,3 +1,4 @@
+import 'server-only';
 import { UpstreamError } from '@/lib/errors';
 import type { CompetitorScrapeResult } from '@/lib/types';
 import type { ScrapeOptions } from './types';
