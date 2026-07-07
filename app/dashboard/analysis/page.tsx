@@ -5,10 +5,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { RotateCcw } from 'lucide-react';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useDecisions } from '@/hooks/useDecisions';
+import { usePipelineRateLimit } from '@/hooks/use-pipeline-rate-limit';
 import { analysisFormSchema, type AnalysisFormInput } from '@/lib/validators/analysis';
+import { isRateLimitError } from '@/lib/rate-limit-utils';
 import type { Decision } from '@/types/decisions';
+import { Button } from '@/components/ui/button';
 import { AgentShowcase } from '@/components/dashboard/home/AgentShowcase';
 import { PipelineVisualization } from '@/components/dashboard/home/PipelineVisualization';
 import { DecisionDetailsModal } from '@/components/dashboard/decisions/DecisionDetailsModal';
@@ -16,9 +20,10 @@ import { AnalysisHeader } from '@/components/dashboard/analysis/AnalysisHeader';
 import { AnalysisSearchForm } from '@/components/dashboard/analysis/AnalysisSearchForm';
 import { RecommendationSummary } from '@/components/dashboard/analysis/RecommendationSummary';
 import { RecommendationActions } from '@/components/dashboard/analysis/RecommendationActions';
+import { RateLimitBanner } from '@/components/dashboard/RateLimitBanner';
 
-export default function WeatherPipelinePage() {
-  const { status, loading, error, run, cancel } = useAnalysis();
+const WeatherPipelinePage = () => {
+  const { status, loading, error, run, cancel, reset } = useAnalysis();
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const prevStatusRef = useRef<string | null>(null);
 
@@ -33,9 +38,25 @@ export default function WeatherPipelinePage() {
   const isRunning = status?.status === 'running' || status?.status === 'cancelling';
   const recommendation = status?.recommendation;
 
+  const { hasRateLimitError, failedRunError, isRetrying, handleRetry, resetRetry, reset: resetRateLimit } = usePipelineRateLimit(
+    status?.agentRuns ?? []
+  );
+
   const handleRun = form.handleSubmit((data) => {
+    resetRetry();
     run(data.businessId, 'weather');
   });
+
+  const onRetry = useCallback(async () => {
+    const currentBusinessId = form.getValues('businessId');
+    await handleRetry(currentBusinessId, 'weather', run);
+  }, [form, handleRetry, run]);
+
+  const handleReset = useCallback(() => {
+    reset();
+    resetRateLimit();
+    setSelectedDecision(null);
+  }, [reset, resetRateLimit]);
 
   useEffect(() => {
     if (!status?.status) return;
@@ -50,13 +71,19 @@ export default function WeatherPipelinePage() {
       toast.loading('Stopping pipeline — waiting for agents to finish...', { id: 'pipeline' });
     } else if (current === 'complete') {
       toast.success('Weather pipeline complete — recommendation ready!', { id: 'pipeline' });
+      resetRetry();
     } else if (current === 'cancelled') {
       toast.error('Pipeline cancelled by user.', { id: 'pipeline' });
+      resetRetry();
     } else if (current === 'failed') {
-      // Find the first agent error to show a meaningful message
       const failedRun = status.agentRuns.find((r) => r.status === 'failed' && r.error);
-      const msg = failedRun?.error ?? 'Weather pipeline failed — please try again.';
-      toast.error(msg, { id: 'pipeline' });
+      const error_msg = failedRun?.error ?? 'Weather pipeline failed — please try again.';
+
+      if (isRateLimitError(error_msg)) {
+        toast.error('Rate limit reached. You can retry in a moment.', { id: 'pipeline' });
+      } else {
+        toast.error(error_msg, { id: 'pipeline' });
+      }
     }
   }, [status?.status]);
 
@@ -113,9 +140,31 @@ export default function WeatherPipelinePage() {
         onCancel={cancel}
       />
 
+      {hasRateLimitError && failedRunError && !isRunning && (
+        <RateLimitBanner error={failedRunError} onRetry={onRetry} isRetrying={isRetrying} />
+      )}
+
+      {status?.status === 'failed' && !hasRateLimitError && !isRunning && (
+        <Button
+          variant="outline"
+          onClick={handleReset}
+          className="w-full border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50 hover:text-white"
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Reset and Try Again
+        </Button>
+      )}
+
       <AnimatePresence mode="wait">
         {status ? (
-          <motion.div key="results" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="space-y-8">
+          <motion.div
+            key="results"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-8"
+          >
             {status.agentRuns.length > 0 && (
               <PipelineVisualization runs={status.agentRuns} isRunning={isRunning} />
             )}
@@ -146,4 +195,6 @@ export default function WeatherPipelinePage() {
       />
     </div>
   );
-}
+};
+
+export default WeatherPipelinePage;

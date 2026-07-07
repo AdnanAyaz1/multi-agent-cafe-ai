@@ -169,6 +169,15 @@ export function useAnalysis() {
     // instead of optimistically showing "stopped" while jobs are still running.
   }, []);
 
+  const reset = useCallback(() => {
+    stopPolling();
+    setPipelineId(null);
+    setStatus(null);
+    setLoading(false);
+    setError(null);
+    activePipelineRef.current = null;
+  }, [stopPolling]);
+
   return {
     pipelineId,
     status,
@@ -176,5 +185,6 @@ export function useAnalysis() {
     error,
     run,
     cancel,
+    reset,
   };
 }
