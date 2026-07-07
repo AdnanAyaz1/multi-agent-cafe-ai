@@ -21,6 +21,6 @@ export async function runMenuAnalyst(
     schemaName: 'MenuAnalysis',
     context,
     inputSnapshot: { itemCount: input.menu.items.length },
-    retries: 1,
+    retries: 2,
   });
 }

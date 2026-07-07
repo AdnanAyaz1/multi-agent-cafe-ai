@@ -35,7 +35,71 @@ export function parseJsonFromText(text: string): unknown {
     cleaned = cleaned.slice(jsonStart, jsonEnd + 1);
   }
 
-  return JSON.parse(cleaned);
+  // Try parsing directly first
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // If direct parse fails, try to find the outermost complete JSON
+    // by scanning for balanced braces/brackets
+    const result = extractBalancedJson(cleaned);
+    if (result !== null) return result;
+    throw new SyntaxError(`No valid JSON found in response (${cleaned.length} chars)`);
+  }
+}
+
+/**
+ * Extract the outermost balanced JSON object or array from text.
+ * Handles cases where the model adds trailing text after the JSON.
+ */
+function extractBalancedJson(text: string): unknown {
+  // Try each possible start character
+  for (const open of ['{', '[']) {
+    const close = open === '{' ? '}' : ']';
+    const startIdx = text.indexOf(open);
+    if (startIdx === -1) continue;
+
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+
+    for (let i = startIdx; i < text.length; i++) {
+      const ch = text[i];
+
+      if (escape) {
+        escape = false;
+        continue;
+      }
+
+      if (ch === '\\' && inString) {
+        escape = true;
+        continue;
+      }
+
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+
+      if (inString) continue;
+
+      if (ch === open || (open === '{' && ch === '{') || (open === '[' && ch === '[')) {
+        if (ch === '{' || ch === '[') depth++;
+      }
+      if (ch === close || (close === '}' && ch === '}') || (close === ']' && ch === ']')) {
+        if (ch === '}' || ch === ']') depth--;
+      }
+
+      if (depth === 0 && i > startIdx) {
+        const candidate = text.slice(startIdx, i + 1);
+        try {
+          return JSON.parse(candidate);
+        } catch {
+          break; // This candidate didn't work, try next start position
+        }
+      }
+    }
+  }
+  return null;
 }
 
 /**
@@ -118,4 +182,15 @@ export function buildRateLimitMessage(err: unknown): string {
     return 'API quota exceeded. Please wait a few minutes and try again.';
   }
   return 'Rate limit exceeded. Please wait a moment and try again.';
+}
+
+/**
+ * Parse the "try again in X.XXs" from a Groq rate-limit error message.
+ * Returns seconds to wait (default 3).
+ */
+export function parseRetryAfter(err: unknown): number {
+  const msg = err instanceof Error ? err.message : String(err);
+  const match = msg.match(/try again in (\d+(?:\.\d+)?)s/i);
+  if (match) return Math.ceil(parseFloat(match[1]));
+  return 3; // default 3s
 }

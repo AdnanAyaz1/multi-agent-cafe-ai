@@ -10,6 +10,7 @@ import {
   parseJsonFromText,
   markFailed,
   buildRateLimitMessage,
+  parseRetryAfter,
 } from './utils';
 
 export type { AgentRunArgs, AgentRunResult };
@@ -53,7 +54,7 @@ export async function withAgentRun<Output>(
   // Rate limit guard: wait between agent calls to stay under free-tier RPM
   // Sleep is abortable — if the pipeline is cancelled during the wait, we stop immediately.
   try {
-    await abortableSleep(2500, signal);
+    await abortableSleep(3500, signal);
   } catch (e) {
     if (signal?.aborted) {
       await markFailed(run.id, start, 'Pipeline cancelled by user');
@@ -120,17 +121,33 @@ export async function withAgentRun<Output>(
         throw new PipelineCancelledError(reason);
       }
 
-      // --- Rate limit / quota: fail immediately, abort the whole pipeline ---
-      if (reason === 'rate_limit' || reason === 'quota_exceeded') {
-        const msg = reason === 'quota_exceeded'
-          ? 'API quota exceeded. Please wait a few minutes and try again.'
-          : buildRateLimitMessage(e);
-
-        log.error(`${args.agentName} ${reason}`, e, {
+      // --- Rate limit: wait and retry (Groq 429s are temporary) ---
+      if (reason === 'rate_limit') {
+        const retryAfter = parseRetryAfter(e);
+        log.warn(`${args.agentName} rate limited, retrying in ${retryAfter}s`, {
           pipelineId: args.context.pipelineId,
           runId: run.id,
         });
+        if (attempt < maxAttempts) {
+          try {
+            await abortableSleep(retryAfter * 1000, signal);
+          } catch {
+            if (signal?.aborted) {
+              await markFailed(run.id, start, 'Pipeline cancelled by user');
+              throw new PipelineCancelledError('user_cancelled');
+            }
+          }
+        }
+        continue; // retry the loop
+      }
 
+      // --- Quota exceeded: terminal, abort pipeline ---
+      if (reason === 'quota_exceeded') {
+        const msg = 'API quota exceeded. Please wait a few minutes and try again.';
+        log.error(`${args.agentName} quota_exceeded`, e, {
+          pipelineId: args.context.pipelineId,
+          runId: run.id,
+        });
         await markFailed(run.id, start, msg);
         throw new PipelineTerminalError(reason, msg);
       }
