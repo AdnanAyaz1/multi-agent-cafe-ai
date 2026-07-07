@@ -142,7 +142,7 @@ export const runWeatherFetch = inngest.createFunction(
   {
     id: 'weather-fetch',
     name: 'Weather Fetch',
-    concurrency: 10,
+    concurrency: 5,
     triggers: [{ event: 'weather/fetch' }],
   },
   async ({ event, step }) => {
