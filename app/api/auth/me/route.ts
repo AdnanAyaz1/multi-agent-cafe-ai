@@ -1,25 +1,19 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { UnauthorizedError, NotFoundError } from '@/lib/errors';
+import { withErrorHandling } from '@/lib/api/with-error-handling';
 
-export async function GET() {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const GET = withErrorHandling(async () => {
+  const session = await auth();
+  if (!session?.user?.id) throw new UnauthorizedError();
 
-    const business = await prisma.business.findFirst({
-      where: { userId: session.user.id },
-      select: { id: true, name: true },
-    });
+  const business = await prisma.business.findFirst({
+    where: { userId: session.user.id },
+    select: { id: true, name: true },
+  });
 
-    if (!business) {
-      return NextResponse.json({ error: 'No business found' }, { status: 404 });
-    }
+  if (!business) throw new NotFoundError('Business');
 
-    return NextResponse.json({ business });
-  } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
+  return NextResponse.json({ business });
+});

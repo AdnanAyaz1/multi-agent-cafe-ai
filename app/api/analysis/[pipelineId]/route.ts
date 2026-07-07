@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { pipelineIdSchema } from '@/lib/validators/analysis';
 import { NotFoundError } from '@/lib/errors';
-import handleError from '@/lib/handlers/errors';
+import { withErrorHandling } from '@/lib/api/with-error-handling';
 import { cancelPipeline, getPipelineCancelReason } from '@/lib/pipelines/cancel';
 import type {
   PipelineStatus,
@@ -19,98 +19,84 @@ import type {
 
 const log = logger.child('api:analysis/status');
 
-export async function GET(
+export const GET = withErrorHandling(async (
   _request: NextRequest,
   ctx: RouteContext<'/api/analysis/[pipelineId]'>
-) {
-  try {
-    const { pipelineId } = await ctx.params;
-    const validId = pipelineIdSchema.parse(pipelineId);
+) => {
+  const { pipelineId } = await ctx.params;
+  const validId = pipelineIdSchema.parse(pipelineId);
 
-    const runs: RawAgentRun[] = await prisma.agentRun.findMany({
-      where: { pipelineId: validId },
-      orderBy: { createdAt: 'asc' },
-    }) as unknown as RawAgentRun[];
+  const runs: RawAgentRun[] = await prisma.agentRun.findMany({
+    where: { pipelineId: validId },
+    orderBy: { createdAt: 'asc' },
+  }) as unknown as RawAgentRun[];
 
-    // Find the recommendation for this pipeline
-    const rec = await findRecommendationForPipeline(validId);
+  const rec = await findRecommendationForPipeline(validId);
 
-    // If no agent runs and no recommendation, pipeline doesn't exist
-    if (runs.length === 0 && !rec) throw new NotFoundError('Pipeline');
+  if (runs.length === 0 && !rec) throw new NotFoundError('Pipeline');
 
-    // For competitor pipelines (no agent runs), derive status from recommendation
-    if (runs.length === 0 && rec) {
-      const recFormatted = formatRecommendation(rec);
-      const body: PipelineStatusResponse = {
-        status: 'complete',
-        agentRuns: [],
-        recommendation: recFormatted,
-      };
-      return NextResponse.json(body);
-    }
-
-    // For weather pipelines (has agent runs)
-    const agentRuns: PipelineAgentRun[] = runs.map((r) => ({
-      id: r.id,
-      agentName: r.agentName as string,
-      status: r.status,
-      durationMs: r.durationMs ?? undefined,
-      tokenCount: r.tokenCount ?? undefined,
-      error: r.error ?? undefined,
-    }));
-
-    let recommendation: PipelineRecommendation | undefined = undefined;
-    const completedSynthesizer = runs.find(
-      (r) => r.agentName === 'synthesizer' && r.status === 'complete'
-    );
-    if (completedSynthesizer && rec) {
-      recommendation = formatRecommendation(rec);
-    }
-
-    // Check Redis for in-progress cancellation
-    const cancelReason = await getPipelineCancelReason(validId);
-    const hasRunning = runs.some((s) => s.status === 'running' || s.status === 'pending');
-
-    let status: PipelineStatus;
-
-    // If Redis says cancelled but pipeline still has running jobs, show "cancelling"
-    if (cancelReason && hasRunning) {
-      status = 'cancelling' as PipelineStatus;
-    } else {
-      status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT, runs);
-    }
-
+  if (runs.length === 0 && rec) {
+    const recFormatted = formatRecommendation(rec);
     const body: PipelineStatusResponse = {
-      status,
-      agentRuns,
-      recommendation,
+      status: 'complete',
+      agentRuns: [],
+      recommendation: recFormatted,
     };
     return NextResponse.json(body);
-  } catch (error) {
-    return handleError(error) as NextResponse;
   }
-}
 
-export async function DELETE(
+  const agentRuns: PipelineAgentRun[] = runs.map((r) => ({
+    id: r.id,
+    agentName: r.agentName as string,
+    status: r.status,
+    durationMs: r.durationMs ?? undefined,
+    tokenCount: r.tokenCount ?? undefined,
+    error: r.error ?? undefined,
+  }));
+
+  let recommendation: PipelineRecommendation | undefined = undefined;
+  const completedSynthesizer = runs.find(
+    (r) => r.agentName === 'synthesizer' && r.status === 'complete'
+  );
+  if (completedSynthesizer && rec) {
+    recommendation = formatRecommendation(rec);
+  }
+
+  const cancelReason = await getPipelineCancelReason(validId);
+  const hasRunning = runs.some((s) => s.status === 'running' || s.status === 'pending');
+
+  let status: PipelineStatus;
+
+  if (cancelReason && hasRunning) {
+    status = 'cancelling' as PipelineStatus;
+  } else {
+    status = derivePipelineStatus(runs.map((r) => r.status), PIPELINE_AGENT_COUNT, runs);
+  }
+
+  const body: PipelineStatusResponse = {
+    status,
+    agentRuns,
+    recommendation,
+  };
+  return NextResponse.json(body);
+});
+
+export const DELETE = withErrorHandling(async (
   _request: NextRequest,
   ctx: RouteContext<'/api/analysis/[pipelineId]'>
-) {
-  try {
-    const { pipelineId } = await ctx.params;
-    const validId = pipelineIdSchema.parse(pipelineId);
+) => {
+  const { pipelineId } = await ctx.params;
+  const validId = pipelineIdSchema.parse(pipelineId);
 
-    const cancelled = await cancelPipeline(validId, 'user_cancelled');
+  const cancelled = await cancelPipeline(validId, 'user_cancelled');
 
-    log.info('pipeline cancel requested', {
-      pipelineId: validId,
-      cancelled,
-    });
+  log.info('pipeline cancel requested', {
+    pipelineId: validId,
+    cancelled,
+  });
 
-    return NextResponse.json({ success: true, cancelled });
-  } catch (error) {
-    return handleError(error) as NextResponse;
-  }
-}
+  return NextResponse.json({ success: true, cancelled });
+});
 
 function derivePipelineStatus(
   runStatuses: string[],
@@ -121,7 +107,6 @@ function derivePipelineStatus(
   const hasCompleted = runStatuses.some((s) => s === 'complete');
   const hasRunning = runStatuses.some((s) => s === 'running' || s === 'pending');
 
-  // Detect user cancellation: all failed runs have the cancellation message
   if (hasFailed && !hasCompleted && !hasRunning && agentRuns) {
     const allCancelled = agentRuns
       .filter((r) => r.status === 'failed')

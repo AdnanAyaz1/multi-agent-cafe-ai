@@ -1,3 +1,5 @@
+import 'server-only';
+
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly code: string;
@@ -37,6 +39,12 @@ export class UpstreamError extends AppError {
       'UPSTREAM_ERROR',
       service ? { service } : undefined
     );
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message = 'Unauthorized') {
+    super(message, 401, 'UNAUTHORIZED');
   }
 }
 

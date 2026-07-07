@@ -84,4 +84,4 @@ const handleError = (
   return formatResponse(responseType, 500, 'An unexpected error occurred', 'UNKNOWN_ERROR');
 };
 
-export default handleError;
+export { handleError };

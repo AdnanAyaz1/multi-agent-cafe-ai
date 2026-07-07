@@ -1,47 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
 import { competitorSnapshotQuerySchema } from '@/lib/validators/competitor';
-import { NotFoundError } from '@/lib/errors';
-import handleError from '@/lib/handlers/errors';
+import { NotFoundError, UnauthorizedError } from '@/lib/errors';
+import { withErrorHandling } from '@/lib/api/with-error-handling';
 
-export async function GET(
+export const GET = withErrorHandling(async (
   request: NextRequest,
   ctx: RouteContext<'/api/competitor/[businessId]'>
-) {
-  try {
-    const { businessId } = await ctx.params;
-    const url = new URL(request.url);
+) => {
+  const session = await auth();
+  if (!session?.user?.id) throw new UnauthorizedError();
 
-    const { limit } = competitorSnapshotQuerySchema.parse({
-      businessId,
-      limit: url.searchParams.get('limit') ?? undefined,
-    });
+  const { businessId } = await ctx.params;
+  const url = new URL(request.url);
 
-    const business = await prisma.business.findUnique({
-      where: { id: businessId },
-      select: { id: true, name: true },
-    });
-    if (!business) throw new NotFoundError(`Business ${businessId}`);
+  const { limit } = competitorSnapshotQuerySchema.parse({
+    businessId,
+    limit: url.searchParams.get('limit') ?? undefined,
+  });
 
-    const snapshots = await prisma.dataSnapshot.findMany({
-      where: { businessId, source: 'competitors' },
-      orderBy: { collectedAt: 'desc' },
-      take: limit ?? 10,
-      select: {
-        id: true,
-        collectedAt: true,
-        expiresAt: true,
-        data: true,
-      },
-    });
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { id: true, name: true },
+  });
+  if (!business) throw new NotFoundError(`Business ${businessId}`);
 
-    return NextResponse.json({
-      businessId,
-      businessName: business.name,
-      count: snapshots.length,
-      snapshots,
-    });
-  } catch (error) {
-    return handleError(error) as NextResponse;
-  }
-}
+  const snapshots = await prisma.dataSnapshot.findMany({
+    where: { businessId, source: 'competitors' },
+    orderBy: { collectedAt: 'desc' },
+    take: limit ?? 10,
+    select: {
+      id: true,
+      collectedAt: true,
+      expiresAt: true,
+      data: true,
+    },
+  });
+
+  return NextResponse.json({
+    businessId,
+    businessName: business.name,
+    count: snapshots.length,
+    snapshots,
+  });
+});

@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMenuForBusiness } from '@/lib/menu';
-import handleError from '@/lib/handlers/errors';
+import { withErrorHandling } from '@/lib/api/with-error-handling';
 
-export async function GET(
+export const GET = withErrorHandling(async (
   _request: NextRequest,
   ctx: RouteContext<'/api/menu/[businessId]'>
-) {
-  try {
-    const { businessId } = await ctx.params;
-    const menu = await getMenuForBusiness(businessId);
-    return NextResponse.json(menu);
-  } catch (error) {
-    return handleError(error) as NextResponse;
-  }
-}
+) => {
+  const { businessId } = await ctx.params;
+  const menu = await getMenuForBusiness(businessId);
+  return NextResponse.json(menu);
+});

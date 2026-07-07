@@ -1,37 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
-import handleError from '@/lib/handlers/errors';
+import { auth } from '@/lib/auth';
+import { NotFoundError, UnauthorizedError } from '@/lib/errors';
+import { withErrorHandling } from '@/lib/api/with-error-handling';
 
 const patchSchema = z.object({
   status: z.enum(['approved', 'rejected']),
   reason: z.string().optional(),
 });
 
-export async function PATCH(
+export const PATCH = withErrorHandling(async (
   request: NextRequest,
   ctx: RouteContext<'/api/decisions/[id]'>
-) {
-  try {
-    const { id } = await ctx.params;
-    const body = await patchSchema.parse(await request.json());
+) => {
+  const session = await auth();
+  if (!session?.user?.id) throw new UnauthorizedError();
 
-    const decision = await prisma.decision.findUnique({ where: { id } });
-    if (!decision) {
-      return NextResponse.json({ error: 'Decision not found' }, { status: 404 });
-    }
+  const { id } = await ctx.params;
+  const body = await patchSchema.parse(await request.json());
 
-    const updated = await prisma.decision.update({
-      where: { id },
-      data: {
-        status: body.status,
-        reason: body.reason,
-        decidedAt: new Date(),
-      },
-    });
+  const decision = await prisma.decision.findUnique({ where: { id } });
+  if (!decision) throw new NotFoundError('Decision');
 
-    return NextResponse.json(updated);
-  } catch (error) {
-    return handleError(error) as NextResponse;
-  }
-}
+  const updated = await prisma.decision.update({
+    where: { id },
+    data: {
+      status: body.status,
+      reason: body.reason,
+      decidedAt: new Date(),
+    },
+  });
+
+  return NextResponse.json(updated);
+});

@@ -4,11 +4,12 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { LogOut, Mail } from 'lucide-react';
 import { useDropdown } from '@/hooks/useDropdown';
-import { signOut } from '@/lib/auth-utils';
+import { useSignOut } from '@/hooks/useSignOut';
 
 export function UserNav() {
   const { data: session } = useSession();
   const { open, setOpen, ref } = useDropdown();
+  const { signOut } = useSignOut();
 
   if (!session?.user) return null;
 

@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Store, LogOut } from 'lucide-react';
 import { MAIN_NAV, BOTTOM_NAV } from '@/constants/navigation';
-import { signOut } from '@/lib/auth-utils';
+import { useSignOut } from '@/hooks/useSignOut';
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { signOut } = useSignOut();
 
   return (
     <aside
