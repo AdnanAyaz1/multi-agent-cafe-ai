@@ -5,7 +5,7 @@ import { usePricingPage } from '@/hooks/usePricingPage';
 import { PRICING_PLANS } from '@/constants/pricing';
 
 export default function PricingPage() {
-  const { session, loading, handleCheckout } = usePricingPage();
+  const { session, handleCheckout } = usePricingPage();
 
   return (
     <div className="min-h-screen" style={{ background: '#0e0c0a' }}>
@@ -98,12 +98,11 @@ export default function PricingPage() {
                 ) : (
                   <button
                     onClick={() => plan.planKey && handleCheckout(plan.planKey)}
-                    disabled={loading === plan.planKey}
-                    className={`block w-full py-3.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-8 cursor-pointer disabled:opacity-50 ${
+                    className={`block w-full py-3.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-8 cursor-pointer ${
                       plan.popular ? 'text-white btn-glow' : 'border border-white/[0.08] bg-white/[0.02] text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                     style={plan.popular ? { background: 'linear-gradient(135deg, #e07850, #c86040)' } : undefined}>
-                    {loading === plan.planKey ? 'Redirecting...' : plan.cta}
+                    {plan.cta}
                   </button>
                 )}
 

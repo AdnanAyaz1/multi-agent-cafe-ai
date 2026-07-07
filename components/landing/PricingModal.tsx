@@ -6,7 +6,7 @@ import { PRICING_PLANS } from '@/constants/pricing';
 import type { PricingModalProps } from '@/types/pricing';
 
 export function PricingModal({ open, onClose }: PricingModalProps) {
-  const { loading, handleCheckout } = usePricingModal(open, onClose);
+  const { handleCheckout } = usePricingModal(open, onClose);
 
   if (!open) return null;
 
@@ -82,13 +82,12 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
               ) : (
                 <button
                   onClick={() => plan.planKey && handleCheckout(plan.planKey)}
-                  disabled={loading === plan.planKey}
-                  className={`block w-full py-2.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-5 cursor-pointer disabled:opacity-50 ${
+                  className={`block w-full py-2.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-5 cursor-pointer ${
                     plan.popular ? 'text-white' : 'border border-white/[0.12] bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]'
                   }`}
                   style={plan.popular ? { background: "linear-gradient(135deg, #e07850, #c86040)" } : undefined}
                 >
-                  {loading === plan.planKey ? 'Redirecting...' : plan.cta}
+                  {plan.cta}
                 </button>
               )}
 

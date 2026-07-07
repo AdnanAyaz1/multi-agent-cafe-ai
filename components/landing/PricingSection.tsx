@@ -6,7 +6,7 @@ import { usePricingCheckout } from "@/hooks/usePricingCheckout";
 import { PRICING_PLANS } from "@/constants/pricing";
 
 export function PricingSection() {
-  const { loading, handleCheckout } = usePricingCheckout();
+  const { handleCheckout } = usePricingCheckout();
 
   return (
     <section id="pricing" className="py-24 lg:py-40 relative">
@@ -95,15 +95,14 @@ export function PricingSection() {
                   ) : (
                     <button
                       onClick={() => plan.planKey && handleCheckout(plan.planKey)}
-                      disabled={loading === plan.planKey}
-                      className={`block w-full py-4 rounded-2xl text-center font-semibold text-sm transition-all duration-400 mb-10 cursor-pointer disabled:opacity-50 ${
+                      className={`block w-full py-4 rounded-2xl text-center font-semibold text-sm transition-all duration-400 mb-10 cursor-pointer ${
                         plan.popular ? "text-white btn-glow" : "hover:text-white"
                       }`}
                       style={plan.popular
                         ? { background: "linear-gradient(135deg, #e07850, #c86040)" }
                         : { border: "1px solid rgba(224, 120, 80, 0.15)", background: "rgba(255,255,255,0.04)", color: "rgba(200, 180, 160, 0.9)" }
                       }>
-                      {loading === plan.planKey ? 'Redirecting...' : plan.cta}
+                      {plan.cta}
                     </button>
                   )}
 
