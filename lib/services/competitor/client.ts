@@ -4,11 +4,11 @@ import type { ScrapeOptions } from './types';
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_TEXT = 60_000;
-const DEFAULT_USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 ' +
-  'AgenticAI-CompetitorBot/1.0';
 
+/**
+ * Scrapes a competitor URL using ScrapingBee's API (Vercel-compatible).
+ * Falls back to Playwright locally if SCRAPINGBEE_API_KEY is not set.
+ */
 export async function scrapeCompetitorUrl(
   url: string,
   options: ScrapeOptions = {}
@@ -18,7 +18,70 @@ export async function scrapeCompetitorUrl(
 
   validateUrl(url);
 
-  // Dynamic imports — Playwright is heavy and unavailable on Vercel serverless
+  const apiKey = process.env.SCRAPINGBEE_API_KEY;
+
+  if (apiKey) {
+    return scrapeWithScrapingBee(url, apiKey, timeoutMs, maxTextLength);
+  }
+
+  // Fallback to Playwright for local development
+  return scrapeWithPlaywright(url, options, timeoutMs, maxTextLength);
+}
+
+async function scrapeWithScrapingBee(
+  url: string,
+  apiKey: string,
+  timeoutMs: number,
+  maxTextLength: number
+): Promise<CompetitorScrapeResult> {
+  const start = Date.now();
+  const params = new URLSearchParams({
+    url,
+    render_js: 'true',
+    return_page_text: 'true',
+    wait: '2000',
+    timeout: String(Math.min(timeoutMs, 30000)),
+  });
+
+  const response = await fetch(`https://app.scrapingbee.com/api/v1?${params}`, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new UpstreamError(
+      `ScrapingBee failed for ${url}: ${response.status} ${body}`,
+      'scrapingbee'
+    );
+  }
+
+  const text = await response.text();
+
+  if (!text || text.length < 20) {
+    throw new UpstreamError(`ScrapingBee returned empty body for ${url}`, 'scrapingbee');
+  }
+
+  const truncated = text.length > maxTextLength ? text.slice(0, maxTextLength) : text;
+
+  return {
+    url,
+    finalUrl: url,
+    title: '',
+    text: truncated,
+    scrapedAt: new Date().toISOString(),
+    durationMs: Date.now() - start,
+  };
+}
+
+async function scrapeWithPlaywright(
+  url: string,
+  options: ScrapeOptions,
+  timeoutMs: number,
+  maxTextLength: number
+): Promise<CompetitorScrapeResult> {
   const [{ PlaywrightCrawler, Configuration }, { log: crawleeLog }, { chromium }] = await Promise.all([
     import('@crawlee/playwright'),
     import('@crawlee/core'),
@@ -36,7 +99,8 @@ export async function scrapeCompetitorUrl(
       launchContext: {
         launcher: chromium,
         launchOptions: { headless: true },
-        userAgent: options.userAgent ?? DEFAULT_USER_AGENT,
+        userAgent: options.userAgent ??
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
       navigationTimeoutSecs: Math.ceil(timeoutMs / 1000),
       requestHandlerTimeoutSecs: Math.ceil(timeoutMs / 1000) + 10,
