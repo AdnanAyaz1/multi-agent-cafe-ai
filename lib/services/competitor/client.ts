@@ -1,12 +1,6 @@
-import { PlaywrightCrawler, Configuration } from '@crawlee/playwright';
-import { log as crawleeLog } from '@crawlee/core';
-import { chromium } from 'playwright';
 import { UpstreamError } from '@/lib/errors';
 import type { CompetitorScrapeResult } from '@/lib/types';
 import type { ScrapeOptions } from './types';
-
-// ─── Crawlee config (silence its built-in logger, isolate state per run) ────
-crawleeLog.setLevel(crawleeLog.LEVELS.WARNING);
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_TEXT = 60_000;
@@ -15,15 +9,6 @@ const DEFAULT_USER_AGENT =
   'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 ' +
   'AgenticAI-CompetitorBot/1.0';
 
-/**
- * Scrapes a single competitor URL with Playwright (full JS rendering).
- *
- * Returns a CompetitorScrapeResult with the page's visible text (scripts and
- * styles stripped). The structured extraction happens downstream in the
- * competitor-parser agent — this function only fetches and cleans.
- *
- * Throws UpstreamError on navigation timeout, non-2xx status, or empty body.
- */
 export async function scrapeCompetitorUrl(
   url: string,
   options: ScrapeOptions = {}
@@ -33,18 +18,22 @@ export async function scrapeCompetitorUrl(
 
   validateUrl(url);
 
+  // Dynamic imports — Playwright is heavy and unavailable on Vercel serverless
+  const [{ PlaywrightCrawler, Configuration }, { log: crawleeLog }, { chromium }] = await Promise.all([
+    import('@crawlee/playwright'),
+    import('@crawlee/core'),
+    import('playwright'),
+  ]);
+
+  crawleeLog.setLevel(crawleeLog.LEVELS.WARNING);
+
   const start = Date.now();
   let captured: Omit<CompetitorScrapeResult, 'durationMs'> | undefined;
   let firstError: unknown;
 
-  // A fresh Configuration per call prevents Crawlee's persistent state from
-  // leaking between scrapes (we are not running a long-lived crawl session).
-    const crawler = new PlaywrightCrawler(
+  const crawler = new PlaywrightCrawler(
     {
       launchContext: {
-        // Pass `launcher` explicitly to avoid crawlee's internal dynamic
-        // `requireLauncherOrThrow('playwright', ...)` which Turbopack cannot
-        // statically resolve at bundle time.
         launcher: chromium,
         launchOptions: { headless: true },
         userAgent: options.userAgent ?? DEFAULT_USER_AGENT,
@@ -61,7 +50,6 @@ export async function scrapeCompetitorUrl(
           throw new Error(`HTTP ${status} for ${request.loadedUrl ?? url}`);
         }
 
-        // Strip script/style/noscript before extracting text.
         const text = await page.evaluate((cap: number) => {
           const clone = document.cloneNode(true) as Document;
           clone.querySelectorAll('script, style, noscript').forEach((n) => n.remove());
@@ -90,9 +78,6 @@ export async function scrapeCompetitorUrl(
   );
 
   try {
-    if (options.respectRobots === false) {
-      // No robots config in PlaywrightCrawler — left as an explicit flag for the future.
-    }
     await crawler.run([url]);
   } catch (e) {
     firstError = firstError ?? e;
