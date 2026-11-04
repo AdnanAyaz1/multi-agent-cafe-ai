@@ -11,20 +11,20 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl"
+      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-3xl"
         style={{
           background: "linear-gradient(160deg, rgba(22, 20, 18, 0.98), rgba(14, 12, 10, 0.95))",
           border: "1px solid rgba(224, 120, 80, 0.15)",
           boxShadow: "0 0 80px -20px rgba(224, 120, 80, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.5)",
         }}
       >
-        <div className="flex items-center justify-between p-6 pb-0">
+        <div className="flex items-center justify-between p-4 sm:p-6 pb-0">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] font-semibold text-[#e07850] mb-1"
               style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
@@ -40,11 +40,11 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 sm:p-6">
           {PRICING_PLANS.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-2xl p-6 transition-all duration-500 ${
+              className={`relative rounded-2xl p-5 sm:p-6 transition-all duration-500 ${
                 plan.popular ? 'md:-mt-2 md:mb-2' : ''
               }`}
               style={{
@@ -52,7 +52,7 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
                   ? "linear-gradient(160deg, rgba(224, 120, 80, 0.1), rgba(30, 27, 24, 0.95))"
                   : "rgba(30, 27, 24, 0.7)",
                 border: plan.popular
-                  ? "1px solid rgba(224, 120, 80, 0.2)"
+                  ? "1px solid rgba(224, 120, 80, 0.25)"
                   : "1px solid rgba(255, 255, 255, 0.08)",
               }}
             >
@@ -64,26 +64,26 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
               )}
 
               <h3 className="text-lg font-bold text-white mb-1">{plan.name}</h3>
-              <p className="text-[11px] text-zinc-500 mb-5">{plan.description}</p>
+              <p className="text-[11px] text-zinc-400 mb-4 sm:mb-5">{plan.description}</p>
 
-              <div className="flex items-baseline gap-1 mb-5">
+              <div className="flex items-baseline gap-1 mb-4 sm:mb-5">
                 <span className="text-xs text-zinc-500">$</span>
-                <span className="text-4xl font-extrabold text-white tracking-tight">{plan.price}</span>
+                <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">{plan.price}</span>
                 <span className="text-xs text-zinc-500 ml-1">{plan.period}</span>
               </div>
 
               {plan.href ? (
                 <a
                   href={plan.href}
-                  className="block w-full py-2.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-5 border border-white/[0.12] bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]"
+                  className="block w-full py-2.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-4 sm:mb-5 border border-white/[0.12] bg-white/[0.04] text-zinc-300 hover:text-white hover:bg-white/[0.08]"
                 >
                   {plan.cta}
                 </a>
               ) : (
                 <button
                   onClick={() => plan.planKey && handleCheckout(plan.planKey)}
-                  className={`block w-full py-2.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-5 cursor-pointer ${
-                    plan.popular ? 'text-white' : 'border border-white/[0.12] bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]'
+                  className={`block w-full py-2.5 rounded-xl text-center font-semibold text-sm transition-all duration-300 mb-4 sm:mb-5 cursor-pointer ${
+                    plan.popular ? 'text-white' : 'border border-white/[0.12] bg-white/[0.04] text-zinc-300 hover:text-white hover:bg-white/[0.08]'
                   }`}
                   style={plan.popular ? { background: "linear-gradient(135deg, #e07850, #c86040)" } : undefined}
                 >
@@ -97,11 +97,11 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
                     <div className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
                       style={{ background: plan.popular ? "rgba(224, 120, 80, 0.15)" : "rgba(224, 120, 80, 0.08)" }}>
                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        strokeWidth={2.5} style={{ color: plan.popular ? "#e07850" : "rgba(224, 120, 80, 0.4)" }}>
+                        strokeWidth={2.5} style={{ color: plan.popular ? "#e07850" : "rgba(224, 120, 80, 0.5)" }}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <span className="text-[13px] text-zinc-400">{feature}</span>
+                    <span className="text-xs text-zinc-300">{feature}</span>
                   </div>
                 ))}
               </div>

@@ -15,13 +15,13 @@ import { ScrollRevealProvider } from "./ScrollRevealProvider";
 export function LandingPage() {
   return (
     <ScrollRevealProvider>
-      <div className="min-h-screen relative overflow-hidden">
+      <div className="min-h-screen relative overflow-x-hidden w-full">
         <SplashScreen />
         <ParticleBackground />
 
         <Navbar />
 
-        <main>
+        <main className="w-full overflow-x-hidden">
           <HeroSection />
           <StatsSection />
           <FeaturesSection />

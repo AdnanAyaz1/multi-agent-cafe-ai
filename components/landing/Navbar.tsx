@@ -17,16 +17,16 @@ export function Navbar() {
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled ? "nav-scrolled" : ""}`}>
-      <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className={`flex items-center justify-between ${scrolled ? "h-16" : "h-20 lg:h-24"} transition-all duration-500`}>
-          <Link href="/" className="flex items-center gap-3 group">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className={`flex items-center justify-between ${scrolled ? "h-16" : "h-16 sm:h-20 lg:h-24"} transition-all duration-500`}>
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
             <div className="relative">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-105"
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-105 flex-shrink-0"
                 style={{ background: "linear-gradient(135deg, #e07850, #c8a070)", boxShadow: "0 4px 16px -2px rgba(224, 120, 80, 0.25)" }}>
                 <span className="text-white font-bold text-sm" style={{ fontFamily: "var(--font-sora)" }}>C</span>
               </div>
             </div>
-            <span className="text-lg font-bold text-white tracking-tight hidden sm:block" style={{ fontFamily: "var(--font-sora)" }}>
+            <span className="text-base sm:text-lg font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-sora)" }}>
               Cafe<span style={{ color: "#e07850" }}>Promo</span>
             </span>
           </Link>
@@ -62,14 +62,15 @@ export function Navbar() {
             </Link>
           </div>
 
-          <button className="md:hidden p-2 cursor-pointer" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
-            <div className="w-6 h-5 relative flex flex-col justify-between">
-              <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "rotate-45 translate-y-[9px]" : ""}`}
-                style={{ background: "rgba(200, 180, 160, 0.7)" }} />
+          <button className="md:hidden p-2 cursor-pointer rounded-lg hover:bg-white/[0.05] transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
+            <div className="w-5 h-4 sm:w-6 sm:h-5 relative flex flex-col justify-between">
+              <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "rotate-45 translate-y-[7px] sm:translate-y-[9px]" : ""}`}
+                style={{ background: "rgba(200, 180, 160, 0.9)" }} />
               <span className={`w-full h-0.5 rounded-full transition-all duration-300 ${mobileOpen ? "opacity-0 scale-0" : ""}`}
-                style={{ background: "rgba(200, 180, 160, 0.7)" }} />
-              <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "-rotate-45 -translate-y-[9px]" : ""}`}
-                style={{ background: "rgba(200, 180, 160, 0.7)" }} />
+                style={{ background: "rgba(200, 180, 160, 0.9)" }} />
+              <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "-rotate-45 -translate-y-[7px] sm:-translate-y-[9px]" : ""}`}
+                style={{ background: "rgba(200, 180, 160, 0.9)" }} />
             </div>
           </button>
         </div>
@@ -81,20 +82,20 @@ export function Navbar() {
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="md:hidden overflow-hidden rounded-2xl glass-card mb-4 mt-2"
+              className="md:hidden overflow-hidden rounded-2xl glass-card mb-4 mt-1 border border-white/[0.08]"
             >
               <div className="flex flex-col gap-1 p-3">
                 {NAV_LINKS.map((link) => (
                   <a key={link.href} href={link.href}
-                    className="text-sm rounded-xl px-4 py-3 transition-all duration-200"
-                    style={{ color: "rgba(200, 180, 160, 0.8)" }}
+                    className="text-sm rounded-xl px-4 py-3 transition-all duration-200 hover:bg-white/[0.05]"
+                    style={{ color: "rgba(200, 180, 160, 0.9)" }}
                     onClick={() => setMobileOpen(false)}>
                     {link.label}
                   </a>
                 ))}
-                <div className="flex flex-col gap-2 pt-2 mt-1" style={{ borderTop: "1px solid rgba(224, 120, 80, 0.12)" }}>
-                  <Link href="/auth/login" className="text-sm rounded-xl px-4 py-3 transition-colors duration-200"
-                    style={{ color: "rgba(200, 180, 160, 0.8)" }} onClick={() => setMobileOpen(false)}>
+                <div className="flex flex-col gap-2 pt-2 mt-1" style={{ borderTop: "1px solid rgba(224, 120, 80, 0.15)" }}>
+                  <Link href="/auth/login" className="text-sm rounded-xl px-4 py-3 transition-colors duration-200 hover:bg-white/[0.05] text-center"
+                    style={{ color: "rgba(200, 180, 160, 0.9)" }} onClick={() => setMobileOpen(false)}>
                     Sign in
                   </Link>
                   <Link href="/auth/register"
