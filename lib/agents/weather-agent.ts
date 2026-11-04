@@ -1,19 +1,14 @@
 import 'server-only';
-import { generateText, isStepCount, type LanguageModel } from 'ai';
-import { createGroq } from '@ai-sdk/groq';
+import { generateText, isStepCount } from 'ai';
+import { getModel } from '@/lib/agents/models';
 import { weatherTool } from '@/lib/agents/tools/weatherTool';
 import { WeatherData, WeatherResult } from '@/lib/types';
 
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 export async function getWeatherData(city: string): Promise<WeatherResult> {
-  const model = process.env.GROQ_MODEL ?? 'llama-3.1-8b-instant';
-
   try {
+    const model = getModel('weather-analyst');
     const result = await generateText({
-      model: groq(model) as unknown as LanguageModel,
+      model,
       tools: { weather: weatherTool },
       toolChoice: 'required',
       prompt: `Get the current weather for ${city}.`,

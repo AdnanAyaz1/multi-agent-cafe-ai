@@ -43,7 +43,10 @@ const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> = {
 };
 
 export function getModel(agentName: AgentName): LanguageModel {
-  const rawGoogleKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+  const rawGoogleKey =
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_AI_API_KEY;
   const rawGroqKey = process.env.GROQ_API_KEY;
 
   const googleApiKey = isValidApiKey(rawGoogleKey) ? rawGoogleKey!.trim() : undefined;
@@ -76,7 +79,7 @@ export function getModel(agentName: AgentName): LanguageModel {
   }
 
   throw new Error(
-    'No valid AI provider API key found. Please provide GOOGLE_GENERATIVE_AI_API_KEY (or GEMINI_API_KEY) or GROQ_API_KEY in your environment.'
+    'No valid AI provider API key found. Please provide GOOGLE_GENERATIVE_AI_API_KEY (or GOOGLE_AI_API_KEY / GEMINI_API_KEY) or GROQ_API_KEY in your environment.'
   );
 }
 
