@@ -4,25 +4,29 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import type { LanguageModel } from 'ai';
 import type { AgentName } from './types';
 
-// Google Generative AI (Gemini 2.0 Flash & Gemini 1.5 Pro)
-const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
-const google = googleApiKey ? createGoogleGenerativeAI({ apiKey: googleApiKey }) : null;
-
-// Groq (Fast Llama 3.1 8B & Llama 3.3 70B)
-const groqApiKey = process.env.GROQ_API_KEY;
-const groq = groqApiKey ? createGroq({ apiKey: groqApiKey }) : null;
+function isValidApiKey(key?: string): boolean {
+  if (!key) return false;
+  const trimmed = key.trim();
+  return (
+    trimmed.length > 0 &&
+    !trimmed.startsWith('your-') &&
+    trimmed !== 'replace-me' &&
+    trimmed !== 'replace-me-with-random-secret'
+  );
+}
 
 /**
  * Optimal models assigned by role:
- * - Extraction / Parsing / High-speed summary: Gemini 2.0 Flash / Llama 3.1 8B
- * - Deep reasoning / Pricing strategy / Adversarial critique: Gemini 1.5 Pro / Llama 3.3 70B
+ * For Google Gemini free tier, `gemini-2.0-flash` provides 15 RPM / 1,500 RPD
+ * and excellent structured output without hitting the strict 2 RPM limit of 1.5 Pro.
+ * Users can override specific agents with `gemini-1.5-pro` via `MODEL_STRATEGIST` etc.
  */
 const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> = {
   google: {
     'menu-analyst': 'gemini-2.0-flash',
     'weather-analyst': 'gemini-2.0-flash',
-    strategist: 'gemini-1.5-pro',
-    critic: 'gemini-1.5-pro',
+    strategist: 'gemini-2.0-flash',
+    critic: 'gemini-2.0-flash',
     synthesizer: 'gemini-2.0-flash',
     'competitor-parser': 'gemini-2.0-flash',
     'competitor-analyst': 'gemini-2.0-flash',
@@ -39,30 +43,40 @@ const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> = {
 };
 
 export function getModel(agentName: AgentName): LanguageModel {
+  const rawGoogleKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+  const rawGroqKey = process.env.GROQ_API_KEY;
+
+  const googleApiKey = isValidApiKey(rawGoogleKey) ? rawGoogleKey!.trim() : undefined;
+  const groqApiKey = isValidApiKey(rawGroqKey) ? rawGroqKey!.trim() : undefined;
+
   const agentEnvKey = `MODEL_${agentName.toUpperCase().replace(/-/g, '_')}`;
   const override = process.env[agentEnvKey] || process.env.AI_MODEL_OVERRIDE;
 
-  // Determine provider: defaults to google if key available, otherwise falls back to groq
-  const preferredProvider = (process.env.AI_PROVIDER?.toLowerCase() as 'google' | 'groq') ||
+  // Determine provider: defaults to google if valid key available, otherwise falls back to groq
+  const preferredProvider =
+    (process.env.AI_PROVIDER?.toLowerCase() as 'google' | 'groq') ||
     (googleApiKey ? 'google' : 'groq');
 
-  if (preferredProvider === 'google' && google) {
+  if (preferredProvider === 'google' && googleApiKey) {
+    const google = createGoogleGenerativeAI({ apiKey: googleApiKey });
     const modelName = override || ROLE_MODELS.google[agentName];
     return google(modelName) as unknown as LanguageModel;
   }
 
-  if (groq) {
+  if (groqApiKey) {
+    const groq = createGroq({ apiKey: groqApiKey });
     const modelName = override || ROLE_MODELS.groq[agentName];
     return groq(modelName) as unknown as LanguageModel;
   }
 
-  if (google) {
+  if (googleApiKey) {
+    const google = createGoogleGenerativeAI({ apiKey: googleApiKey });
     const modelName = override || ROLE_MODELS.google[agentName];
     return google(modelName) as unknown as LanguageModel;
   }
 
   throw new Error(
-    'No AI provider configured. Please provide GOOGLE_GENERATIVE_AI_API_KEY (or GEMINI_API_KEY) or GROQ_API_KEY in your environment.'
+    'No valid AI provider API key found. Please provide GOOGLE_GENERATIVE_AI_API_KEY (or GEMINI_API_KEY) or GROQ_API_KEY in your environment.'
   );
 }
 

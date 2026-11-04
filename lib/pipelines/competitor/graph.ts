@@ -10,8 +10,8 @@ import type {
   WeatherAnalystOutput,
 } from '@/lib/agents/types';
 import type { PipelineRunContext } from '@/lib/pipelines/shared/types';
-import type { MenuWithItems } from '@/lib/menu';
-import type { CompetitorSnapshot } from './helpers';
+import type { Menu } from '@/lib/menu';
+import type { CompetitorData } from '@/lib/types';
 import { runCompetitorParser } from '@/lib/agents/competitor-parser';
 import { runCompetitorAnalyst } from '@/lib/agents/competitor-analyst';
 import { runMenuAnalyst } from '@/lib/agents/menu-analyst';
@@ -39,8 +39,8 @@ const emptyWeather: WeatherAnalystOutput = {
  */
 export const CompetitorPipelineState = Annotation.Root({
   ctx: Annotation<PipelineRunContext>(),
-  menu: Annotation<MenuWithItems>(),
-  competitorSnapshots: Annotation<CompetitorSnapshot[]>(),
+  menu: Annotation<Menu>(),
+  competitorSnapshots: Annotation<CompetitorData[]>(),
   parsedCompetitors: Annotation<CompetitorParserOutput[]>(),
   competitorAnalysis: Annotation<CompetitorAnalystOutput>(),
   menuAnalysis: Annotation<MenuAnalystOutput>(),
@@ -94,11 +94,11 @@ async function competitorAnalystNode(state: CompetitorGraphState) {
         promos: snap.promos,
         notes: snap.notes,
       })),
-      ourMenu: state.menu.items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        category: i.category,
-        price: i.price,
+      ourMenu: state.menu.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        price: item.price,
       })),
     },
     state.ctx
@@ -119,10 +119,11 @@ async function menuAnalystNode(state: CompetitorGraphState) {
 async function strategistNode(state: CompetitorGraphState) {
   await state.ctx.throwIfCancelled();
   const weatherForStrategist = competitorWeatherData(state.competitorAnalysis);
+  const nextRevision = state.criticOutput ? state.revisions + 1 : 0;
 
   log.info('LangGraph node: strategist', {
     pipelineId: state.ctx.pipelineId,
-    revision: state.revisions,
+    revision: nextRevision,
   });
 
   const result = await runStrategist(
@@ -133,12 +134,15 @@ async function strategistNode(state: CompetitorGraphState) {
       competitorData: state.competitorSnapshots,
       competitorAnalysis: state.competitorAnalysis,
       criticFeedback: state.criticOutput,
-      revision: state.revisions,
+      revision: nextRevision,
     },
     state.ctx
   );
 
-  return { strategistOutput: result.output };
+  return {
+    strategistOutput: result.output,
+    revisions: nextRevision,
+  };
 }
 
 // Node 5: Critic (reviews actions against margins and feasibility)
@@ -158,10 +162,7 @@ async function criticNode(state: CompetitorGraphState) {
     state.ctx
   );
 
-  return {
-    criticOutput: result.output,
-    revisions: state.revisions + 1,
-  };
+  return { criticOutput: result.output };
 }
 
 // Node 6: Synthesizer (crafts final executive briefing)
@@ -195,7 +196,8 @@ function routeCritic(state: CompetitorGraphState): 'strategist' | 'synthesizer' 
   if (hasBlockers && state.revisions < MAX_REVISIONS) {
     log.info('LangGraph competitor conditional edge: revision requested', {
       pipelineId: state.ctx.pipelineId,
-      round: state.revisions,
+      currentRevision: state.revisions,
+      maxAllowed: MAX_REVISIONS,
     });
     return 'strategist';
   }

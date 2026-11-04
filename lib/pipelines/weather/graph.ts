@@ -8,9 +8,8 @@ import type {
   SynthesizerOutput,
 } from '@/lib/agents/types';
 import type { PipelineRunContext } from '@/lib/pipelines/shared/types';
-import type { WeatherSnapshot } from '@/lib/services/weather/types';
-import type { MenuWithItems } from '@/lib/menu';
-import type { CompetitorData } from '@/lib/types';
+import type { WeatherData, CompetitorData } from '@/lib/types';
+import type { Menu } from '@/lib/menu';
 import { runMenuAnalyst } from '@/lib/agents/menu-analyst';
 import { runWeatherAnalyst } from '@/lib/agents/weather-analyst';
 import { runStrategist } from '@/lib/agents/strategist';
@@ -26,8 +25,8 @@ const log = logger.child('pipelines.weather.graph');
  */
 export const WeatherPipelineState = Annotation.Root({
   ctx: Annotation<PipelineRunContext>(),
-  menu: Annotation<MenuWithItems>(),
-  weather: Annotation<WeatherSnapshot>(),
+  menu: Annotation<Menu>(),
+  weather: Annotation<WeatherData>(),
   competitors: Annotation<CompetitorData[]>(),
   menuAnalysis: Annotation<MenuAnalystOutput>(),
   weatherAnalysis: Annotation<WeatherAnalystOutput>(),
@@ -61,10 +60,14 @@ async function weatherAnalystNode(state: WeatherGraphState) {
 // Node 3: Strategist (handles initial formulation and revisions)
 async function strategistNode(state: WeatherGraphState) {
   await state.ctx.throwIfCancelled();
+  // Only increment revision counter when revising from critic feedback
+  const nextRevision = state.criticOutput ? state.revisions + 1 : 0;
+
   log.info('LangGraph node: strategist', {
     pipelineId: state.ctx.pipelineId,
-    revision: state.revisions,
+    revision: nextRevision,
   });
+
   const result = await runStrategist(
     {
       menuAnalysis: state.menuAnalysis,
@@ -72,20 +75,25 @@ async function strategistNode(state: WeatherGraphState) {
       rawMenu: state.menu,
       competitorData: state.competitors,
       criticFeedback: state.criticOutput,
-      revision: state.revisions,
+      revision: nextRevision,
     },
     state.ctx
   );
-  return { strategistOutput: result.output };
+
+  return {
+    strategistOutput: result.output,
+    revisions: nextRevision,
+  };
 }
 
-// Node 4: Critic (validates recommendations and checks blockers)
+// Node 4: Critic (evaluates recommendations and checks blockers)
 async function criticNode(state: WeatherGraphState) {
   await state.ctx.throwIfCancelled();
   log.info('LangGraph node: critic', {
     pipelineId: state.ctx.pipelineId,
     revision: state.revisions,
   });
+
   const result = await runCritic(
     {
       menuAnalysis: state.menuAnalysis,
@@ -94,10 +102,8 @@ async function criticNode(state: WeatherGraphState) {
     },
     state.ctx
   );
-  return {
-    criticOutput: result.output,
-    revisions: state.revisions + 1,
-  };
+
+  return { criticOutput: result.output };
 }
 
 // Node 5: Synthesizer (creates the owner-facing executive briefing)
@@ -122,12 +128,15 @@ function routeCritic(state: WeatherGraphState): 'strategist' | 'synthesizer' {
   if (hasBlockers && state.revisions < MAX_REVISIONS) {
     log.info('LangGraph conditional edge: revision requested by critic', {
       pipelineId: state.ctx.pipelineId,
-      round: state.revisions,
+      currentRevision: state.revisions,
+      maxAllowed: MAX_REVISIONS,
     });
     return 'strategist';
   }
-  log.info('LangGraph conditional edge: critic approved or max revisions reached, moving to synthesizer', {
+  log.info('LangGraph conditional edge: advancing to synthesizer', {
     pipelineId: state.ctx.pipelineId,
+    hasBlockers,
+    revisions: state.revisions,
   });
   return 'synthesizer';
 }
@@ -153,7 +162,7 @@ export const weatherPipelineGraph = new StateGraph(WeatherPipelineState)
   // Step 3: Strategist output passes to Critic
   .addEdge('strategist', 'critic')
 
-  // Step 4: Critic conditional branch (loop or advance)
+  // Step 4: Critic conditional branch (loop back to strategist or proceed to synthesizer)
   .addConditionalEdges('critic', routeCritic, {
     strategist: 'strategist',
     synthesizer: 'synthesizer',
