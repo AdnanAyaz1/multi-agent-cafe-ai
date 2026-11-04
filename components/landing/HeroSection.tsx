@@ -65,7 +65,7 @@ export function HeroSection() {
         </HeroTitle>
 
         {/* Subtitle */}
-        <HeroSubtitle className="text-base sm:text-lg sm:text-xl max-w-2xl mx-auto mb-10 sm:mb-14 leading-relaxed px-2"
+        <HeroSubtitle className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10 sm:mb-14 leading-relaxed px-2"
           style={{ color: "rgba(200, 180, 160, 0.75)" }}>
           Five AI agents analyzing weather, competitors, and your menu — delivering
           daily actions to maximize revenue.

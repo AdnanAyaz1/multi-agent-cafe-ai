@@ -17,7 +17,11 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-3xl"
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pricing-modal-title"
+        className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-3xl"
         style={{
           background: "linear-gradient(160deg, rgba(22, 20, 18, 0.98), rgba(14, 12, 10, 0.95))",
           border: "1px solid rgba(224, 120, 80, 0.15)",
@@ -26,7 +30,7 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
       >
         <div className="flex items-center justify-between p-4 sm:p-6 pb-0">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.3em] font-semibold text-[#e07850] mb-1"
+            <p id="pricing-modal-title" className="text-[10px] uppercase tracking-[0.3em] font-semibold text-[#e07850] mb-1"
               style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
               Choose your plan
             </p>
@@ -34,6 +38,7 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close pricing modal"
             className="p-2 rounded-xl bg-white/[0.06] border border-white/[0.1] text-zinc-400 hover:text-white hover:bg-white/[0.1] transition-all duration-300"
           >
             <X className="w-4 h-4" />

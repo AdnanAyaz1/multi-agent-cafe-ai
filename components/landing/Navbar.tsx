@@ -63,7 +63,7 @@ export function Navbar() {
           </div>
 
           <button className="md:hidden p-2 cursor-pointer rounded-lg hover:bg-white/[0.05] transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
+            onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu" aria-expanded={mobileOpen}>
             <div className="w-5 h-4 sm:w-6 sm:h-5 relative flex flex-col justify-between">
               <span className={`w-full h-0.5 rounded-full transition-all duration-300 origin-center ${mobileOpen ? "rotate-45 translate-y-[7px] sm:translate-y-[9px]" : ""}`}
                 style={{ background: "rgba(200, 180, 160, 0.9)" }} />

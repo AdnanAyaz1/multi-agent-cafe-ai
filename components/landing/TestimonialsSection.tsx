@@ -16,7 +16,7 @@ export function TestimonialsSection() {
   useEffect(() => {
     const timer = setInterval(next, 6000);
     return () => clearInterval(timer);
-  }, [next]);
+  }, [next, active]);
 
   const t = TESTIMONIALS[active];
 
