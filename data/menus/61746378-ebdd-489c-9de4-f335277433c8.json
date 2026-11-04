@@ -1,0 +1,188 @@
+[
+  {
+    "id": "psr-h1",
+    "name": "Single-Origin Pour Over (Ethiopia Yirgacheffe)",
+    "category": "hot-drink",
+    "price": 5.5,
+    "description": "Light roast with delicate jasmine florals, bergamot, and sweet lemon acidity.",
+    "tags": [
+      "signature",
+      "vegan"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-h2",
+    "name": "Pioneer Square Cortado",
+    "category": "hot-drink",
+    "price": 4.75,
+    "description": "Equal parts velvety microfoam and double ristretto extracted from our house espresso blend.",
+    "tags": [
+      "signature",
+      "contains-dairy"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-h3",
+    "name": "Vanilla Cardamom Latte",
+    "category": "hot-drink",
+    "price": 6.25,
+    "description": "House-infused organic Madagascar vanilla and freshly crushed green cardamom with steamed oat milk.",
+    "tags": [
+      "signature",
+      "vegetarian"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-h4",
+    "name": "Traditional Flat White",
+    "category": "hot-drink",
+    "price": 5.25,
+    "description": "Double ristretto with seamless whole milk microfoam.",
+    "tags": [
+      "contains-dairy"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-h5",
+    "name": "Spiced Stoneground Chai",
+    "category": "hot-drink",
+    "price": 5.75,
+    "description": "Assam black tea slow-steeped with cinnamon, clove, ginger, and raw turbinado sugar.",
+    "tags": [
+      "vegetarian"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-c1",
+    "name": "Kyoto 16-Hour Cold Brew",
+    "category": "cold-drink",
+    "price": 6,
+    "description": "Slow cold-drip tower extraction resulting in an ultra-smooth, chocolatey and liquor-like body.",
+    "tags": [
+      "signature",
+      "vegan"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-c2",
+    "name": "Nitro Cold Brew with Honey Sweet Cream",
+    "category": "cold-drink",
+    "price": 6.75,
+    "description": "Draft-poured nitrogen-infused cold brew crowned with local clover honey sweet cream.",
+    "tags": [
+      "contains-dairy",
+      "signature"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-c3",
+    "name": "Ceremonial Ube Matcha Latte",
+    "category": "cold-drink",
+    "price": 7,
+    "description": "First-harvest Uji matcha layered over sweetened purple yam puree and iced organic oat milk.",
+    "tags": [
+      "signature",
+      "vegan"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-c4",
+    "name": "Yuzu Cascara Sparkling Tonic",
+    "category": "cold-drink",
+    "price": 5.5,
+    "description": "Sun-dried coffee cherry cascara tea, Japanese yuzu citrus juice, and craft bubbles.",
+    "tags": [
+      "vegan"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-f1",
+    "name": "Avocado & Heirloom Tartine",
+    "category": "food",
+    "price": 12.5,
+    "description": "Toasted seeded sourdough, crushed Hass avocado, heirloom tomatoes, pickled shallots, and Maldon salt.",
+    "tags": [
+      "vegan",
+      "signature"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-f2",
+    "name": "Prosciutto & Gruyere Warm Croissant",
+    "category": "food",
+    "price": 9.75,
+    "description": "Flaky French butter croissant filled with cured prosciutto di Parma, melted Gruyere, and Dijon.",
+    "tags": [
+      "contains-dairy"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-f3",
+    "name": "Wild Smoked Salmon Bagel",
+    "category": "food",
+    "price": 13.5,
+    "description": "Pacific Northwest lox, pickled red onion, caperberries, and lemon-dill shmear on everything bagel.",
+    "tags": [
+      "contains-dairy"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-f4",
+    "name": "Wild Forest Mushroom Tart",
+    "category": "food",
+    "price": 11,
+    "description": "Sauteed chanterelle and cremini mushrooms, herb chevre, and thyme in a crisp butter pastry shell.",
+    "tags": [
+      "vegetarian",
+      "contains-dairy"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-d1",
+    "name": "Cardamom Brioche Morning Bun",
+    "category": "dessert",
+    "price": 5.75,
+    "description": "Laminated Swedish cardamom dough rolled in turbinado sugar and ground spices.",
+    "tags": [
+      "vegetarian",
+      "signature"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-d2",
+    "name": "Dark Chocolate Sea Salt Cookie",
+    "category": "dessert",
+    "price": 4.5,
+    "description": "Baked fresh every morning with 72% Valrhona dark chocolate chunks and Maldon flakes.",
+    "tags": [
+      "vegetarian"
+    ],
+    "available": true
+  },
+  {
+    "id": "psr-d3",
+    "name": "Almond Frangipane Twice-Baked Croissant",
+    "category": "dessert",
+    "price": 6.25,
+    "description": "Filled with velvety almond cream, topped with toasted sliced almonds and powdered sugar.",
+    "tags": [
+      "contains-nuts",
+      "contains-dairy"
+    ],
+    "available": true
+  }
+]
