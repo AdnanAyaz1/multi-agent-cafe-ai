@@ -1,43 +1,84 @@
 'use client';
 
-import { CloudSun } from 'lucide-react';
+import { CloudSun, Sparkles, MapPin, Globe } from 'lucide-react';
 import { getGreeting } from '@/utils/greeting';
 import type { WelcomeBannerProps } from '@/types/dashboard-home';
 import { STATS } from '@/constants/dashboard-home';
 
-export function WelcomeBanner({ weather }: WelcomeBannerProps) {
+export function WelcomeBanner({
+  weather,
+  businessName,
+  cities = [],
+  activeCity,
+  competitorCount = 0,
+  isOnboarded = true,
+  onOpenOnboarding,
+}: WelcomeBannerProps) {
+  const title = businessName ? `${getGreeting()}, ${businessName}` : `${getGreeting()}, Boss`;
+
   return (
-    <div className="dash-glass dash-glow rounded-2xl p-6 lg:p-8">
+    <div className="dash-glass dash-glow rounded-2xl p-6 lg:p-8 space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px w-10 bg-zinc-700" />
-            <p className="text-[11px] text-[#e07850] uppercase tracking-[0.2em] font-semibold">Dashboard</p>
+            <p className="text-[11px] text-[#e07850] uppercase tracking-[0.2em] font-semibold font-mono">
+              Live Intelligence Engine
+            </p>
           </div>
           <h1 className="text-3xl lg:text-4xl font-extrabold text-white mb-2 tracking-tight">
-            {getGreeting()}, Boss
+            {title}
           </h1>
-          <p className="text-zinc-300 text-sm lg:text-base max-w-lg leading-relaxed">Your AI agents are analyzing weather, competitors, and your menu to maximize revenue today.</p>
+          <p className="text-zinc-300 text-sm lg:text-base max-w-xl leading-relaxed">
+            Your 5 autonomous LangGraph agents are tracking micro-climates across{' '}
+            <span className="text-[#e07850] font-semibold">
+              {cities.length > 0 ? cities.join(', ') : 'your operational cities'}
+            </span>{' '}
+            and benchmarked against{' '}
+            <span className="text-[#c8a070] font-semibold">
+              {competitorCount > 0 ? `${competitorCount} competitors` : 'local competitors'}
+            </span>.
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
+          {/* Action button to configure cities & competitors */}
+          {onOpenOnboarding && (
+            <button
+              onClick={onOpenOnboarding}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg ${
+                !isOnboarded
+                  ? 'bg-gradient-to-r from-[#e07850] to-[#c8a070] text-[#1a1208] shadow-[#e07850]/20 animate-pulse'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/[0.08]'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {!isOnboarded ? 'Complete Setup Wizard' : 'Manage Branches & Competitors'}
+            </button>
+          )}
+
           {weather && (
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
               <CloudSun className="w-4 h-4 text-zinc-400" />
               <div>
                 <p className="text-white text-sm font-bold">{weather.temperature}°C</p>
-                <p className="text-zinc-400 text-[10px] uppercase tracking-wider">{weather.condition}</p>
+                <p className="text-zinc-400 text-[10px] uppercase tracking-wider">
+                  {weather.city || activeCity}
+                </p>
               </div>
             </div>
           )}
+
           <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-500/10 border border-green-500/20">
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-[10px] text-green-500 font-semibold uppercase tracking-wider">5 agents active</span>
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[10px] text-green-500 font-semibold uppercase tracking-wider">
+              5 agents active
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-6 mt-6 pt-5 border-t border-zinc-800">
+      <div className="flex flex-wrap items-center gap-6 pt-5 border-t border-zinc-800">
         {STATS.map((stat) => (
           <div key={stat.label} className="flex items-center gap-2.5">
             <stat.icon className={`w-4 h-4 ${stat.color}`} />

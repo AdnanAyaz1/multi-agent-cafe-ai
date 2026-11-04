@@ -1,6 +1,6 @@
 'use client';
 
-import { Cloud } from 'lucide-react';
+import { Cloud, MapPin } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWeatherPage } from '@/hooks/useWeatherPage';
 import { WeatherBackground } from '@/components/dashboard/weather/WeatherBackground';
@@ -13,6 +13,8 @@ export default function WeatherPage() {
   const {
     city,
     setCity,
+    operationalCities,
+    selectOperationalCity,
     setIsFocused,
     weather,
     loading,
@@ -27,6 +29,29 @@ export default function WeatherPage() {
 
       <div className="relative z-10 space-y-8">
         <WeatherHeader city={weather?.city} condition={weather?.condition} />
+
+        {/* Operational Branch Quick Selectors */}
+        {operationalCities.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+            <span className="text-xs font-mono uppercase text-zinc-400 tracking-wider flex items-center gap-1.5 mr-1">
+              <MapPin className="w-3.5 h-3.5 text-[#e07850]" /> Your Operational Branches:
+            </span>
+            {operationalCities.map((opCity) => (
+              <button
+                key={opCity}
+                onClick={() => selectOperationalCity(opCity)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
+                  city.toLowerCase() === opCity.toLowerCase()
+                    ? 'bg-[#e07850] text-[#1a1208] shadow-md shadow-[#e07850]/20'
+                    : 'bg-white/[0.03] hover:bg-white/[0.08] text-zinc-300 border border-white/[0.06]'
+                }`}
+              >
+                <MapPin className="w-3 h-3 opacity-60" />
+                {opCity}
+              </button>
+            ))}
+          </div>
+        )}
 
         <WeatherSearchForm
           city={city}
@@ -64,7 +89,9 @@ export default function WeatherPage() {
                   <Cloud className="w-10 h-10 text-zinc-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">Search for a city</h3>
-                <p className="text-zinc-400 text-sm max-w-sm mx-auto">Get real-time weather analysis and AI-powered menu optimization suggestions.</p>
+                <p className="text-zinc-400 text-sm max-w-sm mx-auto">
+                  Get real-time weather analysis and AI-powered menu optimization suggestions.
+                </p>
               </div>
             </div>
           )}

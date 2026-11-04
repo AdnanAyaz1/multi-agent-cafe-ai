@@ -11,11 +11,21 @@ export interface StatWidgetProps {
 
 export interface WeatherWidgetProps {
   data: import('@/lib/types').WeatherData;
+  cities?: string[];
+  activeCity?: string;
+  onCityChange?: (city: string) => void;
+  suggestion?: import('@/utils/weather-suggestions').WeatherSuggestion | null;
+  onOpenOnboarding?: () => void;
 }
 
 export interface WelcomeBannerProps {
   weather: import('@/lib/types').WeatherData | null;
   businessName?: string;
+  cities?: string[];
+  activeCity?: string;
+  competitorCount?: number;
+  isOnboarded?: boolean;
+  onOpenOnboarding?: () => void;
 }
 
 export interface PipelineStep {
@@ -43,6 +53,10 @@ export interface RecommendationWidgetProps {
 
 export interface CompetitorOverviewProps {
   competitors?: import('@/constants/competitor-display').CompetitorOverviewItem[];
+  competitorUrls?: string[];
+  businessId?: string;
+  onOpenOnboarding?: () => void;
+  onRefreshCompetitors?: () => void;
 }
 
 export interface ToggleProps {

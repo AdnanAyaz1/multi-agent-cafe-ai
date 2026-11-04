@@ -21,16 +21,35 @@ import { AnalysisSearchForm } from '@/components/dashboard/analysis/AnalysisSear
 import { RecommendationSummary } from '@/components/dashboard/analysis/RecommendationSummary';
 import { RecommendationActions } from '@/components/dashboard/analysis/RecommendationActions';
 import { RateLimitBanner } from '@/components/dashboard/RateLimitBanner';
+import { MapPin } from 'lucide-react';
 
 const WeatherPipelinePage = () => {
   const { status, loading, error, run, cancel, reset } = useAnalysis();
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [businessProfile, setBusinessProfile] = useState<{ id: string; name: string; city: string; cities: string[] } | null>(null);
   const prevStatusRef = useRef<string | null>(null);
 
   const form = useForm<AnalysisFormInput>({
     resolver: zodResolver(analysisFormSchema),
     defaultValues: { businessId: '' },
   });
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.business?.id) {
+          form.setValue('businessId', data.business.id);
+          setBusinessProfile({
+            id: data.business.id,
+            name: data.business.name,
+            city: data.business.city,
+            cities: data.business.cities || [],
+          });
+        }
+      })
+      .catch(() => {});
+  }, [form]);
 
   const businessId = form.watch('businessId');
   const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
@@ -130,6 +149,38 @@ const WeatherPipelinePage = () => {
   return (
     <div className="space-y-8">
       <AnalysisHeader pipelineType="weather" />
+
+      {businessProfile && (
+        <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono uppercase text-[#e07850] tracking-wider font-bold">
+                Weather Intelligence Target
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.04] text-zinc-400">
+                Primary Branch: {businessProfile.city}
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-white mt-1">
+              {businessProfile.name}
+            </p>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Operating in: {businessProfile.cities.join(', ') || businessProfile.city}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {businessProfile.cities.map((c) => (
+              <span
+                key={c}
+                className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs font-mono text-zinc-300 flex items-center gap-1"
+              >
+                <MapPin className="w-3 h-3 text-[#e07850]" />
+                {c}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <AnalysisSearchForm
         form={form}

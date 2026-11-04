@@ -21,16 +21,40 @@ import { AnalysisSearchForm } from '@/components/dashboard/analysis/AnalysisSear
 import { RecommendationSummary } from '@/components/dashboard/analysis/RecommendationSummary';
 import { RecommendationActions } from '@/components/dashboard/analysis/RecommendationActions';
 import { RateLimitBanner } from '@/components/dashboard/RateLimitBanner';
+import { CafeOnboardingWizard } from '@/components/dashboard/onboarding/CafeOnboardingWizard';
 
 const CompetitorPipelinePage = () => {
   const { status, loading, error, run, cancel, reset } = useAnalysis();
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [businessProfile, setBusinessProfile] = useState<{ id: string; name: string; competitorUrls: string[]; cities: string[] } | null>(null);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
 
   const form = useForm<AnalysisFormInput>({
     resolver: zodResolver(analysisFormSchema),
     defaultValues: { businessId: '' },
   });
+
+  const fetchProfile = useCallback(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.business?.id) {
+          form.setValue('businessId', data.business.id);
+          setBusinessProfile({
+            id: data.business.id,
+            name: data.business.name,
+            competitorUrls: data.business.competitorUrls || [],
+            cities: data.business.cities || [],
+          });
+        }
+      })
+      .catch(() => {});
+  }, [form]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const businessId = form.watch('businessId');
   const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
@@ -131,6 +155,37 @@ const CompetitorPipelinePage = () => {
     <div className="space-y-8">
       <AnalysisHeader pipelineType="competitor" />
 
+      {businessProfile && (
+        <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono uppercase text-[#e07850] tracking-wider font-bold">
+                Benchmarked Competitors
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.04] text-zinc-400">
+                {businessProfile.competitorUrls.length} Active Targets
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-white mt-1">
+              {businessProfile.name}
+            </p>
+            <p className="text-xs text-zinc-400 truncate max-w-md mt-0.5">
+              {businessProfile.competitorUrls.length > 0
+                ? businessProfile.competitorUrls.join(', ')
+                : 'No competitor URLs configured yet. Add competitor menus to enable scraping.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsOnboardingOpen(true)}
+            className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/[0.08] text-xs font-semibold transition-all self-start sm:self-auto flex items-center gap-1.5"
+          >
+            <Globe className="w-3.5 h-3.5 text-[#e07850]" />
+            Manage Competitor URLs
+          </button>
+        </div>
+      )}
+
       <AnalysisSearchForm
         form={form}
         isRunning={isRunning}
@@ -210,6 +265,15 @@ const CompetitorPipelinePage = () => {
         onClose={() => setSelectedDecision(null)}
         onApprove={(id) => handleApprove(id)}
         onReject={(id) => handleReject(id)}
+      />
+
+      <CafeOnboardingWizard
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        initialCities={businessProfile?.cities}
+        initialCompetitors={businessProfile?.competitorUrls}
+        businessId={businessProfile?.id}
+        onComplete={fetchProfile}
       />
     </div>
   );
