@@ -17,19 +17,19 @@ function isValidApiKey(key?: string): boolean {
 
 /**
  * Optimal models assigned by role:
- * For Google Gemini free tier, `gemini-2.0-flash` provides 15 RPM / 1,500 RPD
- * and excellent structured output without hitting the strict 2 RPM limit of 1.5 Pro.
- * Users can override specific agents with `gemini-1.5-pro` via `MODEL_STRATEGIST` etc.
+ * For Google Gemini free tier, `gemini-2.5-flash` is Google's latest workhorse
+ * offering native reasoning/thinking, fast tool execution, and generous free tier quotas.
+ * Users can override specific agents via `MODEL_STRATEGIST`, `MODEL_CRITIC`, etc.
  */
 const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> = {
   google: {
-    'menu-analyst': 'gemini-2.0-flash',
-    'weather-analyst': 'gemini-2.0-flash',
-    strategist: 'gemini-2.0-flash',
-    critic: 'gemini-2.0-flash',
-    synthesizer: 'gemini-2.0-flash',
-    'competitor-parser': 'gemini-2.0-flash',
-    'competitor-analyst': 'gemini-2.0-flash',
+    'menu-analyst': 'gemini-2.5-flash',
+    'weather-analyst': 'gemini-2.5-flash',
+    strategist: 'gemini-2.5-flash',
+    critic: 'gemini-2.5-flash',
+    synthesizer: 'gemini-2.5-flash',
+    'competitor-parser': 'gemini-2.5-flash',
+    'competitor-analyst': 'gemini-2.5-flash',
   },
   groq: {
     'menu-analyst': 'llama-3.1-8b-instant',
