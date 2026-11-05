@@ -22,7 +22,7 @@ export const runAnalysisPipeline = inngest.createFunction(
     triggers: [{ event: 'pipeline/run' }],
   },
   async ({ event, step }) => {
-    const { businessId, pipelineId, pipelineType } = event.data;
+    const { businessId, pipelineId, pipelineType, city, competitorUrl } = event.data;
 
     const cancelled = await step.run('check-cancelled', () =>
       isPipelineCancelled(pipelineId)
@@ -32,10 +32,10 @@ export const runAnalysisPipeline = inngest.createFunction(
       return { pipelineId, recommendationId: null, revisions: 0, durationMs: 0, pipelineType };
     }
 
-    log.info('pipeline starting', { pipelineId, pipelineType, businessId });
+    log.info('pipeline starting', { pipelineId, pipelineType, businessId, city, competitorUrl });
 
     const result = await step.run('run-pipeline', () =>
-      runPipeline({ businessId, pipelineId, pipelineType })
+      runPipeline({ businessId, pipelineId, pipelineType, city, competitorUrl })
     );
 
     log.info('pipeline complete', { pipelineId, recommendationId: result.recommendationId });

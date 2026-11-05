@@ -31,17 +31,28 @@ export function useAnalysis() {
     return () => stopPolling();
   }, [stopPolling]);
 
-  const run = useCallback(async (businessId: string, pipelineType: PipelineType = 'weather') => {
-    try {
-      setLoading(true);
-      setError(null);
-      stopPolling();
+  const run = useCallback(
+    async (
+      businessId: string,
+      pipelineType: PipelineType = 'weather',
+      city?: string,
+      competitorUrl?: string
+    ) => {
+      try {
+        setLoading(true);
+        setError(null);
+        stopPolling();
 
-      const res = await fetch('/api/analysis/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessId, pipelineType }),
-      });
+        const res = await fetch('/api/analysis/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId,
+            pipelineType,
+            ...(city ? { city } : {}),
+            ...(competitorUrl ? { competitorUrl } : {}),
+          }),
+        });
 
       if (!res.ok) throw new Error('Failed to start analysis');
 

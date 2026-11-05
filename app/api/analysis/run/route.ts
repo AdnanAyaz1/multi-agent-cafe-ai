@@ -15,7 +15,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) throw new UnauthorizedError();
 
-  const { businessId, pipelineType } = await parseBody(request, analysisRunRequestSchema);
+  const { businessId, pipelineType, city, competitorUrl } = await parseBody(request, analysisRunRequestSchema);
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -23,29 +23,58 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   });
   if (!business) throw new NotFoundError('Business');
 
-  if (pipelineType === 'weather' && !business.city) {
-    throw new ValidationError('Business has no city configured');
+  const targetCity = city?.trim() || business.city;
+
+  if (pipelineType === 'weather' && !targetCity) {
+    throw new ValidationError('Business has no city configured and no city was provided');
   }
 
   if (pipelineType === 'competitor') {
     const config = business.config as Record<string, unknown> | null;
     const urls = config?.competitorUrls;
-    if (!Array.isArray(urls) || urls.length === 0) {
-      throw new ValidationError('Business has no competitor URLs configured');
+    const hasConfigured = Array.isArray(urls) && urls.length > 0;
+    if (!hasConfigured && !competitorUrl) {
+      throw new ValidationError('Business has no competitor URLs configured and no competitor URL was provided');
     }
   }
 
   const pipelineId = randomUUID();
 
-  await inngest.send({
-    name: 'pipeline/run',
-    data: { businessId, pipelineId, pipelineType },
-  });
+  try {
+    await inngest.send({
+      name: 'pipeline/run',
+      data: {
+        businessId,
+        pipelineId,
+        pipelineType,
+        ...(targetCity ? { city: targetCity } : {}),
+        ...(competitorUrl ? { competitorUrl: competitorUrl.trim() } : {}),
+      },
+    });
+  } catch (err) {
+    log.warn('Could not dispatch Inngest event, running pipeline in background fallback', {
+      error: err instanceof Error ? err.message : String(err),
+      pipelineId,
+    });
+    // Fallback: run pipeline asynchronously in background
+    const { runPipeline } = await import('@/lib/pipelines');
+    runPipeline({
+      businessId,
+      pipelineId,
+      pipelineType,
+      ...(targetCity ? { city: targetCity } : {}),
+      ...(competitorUrl ? { competitorUrl: competitorUrl.trim() } : {}),
+    }).catch((e) => {
+      log.error('Fallback background pipeline failed', e);
+    });
+  }
 
   log.info('pipeline dispatched', {
     pipelineId,
     businessId,
     pipelineType,
+    city: targetCity,
+    competitorUrl,
   });
 
   return NextResponse.json(

@@ -1,6 +1,7 @@
 'use client';
 
-import { Cloud, Droplets, Wind, Thermometer, AlertTriangle, MapPin, Sparkles, Tag, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { Cloud, Droplets, Wind, Thermometer, AlertTriangle, MapPin, Sparkles, Tag, Plus, ArrowRight } from 'lucide-react';
 import { getImpactLevel, IMPACT_MESSAGES } from '@/utils/weather';
 import type { WeatherWidgetProps } from '@/types/dashboard-home';
 
@@ -143,6 +144,19 @@ export function WeatherWidget({
             </p>
           </div>
         )}
+
+        <div className="pt-2 border-t border-white/[0.04]">
+          <Link
+            href={`/dashboard/analysis?city=${encodeURIComponent(currentCity)}`}
+            className="w-full py-2.5 px-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-white border border-white/[0.06] text-xs font-semibold transition-all flex items-center justify-between group"
+          >
+            <span className="flex items-center gap-2">
+              <Cloud className="w-3.5 h-3.5 text-[#e07850]" />
+              Run Weather Pipeline for {currentCity}
+            </span>
+            <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+          </Link>
+        </div>
       </div>
     </div>
   );

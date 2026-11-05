@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +13,7 @@ import { usePipelineRateLimit } from '@/hooks/use-pipeline-rate-limit';
 import { analysisFormSchema, type AnalysisFormInput } from '@/lib/validators/analysis';
 import { isRateLimitError } from '@/lib/rate-limit-utils';
 import type { Decision } from '@/types/decisions';
+import type { WeatherData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { AgentShowcase } from '@/components/dashboard/home/AgentShowcase';
 import { PipelineVisualization } from '@/components/dashboard/home/PipelineVisualization';
@@ -24,14 +26,20 @@ import { RateLimitBanner } from '@/components/dashboard/RateLimitBanner';
 import { MapPin } from 'lucide-react';
 
 const WeatherPipelinePage = () => {
+  const searchParams = useSearchParams();
+  const queryCity = searchParams.get('city');
+
   const { status, loading, error, run, cancel, reset } = useAnalysis();
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [businessProfile, setBusinessProfile] = useState<{ id: string; name: string; city: string; cities: string[] } | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string>(queryCity || '');
+  const [weatherPreview, setWeatherPreview] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
 
   const form = useForm<AnalysisFormInput>({
     resolver: zodResolver(analysisFormSchema),
-    defaultValues: { businessId: '' },
+    defaultValues: { businessId: '', city: queryCity || '' },
   });
 
   useEffect(() => {
@@ -40,16 +48,59 @@ const WeatherPipelinePage = () => {
       .then((data) => {
         if (data.business?.id) {
           form.setValue('businessId', data.business.id);
+          const rawCities = (data.business.cities as string[]) || [];
+          const primaryCity = data.business.city || rawCities[0] || '';
           setBusinessProfile({
             id: data.business.id,
             name: data.business.name,
             city: data.business.city,
-            cities: data.business.cities || [],
+            cities: rawCities,
           });
+
+          // If no city pre-selected via query param, default to primary branch city
+          if (!queryCity && primaryCity) {
+            setSelectedCity(primaryCity);
+            form.setValue('city', primaryCity);
+          }
         }
       })
       .catch(() => {});
-  }, [form]);
+  }, [form, queryCity]);
+
+  // Fetch weather preview whenever selected city changes
+  useEffect(() => {
+    if (!selectedCity) return;
+    let active = true;
+    setWeatherLoading(true);
+
+    fetch('/api/weather', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ city: selectedCity }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data.data) {
+          setWeatherPreview(data.data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setWeatherLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedCity]);
+
+  const handleSelectCity = useCallback(
+    (city: string) => {
+      setSelectedCity(city);
+      form.setValue('city', city);
+    },
+    [form]
+  );
 
   const businessId = form.watch('businessId');
   const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
@@ -63,13 +114,18 @@ const WeatherPipelinePage = () => {
 
   const handleRun = form.handleSubmit((data) => {
     resetRetry();
-    run(data.businessId, 'weather');
+    run(data.businessId, 'weather', selectedCity || data.city || undefined);
   });
 
   const onRetry = useCallback(async () => {
     const currentBusinessId = form.getValues('businessId');
-    await handleRetry(currentBusinessId, 'weather', run);
-  }, [form, handleRetry, run]);
+    await handleRetry(
+      currentBusinessId,
+      'weather',
+      (bId, pType, c) => run(bId, pType, c),
+      selectedCity || undefined
+    );
+  }, [form, handleRetry, run, selectedCity]);
 
   const handleReset = useCallback(() => {
     reset();
@@ -85,11 +141,11 @@ const WeatherPipelinePage = () => {
     prevStatusRef.current = current;
 
     if (current === 'running' && prev !== 'running') {
-      toast.loading('Weather pipeline started — agents are working...', { id: 'pipeline' });
+      toast.loading(`Weather pipeline started for ${selectedCity || 'target city'} — agents are working...`, { id: 'pipeline' });
     } else if (current === 'cancelling' && prev !== 'cancelling') {
       toast.loading('Stopping pipeline — waiting for agents to finish...', { id: 'pipeline' });
     } else if (current === 'complete') {
-      toast.success('Weather pipeline complete — recommendation ready!', { id: 'pipeline' });
+      toast.success(`Weather pipeline complete for ${selectedCity || 'target city'} — recommendation ready!`, { id: 'pipeline' });
       resetRetry();
     } else if (current === 'cancelled') {
       toast.error('Pipeline cancelled by user.', { id: 'pipeline' });
@@ -104,7 +160,7 @@ const WeatherPipelinePage = () => {
         toast.error(error_msg, { id: 'pipeline' });
       }
     }
-  }, [status?.status]);
+  }, [status?.status, status?.agentRuns, selectedCity, resetRetry]);
 
   useEffect(() => {
     if (!status) prevStatusRef.current = null;
@@ -168,16 +224,25 @@ const WeatherPipelinePage = () => {
               Operating in: {businessProfile.cities.join(', ') || businessProfile.city}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {businessProfile.cities.map((c) => (
-              <span
-                key={c}
-                className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs font-mono text-zinc-300 flex items-center gap-1"
-              >
-                <MapPin className="w-3 h-3 text-[#e07850]" />
-                {c}
-              </span>
-            ))}
+          <div className="flex items-center gap-2 flex-wrap">
+            {businessProfile.cities.map((c) => {
+              const isSelected = selectedCity.toLowerCase() === c.toLowerCase();
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => handleSelectCity(c)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1 transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#e07850] text-[#1a1208] font-bold shadow-md shadow-[#e07850]/20'
+                      : 'bg-white/[0.03] border border-white/[0.06] text-zinc-300 hover:bg-white/[0.07]'
+                  }`}
+                >
+                  <MapPin className="w-3 h-3 text-current" />
+                  {c}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -189,6 +254,11 @@ const WeatherPipelinePage = () => {
         error={error}
         onSubmit={handleRun}
         onCancel={cancel}
+        cities={businessProfile?.cities || []}
+        selectedCity={selectedCity}
+        onSelectCity={handleSelectCity}
+        weatherPreview={weatherPreview}
+        weatherLoading={weatherLoading}
       />
 
       {hasRateLimitError && failedRunError && !isRunning && (
@@ -248,4 +318,10 @@ const WeatherPipelinePage = () => {
   );
 };
 
-export default WeatherPipelinePage;
+export default function WeatherPipelinePageWrapper() {
+  return (
+    <Suspense fallback={<div className="p-8 text-zinc-400">Loading Weather Pipeline...</div>}>
+      <WeatherPipelinePage />
+    </Suspense>
+  );
+}

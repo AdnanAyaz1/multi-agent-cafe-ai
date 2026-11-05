@@ -9,9 +9,9 @@ import type { AgentRunArgs, AgentRunResult } from './types';
 import {
   parseJsonFromText,
   markFailed,
-  buildRateLimitMessage,
   parseRetryAfter,
 } from './utils';
+import { getMockAgentOutput } from './mock-data';
 
 export type { AgentRunArgs, AgentRunResult };
 
@@ -47,6 +47,38 @@ export async function withAgentRun<Output>(
       startedAt,
     },
   });
+
+  // Fast-path for mock execution (automated testing / offline verification)
+  if (process.env.MOCK_LLM === 'true' || process.env.AI_PROVIDER === 'mock') {
+    await abortableSleep(200, signal);
+    const mockData = getMockAgentOutput(args.agentName);
+    const validated = args.schema.parse(mockData);
+    const durationMs = Date.now() - start;
+    const tokenCount = 350;
+
+    await prisma.agentRun.update({
+      where: { id: run.id },
+      data: {
+        status: 'complete',
+        output: JSON.parse(JSON.stringify(validated)) as object,
+        durationMs,
+        tokenCount,
+        completedAt: new Date(),
+      },
+    });
+
+    log.info(`${args.agentName} ok (mock)`, {
+      pipelineId: args.context.pipelineId,
+      durationMs,
+    });
+
+    return {
+      output: validated,
+      durationMs,
+      tokenCount,
+      agentRunId: run.id,
+    };
+  }
 
   const maxAttempts = (args.retries ?? 0) + 1;
   let lastError: unknown;

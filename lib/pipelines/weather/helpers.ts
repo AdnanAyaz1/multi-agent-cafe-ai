@@ -12,11 +12,14 @@ export async function loadInputs(context: PipelineContext): Promise<WeatherPipel
   });
   if (!business) throw new NotFoundError('Business');
 
+  const targetCity = context.city?.trim() || business.city;
+  const isPrimaryCity = targetCity.toLowerCase() === business.city.toLowerCase();
+
   const weather = await ensureWeatherSnapshot({
     businessId: context.businessId,
-    city: business.city,
-    latitude: business.latitude,
-    longitude: business.longitude,
+    city: targetCity,
+    latitude: isPrimaryCity ? business.latitude : null,
+    longitude: isPrimaryCity ? business.longitude : null,
   });
 
   const menu = await getMenuForBusiness(context.businessId);

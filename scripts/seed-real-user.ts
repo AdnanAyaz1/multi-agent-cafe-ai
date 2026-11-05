@@ -264,6 +264,84 @@ async function seed() {
   await fs.writeFile(menuFilePath, JSON.stringify(SPECIALTY_MENU_ITEMS, null, 2), 'utf-8');
   console.log(`Menu written with ${SPECIALTY_MENU_ITEMS.length} items to: ${menuFilePath}`);
 
+  // 5. Seed Real Competitor Snapshots into Neon DB
+  const competitorProfiles = [
+    {
+      url: 'https://anchorheadcoffee.com',
+      finalUrl: 'https://anchorheadcoffee.com',
+      brand: 'Anchorhead Coffee',
+      items: [
+        { name: 'Quake Cold Brew', category: 'cold drinks', price: 5.5, currency: 'USD', description: 'Heavy body cold brew with dark chocolate notes', isPromo: false },
+        { name: 'Levitation Espresso', category: 'espresso', price: 4.25, currency: 'USD', description: 'Direct trade flagship espresso blend', isPromo: false },
+        { name: 'Seasonal Single Origin Pour Over', category: 'hot drinks', price: 6.5, currency: 'USD', description: 'Rotating micro-lot Ethiopian Yirgacheffe', isPromo: false },
+        { name: 'Lavender Honey Latte', category: 'espresso', price: 6.75, currency: 'USD', description: 'Organic lavender with wild mountain honey', isPromo: false },
+        { name: 'Narwhal Nitro Cold Brew', category: 'cold drinks', price: 6.25, currency: 'USD', description: 'Velvety nitrogen-infused draught coffee', isPromo: false },
+      ],
+      promos: [
+        { text: 'Morning Pastry Bundle: $2 off any bakery item with large specialty drink', discountPercent: 15, validUntil: '11:00 AM' },
+      ],
+      notes: ['Heavy cold brew and specialty espresso focus', 'Premium downtown Seattle pricing ($6.50 pour over)'],
+      scrapedAt: new Date().toISOString(),
+    },
+    {
+      url: 'https://www.victrolacoffee.com',
+      finalUrl: 'https://www.victrolacoffee.com',
+      brand: 'Victrola Coffee Roasters',
+      items: [
+        { name: 'Empire Blend Drip', category: 'hot drinks', price: 4.0, currency: 'USD', description: 'Full body dark roast with caramel sweetness', isPromo: false },
+        { name: 'Streamline Espresso', category: 'espresso', price: 4.5, currency: 'USD', description: 'Classic espresso profile with chocolate and citrus', isPromo: false },
+        { name: 'Spanish Latte', category: 'espresso', price: 6.5, currency: 'USD', description: 'Rich condensed milk specialty latte', isPromo: false },
+        { name: 'Cold Brew on Tap', category: 'cold drinks', price: 5.75, currency: 'USD', description: 'Crisp steeped cold brew', isPromo: false },
+      ],
+      promos: [
+        { text: 'Afternoon Refresher: 20% off all cold brew refills between 2 PM and 5 PM', discountPercent: 20, validUntil: '5:00 PM' },
+      ],
+      notes: ['Capitol Hill heritage roaster', 'Strong following for drip and single origin'],
+      scrapedAt: new Date().toISOString(),
+    },
+    {
+      url: 'https://www.fontecafe.com',
+      finalUrl: 'https://www.fontecafe.com',
+      brand: 'Fonté Coffee Roaster',
+      items: [
+        { name: 'First Avenue Blend', category: 'hot drinks', price: 4.25, currency: 'USD', description: 'Medium roast signature blend', isPromo: false },
+        { name: 'Caffe Forte Espresso', category: 'espresso', price: 4.5, currency: 'USD', description: 'Italian style espresso', isPromo: false },
+        { name: 'Vanilla Caramel Macchiato', category: 'espresso', price: 6.75, currency: 'USD', description: 'House vanilla and sea salt caramel', isPromo: false },
+      ],
+      promos: [
+        { text: 'Free extra espresso shot on any specialty drink before 10 AM', discountPercent: 10, validUntil: '10:00 AM' },
+      ],
+      notes: ['Luxury Pike Place hotel roaster', 'Higher price tier with kitchen and brunch'],
+      scrapedAt: new Date().toISOString(),
+    },
+    {
+      url: 'https://elmcoffeeroasters.com',
+      finalUrl: 'https://elmcoffeeroasters.com',
+      brand: 'Elm Coffee Roasters',
+      items: [
+        { name: 'Single Origin Batch Brew', category: 'hot drinks', price: 4.25, currency: 'USD', description: 'Light roast washed Colombian', isPromo: false },
+        { name: 'Nine Swans Espresso', category: 'espresso', price: 4.5, currency: 'USD', description: 'Floral and crisp fruit notes', isPromo: false },
+        { name: 'Iced Cardamom Tonic', category: 'cold drinks', price: 6.5, currency: 'USD', description: 'Espresso tonic with cardamom bitters', isPromo: false },
+      ],
+      promos: [],
+      notes: ['Pioneer Square neighbor', 'Nordic light roast profile with boutique retail'],
+      scrapedAt: new Date().toISOString(),
+    },
+  ];
+
+  for (const comp of competitorProfiles) {
+    await prisma.dataSnapshot.create({
+      data: {
+        businessId: business.id,
+        source: 'competitors',
+        data: comp as object,
+        collectedAt: new Date(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days TTL
+      },
+    });
+  }
+  console.log(`Seeded ${competitorProfiles.length} real competitor snapshots into Neon DB.`);
+
   console.log('\n======================================================');
   console.log('REAL USER READY FOR LOGIN:');
   console.log(`Email:    ${USER_EMAIL}`);

@@ -17,7 +17,7 @@ function createWorker(): Worker<AnalysisJobData> {
   const worker = new Worker<AnalysisJobData>(
     'ai-analysis',
     async (job: Job<AnalysisJobData>) => {
-      const { businessId, pipelineId, pipelineType } = job.data;
+      const { businessId, pipelineId, pipelineType, city, competitorUrl } = job.data;
 
       // Pre-check: skip if already cancelled before we even start
       if (await isPipelineCancelled(pipelineId)) {
@@ -30,7 +30,7 @@ function createWorker(): Worker<AnalysisJobData> {
 
       // runPipeline creates its own AbortController and watches Redis for
       // cancellation signals, so in-flight LLM calls can be aborted promptly.
-      const result = await runPipeline({ businessId, pipelineId, pipelineType });
+      const result = await runPipeline({ businessId, pipelineId, pipelineType, city, competitorUrl });
 
       job.log(`Pipeline ${pipelineId} complete, rec ${result.recommendationId}`);
       return result;

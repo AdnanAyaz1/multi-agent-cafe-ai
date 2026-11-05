@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Eye, Globe, Sparkles, ExternalLink, Plus, RefreshCw, Loader2 } from 'lucide-react';
 import { MOCK_COMPETITORS, COMPETITOR_CHANGE_ICONS } from '@/constants/competitor-display';
 import type { CompetitorOverviewProps } from '@/types/dashboard-home';
@@ -111,9 +112,17 @@ export function CompetitorOverview({
                         <p className="text-[10px] text-zinc-500 truncate max-w-[220px]">{url}</p>
                       </div>
                     </div>
-                    <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                      TRACKING
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="hidden sm:inline-block text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                        TRACKING
+                      </span>
+                      <Link
+                        href={`/dashboard/competitors?competitorUrl=${encodeURIComponent(url)}`}
+                        className="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-[#e07850]/15 hover:bg-[#e07850] text-[#e07850] hover:text-[#1a1208] border border-[#e07850]/30 transition-all flex items-center gap-1"
+                      >
+                        Analyze →
+                      </Link>
+                    </div>
                   </div>
                 );
               })}

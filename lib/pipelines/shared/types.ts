@@ -15,6 +15,8 @@ export interface PipelineContext {
   pipelineId: string;
   businessId: string;
   pipelineType: PipelineType;
+  city?: string;
+  competitorUrl?: string;
   /** AbortSignal that fires when the pipeline is cancelled or hit a terminal error. */
   signal?: AbortSignal;
 }
@@ -42,6 +44,8 @@ export interface PipelineRunContext {
   pipelineId: string;
   businessId: string;
   pipelineType: 'weather' | 'competitor';
+  city?: string;
+  competitorUrl?: string;
   signal: AbortSignal;
 
   /** Abort the entire pipeline with a reason. Updates Redis + DB. */

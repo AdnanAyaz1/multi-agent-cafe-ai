@@ -38,7 +38,14 @@ export function classifyLLMError(err: unknown): PipelineAbortReason {
 
     if (name === 'aborterror' || name === 'abort') return 'user_cancelled';
 
-    if (msg.includes('quota exceeded') || msg.includes('billing error') || msg.includes('token limit exceeded')) {
+    if (
+      msg.includes('quota exceeded') ||
+      msg.includes('billing error') ||
+      msg.includes('token limit exceeded') ||
+      msg.includes('free tier is not available') ||
+      msg.includes('set up billing') ||
+      msg.includes('project-unavailable')
+    ) {
       return 'quota_exceeded';
     }
 

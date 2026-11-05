@@ -57,14 +57,18 @@ export function buildRunContext(opts: {
   pipelineId: string;
   businessId: string;
   pipelineType: 'weather' | 'competitor';
+  city?: string;
+  competitorUrl?: string;
   controller: AbortController;
 }): PipelineRunContext {
-  const { pipelineId, businessId, pipelineType, controller } = opts;
+  const { pipelineId, businessId, pipelineType, city, competitorUrl, controller } = opts;
 
   return {
     pipelineId,
     businessId,
     pipelineType,
+    city,
+    competitorUrl,
     signal: controller.signal,
 
     async abort(reason: PipelineAbortReason) {
@@ -91,11 +95,21 @@ export function buildRunContext(opts: {
     },
 
     async throwIfCancelled() {
-      const reason = await redis.get(`pipeline:cancel:${pipelineId}`);
-      if (reason) {
+      if (controller.signal.aborted) {
         throw new PipelineCancelledError(
-          (reason as PipelineAbortReason) || 'user_cancelled'
+          (controller.signal.reason as PipelineAbortReason) || 'user_cancelled'
         );
+      }
+      try {
+        const reason = await redis.get(`pipeline:cancel:${pipelineId}`);
+        if (reason) {
+          throw new PipelineCancelledError(
+            (reason as PipelineAbortReason) || 'user_cancelled'
+          );
+        }
+      } catch (err) {
+        if (err instanceof PipelineCancelledError) throw err;
+        // Redis unavailable / offline, safe to ignore
       }
     },
   };

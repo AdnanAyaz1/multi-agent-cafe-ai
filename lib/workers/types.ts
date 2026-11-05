@@ -4,6 +4,8 @@ export interface AnalysisJobData {
   businessId: string;
   pipelineId: string;
   pipelineType: PipelineType;
+  city?: string;
+  competitorUrl?: string;
 }
 
 export interface CompetitorJobData {

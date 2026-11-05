@@ -30,6 +30,7 @@ export async function runWeatherPipeline(
   log.info('weather pipeline start (LangGraph.js)', {
     pipelineId: ctx.pipelineId,
     businessId: ctx.businessId,
+    city: ctx.city,
   });
 
   try {
@@ -61,6 +62,7 @@ export async function runWeatherPipeline(
       { strategist, critic, synthesizer, finalConfidence },
       'marketing',
       {
+        city: weather.city,
         menuAnalysis: graphResult.menuAnalysis,
         weatherAnalysis: graphResult.weatherAnalysis,
       }

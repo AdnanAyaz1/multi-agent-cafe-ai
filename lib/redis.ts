@@ -7,11 +7,20 @@ function createRedisClient(): Redis {
   const url = process.env.REDIS_URL ?? 'redis://localhost:6379'
   const isTLS = url.startsWith('rediss://')
 
-  return new Redis(url, {
-    maxRetriesPerRequest: null,
+  const client = new Redis(url, {
+    maxRetriesPerRequest: 1,
     enableReadyCheck: false,
+    lazyConnect: true,
+    enableOfflineQueue: false,
+    connectTimeout: 1500,
+    commandTimeout: 2000,
     tls: isTLS ? {} : undefined,
   })
+
+  // Prevent unhandled error crashes if Redis is offline or not configured
+  client.on('error', () => {});
+
+  return client;
 }
 
 let _redis: Redis | null = null

@@ -12,13 +12,22 @@ const SNAPSHOT_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 export async function ensureWeatherSnapshot(
   opts: EnsureWeatherOptions
 ): Promise<WeatherData> {
-  const fresh = await prisma.dataSnapshot.findFirst({
+  const snapshots = await prisma.dataSnapshot.findMany({
     where: {
       businessId: opts.businessId,
       source: 'weather',
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
     orderBy: { collectedAt: 'desc' },
+    take: 10,
+  });
+
+  const fresh = snapshots.find((s) => {
+    const data = s.data as unknown as WeatherData;
+    return (
+      typeof data?.city === 'string' &&
+      data.city.trim().toLowerCase() === opts.city.trim().toLowerCase()
+    );
   });
 
   if (fresh) {

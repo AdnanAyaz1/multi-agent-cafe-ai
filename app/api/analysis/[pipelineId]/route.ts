@@ -55,10 +55,7 @@ export const GET = withErrorHandling(async (
   }));
 
   let recommendation: PipelineRecommendation | undefined = undefined;
-  const completedSynthesizer = runs.find(
-    (r) => r.agentName === 'synthesizer' && r.status === 'complete'
-  );
-  if (completedSynthesizer && rec) {
+  if (rec) {
     recommendation = formatRecommendation(rec);
   }
 

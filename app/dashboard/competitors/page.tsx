@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,16 +24,31 @@ import { RecommendationActions } from '@/components/dashboard/analysis/Recommend
 import { RateLimitBanner } from '@/components/dashboard/RateLimitBanner';
 import { CafeOnboardingWizard } from '@/components/dashboard/onboarding/CafeOnboardingWizard';
 
+function formatCompetitorLabel(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, '');
+    const name = host.split('.')[0];
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  } catch {
+    return url;
+  }
+}
+
 const CompetitorPipelinePage = () => {
+  const searchParams = useSearchParams();
+  const queryCompetitorUrl = searchParams.get('competitorUrl');
+
   const { status, loading, error, run, cancel, reset } = useAnalysis();
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [businessProfile, setBusinessProfile] = useState<{ id: string; name: string; competitorUrls: string[]; cities: string[] } | null>(null);
+  const [selectedCompetitorUrl, setSelectedCompetitorUrl] = useState<string>(queryCompetitorUrl || '');
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
 
   const form = useForm<AnalysisFormInput>({
     resolver: zodResolver(analysisFormSchema),
-    defaultValues: { businessId: '' },
+    defaultValues: { businessId: '', competitorUrl: queryCompetitorUrl || '' },
   });
 
   const fetchProfile = useCallback(() => {
@@ -41,20 +57,35 @@ const CompetitorPipelinePage = () => {
       .then((data) => {
         if (data.business?.id) {
           form.setValue('businessId', data.business.id);
+          const rawCompetitors = (data.business.competitorUrls as string[]) || [];
           setBusinessProfile({
             id: data.business.id,
             name: data.business.name,
-            competitorUrls: data.business.competitorUrls || [],
-            cities: data.business.cities || [],
+            competitorUrls: rawCompetitors,
+            cities: (data.business.cities as string[]) || [],
           });
+
+          // Default to the first competitor URL if none selected via searchParams
+          if (!queryCompetitorUrl && rawCompetitors.length > 0) {
+            setSelectedCompetitorUrl(rawCompetitors[0]);
+            form.setValue('competitorUrl', rawCompetitors[0]);
+          }
         }
       })
       .catch(() => {});
-  }, [form]);
+  }, [form, queryCompetitorUrl]);
 
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  const handleSelectCompetitorUrl = useCallback(
+    (url: string) => {
+      setSelectedCompetitorUrl(url);
+      form.setValue('competitorUrl', url);
+    },
+    [form]
+  );
 
   const businessId = form.watch('businessId');
   const { decisions, ingestRecommendation, approveDecision, rejectDecision } = useDecisions(businessId || undefined);
@@ -68,13 +99,19 @@ const CompetitorPipelinePage = () => {
 
   const handleRun = form.handleSubmit((data) => {
     resetRetry();
-    run(data.businessId, 'competitor');
+    run(data.businessId, 'competitor', undefined, selectedCompetitorUrl || data.competitorUrl || undefined);
   });
 
   const onRetry = useCallback(async () => {
     const currentBusinessId = form.getValues('businessId');
-    await handleRetry(currentBusinessId, 'competitor', run);
-  }, [form, handleRetry, run]);
+    await handleRetry(
+      currentBusinessId,
+      'competitor',
+      (bId, pType, _city, compUrl) => run(bId, pType, undefined, compUrl),
+      undefined,
+      selectedCompetitorUrl || undefined
+    );
+  }, [form, handleRetry, run, selectedCompetitorUrl]);
 
   const handleReset = useCallback(() => {
     reset();
@@ -89,12 +126,14 @@ const CompetitorPipelinePage = () => {
     if (prev === current) return;
     prevStatusRef.current = current;
 
+    const targetLabel = selectedCompetitorUrl ? formatCompetitorLabel(selectedCompetitorUrl) : 'competitor';
+
     if (current === 'running' && prev !== 'running') {
-      toast.loading('Competitor pipeline started — agents are working...', { id: 'pipeline' });
+      toast.loading(`Competitor pipeline started against ${targetLabel} — agents are working...`, { id: 'pipeline' });
     } else if (current === 'cancelling' && prev !== 'cancelling') {
       toast.loading('Stopping pipeline — waiting for agents to finish...', { id: 'pipeline' });
     } else if (current === 'complete') {
-      toast.success('Competitor pipeline complete — recommendation ready!', { id: 'pipeline' });
+      toast.success(`Competitor pipeline complete against ${targetLabel} — recommendation ready!`, { id: 'pipeline' });
       resetRetry();
     } else if (current === 'cancelled') {
       toast.error('Pipeline cancelled by user.', { id: 'pipeline' });
@@ -109,7 +148,7 @@ const CompetitorPipelinePage = () => {
         toast.error(error_msg, { id: 'pipeline' });
       }
     }
-  }, [status?.status]);
+  }, [status?.status, status?.agentRuns, selectedCompetitorUrl, resetRetry]);
 
   useEffect(() => {
     if (!status) prevStatusRef.current = null;
@@ -157,7 +196,7 @@ const CompetitorPipelinePage = () => {
 
       {businessProfile && (
         <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+          <div className="flex-1">
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase text-[#e07850] tracking-wider font-bold">
                 Benchmarked Competitors
@@ -169,11 +208,34 @@ const CompetitorPipelinePage = () => {
             <p className="text-sm font-semibold text-white mt-1">
               {businessProfile.name}
             </p>
-            <p className="text-xs text-zinc-400 truncate max-w-md mt-0.5">
-              {businessProfile.competitorUrls.length > 0
-                ? businessProfile.competitorUrls.join(', ')
-                : 'No competitor URLs configured yet. Add competitor menus to enable scraping.'}
-            </p>
+            {businessProfile.competitorUrls.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                {businessProfile.competitorUrls.map((url) => {
+                  const isSelected = selectedCompetitorUrl.toLowerCase().trim() === url.toLowerCase().trim();
+                  return (
+                    <button
+                      key={url}
+                      type="button"
+                      disabled={isRunning}
+                      onClick={() => handleSelectCompetitorUrl(url)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                        isSelected
+                          ? 'bg-[#e07850]/20 text-[#e07850] border border-[#e07850]/40 font-bold shadow-sm shadow-[#e07850]/10'
+                          : 'bg-white/[0.04] text-zinc-400 hover:text-white border border-white/[0.06]'
+                      }`}
+                      title={url}
+                    >
+                      <Globe className="w-3 h-3 opacity-70" />
+                      {formatCompetitorLabel(url)}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-zinc-400 mt-1">
+                No competitor URLs configured yet. Add competitor menus to enable benchmarking.
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -193,6 +255,10 @@ const CompetitorPipelinePage = () => {
         error={error}
         onSubmit={handleRun}
         onCancel={cancel}
+        pipelineType="competitor"
+        competitorUrls={businessProfile?.competitorUrls || []}
+        selectedCompetitorUrl={selectedCompetitorUrl}
+        onSelectCompetitorUrl={handleSelectCompetitorUrl}
       />
 
       {hasRateLimitError && failedRunError && !isRunning && (
@@ -235,8 +301,10 @@ const CompetitorPipelinePage = () => {
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">Collecting competitor data...</p>
-                    <p className="text-xs text-zinc-400">Scraping websites and analyzing pricing</p>
+                    <p className="text-sm font-semibold text-white">
+                      Collecting competitor data for {selectedCompetitorUrl ? formatCompetitorLabel(selectedCompetitorUrl) : 'target cafe'}...
+                    </p>
+                    <p className="text-xs text-zinc-400">Scraping menu, pricing, and positioning</p>
                   </div>
                 </div>
               </div>
@@ -279,4 +347,10 @@ const CompetitorPipelinePage = () => {
   );
 };
 
-export default CompetitorPipelinePage;
+export default function CompetitorPipelinePageWrapper() {
+  return (
+    <Suspense fallback={<div className="p-8 text-zinc-400">Loading Competitor Pipeline...</div>}>
+      <CompetitorPipelinePage />
+    </Suspense>
+  );
+}

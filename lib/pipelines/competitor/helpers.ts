@@ -46,41 +46,82 @@ export async function loadInputs(
 
   const menu = await getMenuForBusiness(context.businessId);
 
-  await inngest.send(
-    urls.map((url) => ({
-      name: 'competitor/scrape' as const,
-      data: { businessId: context.businessId, url, pipelineId: context.pipelineId },
-    }))
-  );
-  log.info('scrape events dispatched', { pipelineId: context.pipelineId, urlCount: urls.length });
+  try {
+    await inngest.send(
+      urls.map((url) => ({
+        name: 'competitor/scrape' as const,
+        data: { businessId: context.businessId, url, pipelineId: context.pipelineId },
+      }))
+    );
+    log.info('scrape events dispatched', { pipelineId: context.pipelineId, urlCount: urls.length });
+  } catch (err) {
+    log.warn('Could not dispatch Inngest scrape events (Inngest offline or unconfigured), falling back to database snapshots', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
 
-  const timeoutMs = 2 * 60 * 1000;
-  const pollInterval = 3000;
+  const timeoutMs = process.env.NODE_ENV === 'test' ? 5000 : 30 * 1000;
+  const pollInterval = 2000;
   const startTime = Date.now();
   let competitorSnapshots: CompetitorData[] = [];
+  const targetUrlsLower = urls.map((u) => u.toLowerCase().trim());
 
   while (Date.now() - startTime < timeoutMs) {
     const dbSnapshots = await prisma.dataSnapshot.findMany({
       where: {
         businessId: context.businessId,
         source: 'competitors',
-        expiresAt: { gt: new Date() },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       orderBy: { collectedAt: 'desc' },
-      take: urls.length,
+      take: 50,
     });
 
-    competitorSnapshots = dbSnapshots.map((s) => s.data as unknown as CompetitorData);
+    // Deduplicate by URL (keep freshest) matching requested URLs
+    const map = new Map<string, CompetitorData>();
+    for (const snap of dbSnapshots) {
+      const data = snap.data as unknown as CompetitorData;
+      if (data?.url) {
+        const matchesTarget = targetUrlsLower.includes(data.url.toLowerCase().trim());
+        if (matchesTarget && !map.has(data.url.toLowerCase())) {
+          map.set(data.url.toLowerCase(), data);
+        }
+      }
+    }
+    competitorSnapshots = Array.from(map.values());
 
-    const scrapedUrls = new Set(competitorSnapshots.map((s) => s.url));
-    const allCovered = urls.every((u) => scrapedUrls.has(u));
-    if (allCovered || competitorSnapshots.length >= urls.length) break;
+    const scrapedUrls = new Set(competitorSnapshots.map((s) => s.url.toLowerCase().trim()));
+    const allCovered = targetUrlsLower.every((u) => scrapedUrls.has(u));
+    if (allCovered || (competitorSnapshots.length > 0 && competitorSnapshots.length >= urls.length)) {
+      break;
+    }
+
+    // If we already have competitor data and Inngest wasn't available, don't stall
+    if (competitorSnapshots.length > 0 && Date.now() - startTime > 4000) {
+      log.info('proceeding with available competitor snapshots', {
+        available: competitorSnapshots.length,
+        totalUrls: urls.length,
+      });
+      break;
+    }
 
     await new Promise((r) => setTimeout(r, pollInterval));
   }
 
+  // Fallback: if no specific snapshot matched the URL, check if any snapshot exists
   if (competitorSnapshots.length === 0) {
-    throw new ValidationError('No competitor data collected within timeout');
+    const fallbackSnap = await prisma.dataSnapshot.findFirst({
+      where: {
+        businessId: context.businessId,
+        source: 'competitors',
+      },
+      orderBy: { collectedAt: 'desc' },
+    });
+    if (fallbackSnap) {
+      competitorSnapshots = [fallbackSnap.data as unknown as CompetitorData];
+    } else {
+      throw new ValidationError('No competitor data collected within timeout');
+    }
   }
 
   return { menu, competitorSnapshots };

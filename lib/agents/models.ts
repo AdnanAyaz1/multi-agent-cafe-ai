@@ -55,6 +55,10 @@ export function getModel(agentName: AgentName): LanguageModel {
   const agentEnvKey = `MODEL_${agentName.toUpperCase().replace(/-/g, '_')}`;
   const override = process.env[agentEnvKey] || process.env.AI_MODEL_OVERRIDE;
 
+  if (process.env.MOCK_LLM === 'true' || process.env.AI_PROVIDER === 'mock') {
+    return { modelId: 'mock-model', provider: 'mock' } as unknown as LanguageModel;
+  }
+
   // Determine provider: defaults to google if valid key available, otherwise falls back to groq
   const preferredProvider =
     (process.env.AI_PROVIDER?.toLowerCase() as 'google' | 'groq') ||

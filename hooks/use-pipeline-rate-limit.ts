@@ -8,7 +8,13 @@ export interface UsePipelineRateLimitReturn {
   hasRateLimitError: boolean;
   failedRunError: string | null;
   isRetrying: boolean;
-  handleRetry: (businessId: string, pipelineType: PipelineType, runFn: (id: string, type: PipelineType) => void) => Promise<void>;
+  handleRetry: (
+    businessId: string,
+    pipelineType: PipelineType,
+    runFn: (id: string, type: PipelineType, city?: string, competitorUrl?: string) => void,
+    city?: string,
+    competitorUrl?: string
+  ) => Promise<void>;
   resetRetry: () => void;
   reset: () => void;
 }
@@ -21,13 +27,19 @@ export function usePipelineRateLimit(agentRuns: PipelineAgentRun[]): UsePipeline
   const failedRunError = failedRun?.error ?? null;
 
   const handleRetry = useCallback(
-    async (businessId: string, pipelineType: PipelineType, runFn: (id: string, type: PipelineType) => void) => {
+    async (
+      businessId: string,
+      pipelineType: PipelineType,
+      runFn: (id: string, type: PipelineType, city?: string, competitorUrl?: string) => void,
+      city?: string,
+      competitorUrl?: string
+    ) => {
       if (!businessId || isRetrying) return;
 
       setIsRetrying(true);
       // Small delay to show the retrying state
       await new Promise((resolve) => setTimeout(resolve, 500));
-      runFn(businessId, pipelineType);
+      runFn(businessId, pipelineType, city, competitorUrl);
     },
     [isRetrying]
   );

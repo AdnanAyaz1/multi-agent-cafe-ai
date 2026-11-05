@@ -36,6 +36,7 @@ export interface WeatherHeroProps {
 
 export interface WeatherImpactSidebarProps {
   impact: 'low' | 'medium' | 'high';
+  city?: string;
 }
 
 export interface WeatherSearchFormProps {
@@ -86,4 +87,13 @@ export interface AnalysisSearchFormProps {
   error: string | null;
   onSubmit: () => void;
   onCancel: () => void;
+  pipelineType?: 'weather' | 'competitor';
+  cities?: string[];
+  selectedCity?: string;
+  onSelectCity?: (city: string) => void;
+  weatherPreview?: WeatherData | null;
+  weatherLoading?: boolean;
+  competitorUrls?: string[];
+  selectedCompetitorUrl?: string;
+  onSelectCompetitorUrl?: (url: string) => void;
 }

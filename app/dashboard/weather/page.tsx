@@ -78,7 +78,7 @@ export default function WeatherPage() {
                   <WeatherHero weather={weather} />
                 </div>
                 <div className="lg:col-span-4">
-                  {impact && <WeatherImpactSidebar impact={impact} />}
+                  {impact && <WeatherImpactSidebar impact={impact} city={weather.city} />}
                 </div>
               </div>
             </motion.div>

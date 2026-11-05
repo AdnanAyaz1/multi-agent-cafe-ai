@@ -41,6 +41,10 @@ function watchForCancellation(
     }
   }, checkInterval);
 
+  if (typeof interval.unref === 'function') {
+    interval.unref();
+  }
+
   return {
     stop: () => clearInterval(interval),
   };
@@ -60,12 +64,20 @@ function watchForCancellation(
  * signal promptly.
  */
 export async function runPipeline(
-  context: { pipelineId: string; businessId: string; pipelineType: PipelineType }
+  context: {
+    pipelineId: string;
+    businessId: string;
+    pipelineType: PipelineType;
+    city?: string;
+    competitorUrl?: string;
+  }
 ): Promise<PipelineResult> {
   log.info('dispatching pipeline', {
     pipelineId: context.pipelineId,
     pipelineType: context.pipelineType,
     businessId: context.businessId,
+    city: context.city,
+    competitorUrl: context.competitorUrl,
   });
 
   // Check if already cancelled before starting

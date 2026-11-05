@@ -1,8 +1,10 @@
+import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { IMPACT_MESSAGES } from '@/utils/weather';
 import { IMPACT_ACTIONS } from '@/constants/weather-display';
 import type { WeatherImpactSidebarProps } from '@/types/component-props';
 
-export function WeatherImpactSidebar({ impact }: WeatherImpactSidebarProps) {
+export function WeatherImpactSidebar({ impact, city }: WeatherImpactSidebarProps) {
   return (
     <div className="glass-card rounded-3xl overflow-hidden h-full">
       <div className="relative z-10 p-6 h-full flex flex-col">
@@ -52,6 +54,17 @@ export function WeatherImpactSidebar({ impact }: WeatherImpactSidebarProps) {
               </div>
             ))}
           </div>
+
+          {city && (
+            <div className="mt-6 pt-4 border-t border-white/[0.06]">
+              <Link
+                href={`/dashboard/analysis?city=${encodeURIComponent(city)}`}
+                className="w-full py-3 px-4 rounded-xl bg-[#e07850] hover:bg-[#c86840] text-white text-xs font-bold font-mono tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#e07850]/20"
+              >
+                <Sparkles className="w-4 h-4" /> Run AI Pipeline for {city}
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

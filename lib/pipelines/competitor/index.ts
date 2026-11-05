@@ -33,6 +33,7 @@ export async function runCompetitorPipeline(
   log.info('competitor pipeline start (LangGraph.js)', {
     pipelineId: ctx.pipelineId,
     businessId: ctx.businessId,
+    competitorUrl: ctx.competitorUrl,
   });
 
   try {
@@ -42,15 +43,19 @@ export async function runCompetitorPipeline(
     });
     if (!business) throw new NotFoundError('Business');
 
-    const urls = extractCompetitorUrls(business.config);
+    const configuredUrls = extractCompetitorUrls(business.config);
+    const targetUrl = ctx.competitorUrl?.trim();
+    const urls = targetUrl ? [targetUrl] : configuredUrls;
+
     if (urls.length === 0) {
-      throw new ValidationError('No competitor URLs configured for this business');
+      throw new ValidationError('No competitor URLs configured or selected for this business');
     }
 
     const { menu, competitorSnapshots } = await loadInputs(ctx, urls);
     log.info('competitor data collected', {
       pipelineId: ctx.pipelineId,
       snapshotCount: competitorSnapshots.length,
+      targetUrl,
     });
 
     await ctx.throwIfCancelled();
@@ -78,6 +83,9 @@ export async function runCompetitorPipeline(
       { strategist, critic, synthesizer, finalConfidence },
       'competitor',
       {
+        competitorUrl: targetUrl || competitorSnapshots[0]?.url || urls[0],
+        competitorBrand: competitorSnapshots[0]?.brand ?? undefined,
+        competitorUrls: urls,
         menuAnalysis: graphResult.menuAnalysis,
         competitorAnalysis: graphResult.competitorAnalysis,
       }

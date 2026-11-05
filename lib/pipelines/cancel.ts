@@ -34,7 +34,11 @@ export async function cancelPipeline(
   const key = `${CANCEL_KEY_PREFIX}${pipelineId}`;
 
   // Set the reason in Redis with a TTL
-  await redis.set(key, reason, 'EX', CANCEL_TTL_SECONDS);
+  try {
+    await redis.set(key, reason, 'EX', CANCEL_TTL_SECONDS);
+  } catch (e) {
+    log.warn('Failed to set Redis cancellation flag', { pipelineId, error: e });
+  }
 
   // Mark any running/pending agent runs as failed in the DB
   const result = await prisma.agentRun.updateMany({
@@ -66,10 +70,14 @@ export async function cancelPipeline(
 export async function getPipelineCancelReason(
   pipelineId: string
 ): Promise<PipelineAbortReason | null> {
-  const key = `${CANCEL_KEY_PREFIX}${pipelineId}`;
-  const value = await redis.get(key);
-  if (!value) return null;
-  return (value as PipelineAbortReason) || 'user_cancelled';
+  try {
+    const key = `${CANCEL_KEY_PREFIX}${pipelineId}`;
+    const value = await redis.get(key);
+    if (!value) return null;
+    return (value as PipelineAbortReason) || 'user_cancelled';
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -84,6 +92,10 @@ export async function isPipelineCancelled(pipelineId: string): Promise<boolean> 
  * Called when a pipeline completes or fails naturally (cleanup).
  */
 export async function clearCancellationFlag(pipelineId: string): Promise<void> {
-  const key = `${CANCEL_KEY_PREFIX}${pipelineId}`;
-  await redis.del(key);
+  try {
+    const key = `${CANCEL_KEY_PREFIX}${pipelineId}`;
+    await redis.del(key);
+  } catch {
+    // Redis unavailable or offline, safe to ignore
+  }
 }
