@@ -12,6 +12,7 @@ import {
   parseRetryAfter,
 } from './utils';
 import { getMockAgentOutput } from './mock-data';
+import { getFallbackModel } from './models';
 
 export type { AgentRunArgs, AgentRunResult };
 
@@ -101,10 +102,14 @@ export async function withAgentRun<Output>(
     throw new PipelineCancelledError('user_cancelled');
   }
 
+  const fallbackModel = args.fallbackModel ?? getFallbackModel(args.agentName);
+  let activeModel = args.model;
+  let usedFallback = false;
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const result = await generateText({
-        model: args.model,
+        model: activeModel,
         instructions: args.instructions,
         prompt: args.prompt,
         maxRetries: 0,
@@ -151,6 +156,44 @@ export async function withAgentRun<Output>(
       if (signal?.aborted) {
         await markFailed(run.id, start, `Pipeline aborted: ${reason}`);
         throw new PipelineCancelledError(reason);
+      }
+
+      // --- Failover to alternate provider model on rate limit, quota exceeded, or model unavailable ---
+      if (
+        (reason === 'rate_limit' || reason === 'quota_exceeded' || reason === 'model_unavailable') &&
+        fallbackModel &&
+        !usedFallback
+      ) {
+        log.warn(
+          `${args.agentName} hit ${reason} on primary model, failing over to alternate provider model`,
+          {
+            pipelineId: args.context.pipelineId,
+            runId: run.id,
+            error: e instanceof Error ? e.message : String(e),
+          }
+        );
+        activeModel = fallbackModel;
+        usedFallback = true;
+        try {
+          await abortableSleep(500, signal);
+        } catch {
+          if (signal?.aborted) {
+            await markFailed(run.id, start, 'Pipeline cancelled by user');
+            throw new PipelineCancelledError('user_cancelled');
+          }
+        }
+        continue;
+      }
+
+      // --- Model unavailable (e.g. decommissioned ID, no access) ---
+      if (reason === 'model_unavailable') {
+        const msg = `AI model unavailable: ${e instanceof Error ? e.message : String(e)}`;
+        log.error(`${args.agentName} model_unavailable`, e, {
+          pipelineId: args.context.pipelineId,
+          runId: run.id,
+        });
+        await markFailed(run.id, start, msg);
+        throw new PipelineTerminalError(reason, msg);
       }
 
       // --- Rate limit: wait and retry (Groq 429s are temporary) ---

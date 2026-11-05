@@ -281,6 +281,7 @@ export interface CompetitorAnalystInput {
 export interface AgentRunArgs<Output> {
   agentName: AgentName;
   model: LanguageModel;
+  fallbackModel?: LanguageModel;
   instructions: string;
   prompt: string;
   schema: ZodType<Output>;

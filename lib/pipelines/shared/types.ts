@@ -38,7 +38,8 @@ export type PipelineAbortReason =
   | 'rate_limit'
   | 'quota_exceeded'
   | 'pipeline_failed'
-  | 'timeout';
+  | 'timeout'
+  | 'model_unavailable';
 
 export interface PipelineRunContext {
   pipelineId: string;

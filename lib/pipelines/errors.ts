@@ -50,6 +50,17 @@ export function classifyLLMError(err: unknown): PipelineAbortReason {
     }
 
     if (
+      msg.includes('does not exist') ||
+      msg.includes('not have access') ||
+      msg.includes('model_not_found') ||
+      msg.includes('model not found') ||
+      msg.includes('is not found') ||
+      msg.includes('is deprecated')
+    ) {
+      return 'model_unavailable';
+    }
+
+    if (
       msg.includes('429') ||
       msg.includes('rate limit') ||
       msg.includes('rate_limit') ||
