@@ -19,27 +19,31 @@ function isValidApiKey(key?: string): boolean {
 
 /**
  * Free Tier Standard Models:
- * - Google Gemini: `gemini-2.0-flash` (1,500 free requests/day, 15 RPM, high speed & structured output)
- * - Groq: `llama-3.3-70b-versatile` (Active flagship versatile model on Groq free tier)
+ * - Google Gemini:
+ *   - `gemini-3.8-flash`: Google's primary intelligent agent model for autonomous workflows, reasoning, & synthesis.
+ *   - `gemini-3.5-flash-lite`: Google's ultra-fast lightweight model for extraction, parsing, and classification.
+ * - Groq:
+ *   - `openai/gpt-oss-20b`: Ultra-fast (~1,000 tps) open-weights model for rapid structured extraction.
+ *   - `openai/gpt-oss-120b`: Flagship open-weights reasoning model for complex planning and adversarial critique.
  */
 export const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> = {
   google: {
-    'menu-analyst': 'gemini-2.0-flash',
-    'weather-analyst': 'gemini-2.0-flash',
-    strategist: 'gemini-2.0-flash',
-    critic: 'gemini-2.0-flash',
-    synthesizer: 'gemini-2.0-flash',
-    'competitor-parser': 'gemini-2.0-flash',
-    'competitor-analyst': 'gemini-2.0-flash',
+    'menu-analyst': 'gemini-3.5-flash-lite',
+    'weather-analyst': 'gemini-3.5-flash-lite',
+    strategist: 'gemini-3.8-flash',
+    critic: 'gemini-3.8-flash',
+    synthesizer: 'gemini-3.8-flash',
+    'competitor-parser': 'gemini-3.5-flash-lite',
+    'competitor-analyst': 'gemini-3.8-flash',
   },
   groq: {
-    'menu-analyst': 'llama-3.3-70b-versatile',
-    'weather-analyst': 'llama-3.3-70b-versatile',
-    strategist: 'llama-3.3-70b-versatile',
-    critic: 'llama-3.3-70b-versatile',
-    synthesizer: 'llama-3.3-70b-versatile',
-    'competitor-parser': 'llama-3.3-70b-versatile',
-    'competitor-analyst': 'llama-3.3-70b-versatile',
+    'menu-analyst': 'openai/gpt-oss-20b',
+    'weather-analyst': 'openai/gpt-oss-20b',
+    strategist: 'openai/gpt-oss-120b',
+    critic: 'openai/gpt-oss-120b',
+    synthesizer: 'openai/gpt-oss-120b',
+    'competitor-parser': 'openai/gpt-oss-20b',
+    'competitor-analyst': 'openai/gpt-oss-120b',
   },
 };
 
@@ -47,29 +51,30 @@ export const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> =
  * Hybrid multi-model configuration:
  * Splits execution across Groq and Google Gemini to:
  * 1. Prevent concurrent rate-limit collisions during parallel fan-out steps.
- * 2. Leverage Groq (Llama 3.3 70B) for fast structured extraction and independent critique.
- * 3. Leverage Google Gemini (Gemini 2.0 Flash) for deep strategy reasoning and executive briefing.
+ * 2. Leverage Groq (GPT-OSS 20B) for sub-second structured JSON extraction.
+ * 3. Leverage Google Gemini (Gemini 3.8 Flash) for deep strategy reasoning and executive briefing.
+ * 4. Leverage Groq (GPT-OSS 120B) for independent cross-family adversarial critique.
  */
 export const HYBRID_ROLE_ASSIGNMENTS: Record<
   AgentName,
   { provider: 'google' | 'groq'; model: string }
 > = {
-  // Fast extraction (Groq Llama 3.3 70B) - parallel safe, zero Gemini quota used
-  'menu-analyst': { provider: 'groq', model: 'llama-3.3-70b-versatile' },
-  'weather-analyst': { provider: 'groq', model: 'llama-3.3-70b-versatile' },
-  'competitor-parser': { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+  // Fast extraction (Groq GPT-OSS 20B) - ~1,000 tps, parallel safe, zero Gemini quota used
+  'menu-analyst': { provider: 'groq', model: 'openai/gpt-oss-20b' },
+  'weather-analyst': { provider: 'groq', model: 'openai/gpt-oss-20b' },
+  'competitor-parser': { provider: 'groq', model: 'openai/gpt-oss-20b' },
 
-  // Deep Reasoning & Strategy (Google Gemini 2.0 Flash) - generous 1,500 RPD free tier
-  strategist: { provider: 'google', model: 'gemini-2.0-flash' },
+  // Deep Reasoning & Strategy (Google Gemini 3.8 Flash) - premier agent reasoning
+  strategist: { provider: 'google', model: 'gemini-3.8-flash' },
 
-  // Cross-Model Adversarial Audit (Groq Llama 3.3 70B) - independent model family critique
-  critic: { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+  // Cross-Model Adversarial Audit (Groq GPT-OSS 120B) - independent model family critique
+  critic: { provider: 'groq', model: 'openai/gpt-oss-120b' },
 
-  // Competitive Positioning (Google Gemini 2.0 Flash)
-  'competitor-analyst': { provider: 'google', model: 'gemini-2.0-flash' },
+  // Competitive Positioning (Google Gemini 3.8 Flash)
+  'competitor-analyst': { provider: 'google', model: 'gemini-3.8-flash' },
 
-  // Executive Synthesis & Briefing (Google Gemini 2.0 Flash) - polished owner briefing markdown
-  synthesizer: { provider: 'google', model: 'gemini-2.0-flash' },
+  // Executive Synthesis & Briefing (Google Gemini 3.8 Flash) - polished owner briefing markdown
+  synthesizer: { provider: 'google', model: 'gemini-3.8-flash' },
 };
 
 function getApiKeys(): { googleApiKey?: string; groqApiKey?: string } {
