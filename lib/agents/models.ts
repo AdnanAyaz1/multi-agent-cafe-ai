@@ -6,6 +6,37 @@ import type { AgentName } from './types';
 
 export type AIProvider = 'google' | 'groq' | 'hybrid' | 'mock';
 
+/**
+ * Migration map for deprecated or decommissioned models.
+ * Ensures that stale environment variables or legacy configs never trigger
+ * "model does not exist" or "model is no longer available" errors.
+ */
+const DEPRECATED_MODELS: Record<string, string> = {
+  'llama-3.1-8b-instant': 'openai/gpt-oss-20b',
+  'llama-3.1-70b-versatile': 'llama-3.3-70b-versatile',
+  'gemini-2.0-flash': 'gemini-3.8-flash',
+  'gemini-2.0-flash-exp': 'gemini-3.8-flash',
+  'gemini-1.5-flash': 'gemini-3.5-flash-lite',
+  'gemini-1.5-pro': 'gemini-3.8-flash',
+};
+
+export function sanitizeModelName(rawModelName: string, provider?: 'google' | 'groq'): string {
+  const trimmed = rawModelName.trim();
+  if (DEPRECATED_MODELS[trimmed]) {
+    return DEPRECATED_MODELS[trimmed];
+  }
+  if (trimmed.includes('llama-3.1-8b')) {
+    return 'openai/gpt-oss-20b';
+  }
+  if (trimmed.includes('llama-3.1-70b')) {
+    return 'llama-3.3-70b-versatile';
+  }
+  if (trimmed.includes('gemini-2.0') || trimmed.includes('gemini-1.5')) {
+    return 'gemini-3.8-flash';
+  }
+  return trimmed;
+}
+
 function isValidApiKey(key?: string): boolean {
   if (!key) return false;
   const trimmed = key.trim();
@@ -100,7 +131,8 @@ export function resolveProvider(preferred?: string): AIProvider {
   return 'groq';
 }
 
-function createModelInstance(provider: 'google' | 'groq', modelName: string): LanguageModel {
+function createModelInstance(provider: 'google' | 'groq', rawModelName: string): LanguageModel {
+  const modelName = sanitizeModelName(rawModelName, provider);
   const { googleApiKey, groqApiKey } = getApiKeys();
 
   if (provider === 'groq') {
@@ -133,10 +165,12 @@ export function getModel(agentName: AgentName): LanguageModel {
   }
 
   const agentEnvKey = `MODEL_${agentName.toUpperCase().replace(/-/g, '_')}`;
-  const override =
+  const rawOverride =
     process.env[agentEnvKey] ||
     process.env.AI_MODEL_OVERRIDE ||
     process.env.GROQ_MODEL;
+
+  const override = rawOverride ? sanitizeModelName(rawOverride) : undefined;
 
   const provider = resolveProvider();
 

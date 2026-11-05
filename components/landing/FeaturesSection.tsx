@@ -3,11 +3,11 @@ import { FEATURES } from "@/constants/landing";
 import { FEATURE_ICONS } from "@/constants/icons";
 
 const PIPELINE_AGENTS = [
-  { name: "Menu Analyst", role: "Menu & Margin Mix", model: "llama-3.1-8b", tag: "Step 1" },
-  { name: "Weather Analyst", role: "Demand & Signals", model: "llama-3.1-8b", tag: "Step 2" },
-  { name: "Strategist", role: "Price & Promo Ideas", model: "llama-3.3-70b", tag: "Step 3" },
-  { name: "Critic", role: "Risk & Guardrails", model: "llama-3.3-70b", tag: "Step 4" },
-  { name: "Synthesizer", role: "Daily Briefing", model: "llama-3.1-8b", tag: "Step 5" },
+  { name: "Menu Analyst", role: "Menu & Margin Mix", model: "gpt-oss-20b", tag: "Step 1" },
+  { name: "Weather Analyst", role: "Demand & Signals", model: "gpt-oss-20b", tag: "Step 2" },
+  { name: "Strategist", role: "Price & Promo Ideas", model: "gpt-oss-20b", tag: "Step 3" },
+  { name: "Critic", role: "Risk & Guardrails", model: "gpt-oss-20b", tag: "Step 4" },
+  { name: "Synthesizer", role: "Daily Briefing", model: "gpt-oss-20b", tag: "Step 5" },
 ];
 
 export function FeaturesSection() {
