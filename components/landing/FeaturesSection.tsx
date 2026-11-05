@@ -4,10 +4,10 @@ import { FEATURE_ICONS } from "@/constants/icons";
 
 const PIPELINE_AGENTS = [
   { name: "Menu Analyst", role: "Menu & Margin Mix", model: "gpt-oss-20b", tag: "Step 1" },
-  { name: "Weather Analyst", role: "Demand & Signals", model: "gpt-oss-20b", tag: "Step 2" },
-  { name: "Strategist", role: "Price & Promo Ideas", model: "gpt-oss-20b", tag: "Step 3" },
-  { name: "Critic", role: "Risk & Guardrails", model: "gpt-oss-20b", tag: "Step 4" },
-  { name: "Synthesizer", role: "Daily Briefing", model: "gpt-oss-20b", tag: "Step 5" },
+  { name: "Weather Analyst", role: "Demand & Signals", model: "gemini-3.5-flash-lite", tag: "Step 2" },
+  { name: "Strategist", role: "Price & Promo Ideas", model: "gemini-3.8-flash", tag: "Step 3" },
+  { name: "Critic", role: "Risk & Guardrails", model: "llama-3.3-70b", tag: "Step 4" },
+  { name: "Synthesizer", role: "Daily Briefing", model: "gpt-oss-120b", tag: "Step 5" },
 ];
 
 export function FeaturesSection() {

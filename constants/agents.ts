@@ -16,22 +16,22 @@ export const AGENT_CONFIG = {
   },
   'weather-analyst': {
     name: 'Weather Analyst',
-    model: 'openai/gpt-oss-20b',
+    model: 'gemini-3.5-flash-lite',
     description: 'Summarizes weather and seasonal signals',
   },
   strategist: {
     name: 'Strategist',
-    model: 'openai/gpt-oss-20b',
+    model: 'gemini-3.8-flash',
     description: 'Proposes items to promote or discount with reasoning',
   },
   critic: {
     name: 'Critic',
-    model: 'openai/gpt-oss-20b',
+    model: 'llama-3.3-70b-versatile',
     description: 'Challenges the plan and asks for fixes if needed',
   },
   synthesizer: {
     name: 'Synthesizer',
-    model: 'openai/gpt-oss-20b',
+    model: 'openai/gpt-oss-120b',
     description: 'Produces the final recommendation',
   },
 } as const
