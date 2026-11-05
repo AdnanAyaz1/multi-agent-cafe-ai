@@ -84,10 +84,11 @@ export async function withAgentRun<Output>(
   const maxAttempts = (args.retries ?? 0) + 1;
   let lastError: unknown;
 
-  // Rate limit guard: wait between agent calls to stay under free-tier RPM
+  // Rate limit guard: wait between agent calls to stay under free-tier limits
   // Sleep is abortable — if the pipeline is cancelled during the wait, we stop immediately.
+  const delayMs = parseInt(process.env.AGENT_DELAY_MS ?? '1500', 10);
   try {
-    await abortableSleep(3500, signal);
+    await abortableSleep(delayMs, signal);
   } catch (e) {
     if (signal?.aborted) {
       await markFailed(run.id, start, 'Pipeline cancelled by user');

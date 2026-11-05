@@ -18,15 +18,20 @@ function isValidApiKey(key?: string): boolean {
 }
 
 /**
- * Free Tier Standard Models:
- * - Google Gemini:
- *   - `gemini-3.8-flash`: Google's primary intelligent agent model for autonomous workflows, reasoning, & synthesis.
- *   - `gemini-3.5-flash-lite`: Google's ultra-fast lightweight model for extraction, parsing, and classification.
- * - Groq:
- *   - `openai/gpt-oss-20b`: Ultra-fast (~1,000 tps) open-weights model for rapid structured extraction.
- *   - `openai/gpt-oss-120b`: Flagship open-weights reasoning model for complex planning and adversarial critique.
+ * Standard models:
+ * - Groq: `openai/gpt-oss-20b` (The most generous free-tier model: ~1,000 tps, high RPM/TPM limits, minimal token footprint)
+ * - Google Gemini: `gemini-3.8-flash` / `gemini-3.5-flash-lite`
  */
 export const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> = {
+  groq: {
+    'menu-analyst': 'openai/gpt-oss-20b',
+    'weather-analyst': 'openai/gpt-oss-20b',
+    strategist: 'openai/gpt-oss-20b',
+    critic: 'openai/gpt-oss-20b',
+    synthesizer: 'openai/gpt-oss-20b',
+    'competitor-parser': 'openai/gpt-oss-20b',
+    'competitor-analyst': 'openai/gpt-oss-20b',
+  },
   google: {
     'menu-analyst': 'gemini-3.5-flash-lite',
     'weather-analyst': 'gemini-3.5-flash-lite',
@@ -36,45 +41,24 @@ export const ROLE_MODELS: Record<'google' | 'groq', Record<AgentName, string>> =
     'competitor-parser': 'gemini-3.5-flash-lite',
     'competitor-analyst': 'gemini-3.8-flash',
   },
-  groq: {
-    'menu-analyst': 'openai/gpt-oss-20b',
-    'weather-analyst': 'openai/gpt-oss-20b',
-    strategist: 'openai/gpt-oss-120b',
-    critic: 'openai/gpt-oss-120b',
-    synthesizer: 'openai/gpt-oss-120b',
-    'competitor-parser': 'openai/gpt-oss-20b',
-    'competitor-analyst': 'openai/gpt-oss-120b',
-  },
 };
 
 /**
- * Hybrid multi-model configuration:
- * Splits execution across Groq and Google Gemini to:
- * 1. Prevent concurrent rate-limit collisions during parallel fan-out steps.
- * 2. Leverage Groq (GPT-OSS 20B) for sub-second structured JSON extraction.
- * 3. Leverage Google Gemini (Gemini 3.8 Flash) for deep strategy reasoning and executive briefing.
- * 4. Leverage Groq (GPT-OSS 120B) for independent cross-family adversarial critique.
+ * All-Groq High-Throughput Configuration:
+ * Routes all agents through Groq's most generous model (`openai/gpt-oss-20b`)
+ * to eliminate rate limit collisions and maximize request throughput.
  */
 export const HYBRID_ROLE_ASSIGNMENTS: Record<
   AgentName,
   { provider: 'google' | 'groq'; model: string }
 > = {
-  // Fast extraction (Groq GPT-OSS 20B) - ~1,000 tps, parallel safe, zero Gemini quota used
   'menu-analyst': { provider: 'groq', model: 'openai/gpt-oss-20b' },
   'weather-analyst': { provider: 'groq', model: 'openai/gpt-oss-20b' },
   'competitor-parser': { provider: 'groq', model: 'openai/gpt-oss-20b' },
-
-  // Deep Reasoning & Strategy (Google Gemini 3.8 Flash) - premier agent reasoning
-  strategist: { provider: 'google', model: 'gemini-3.8-flash' },
-
-  // Cross-Model Adversarial Audit (Groq GPT-OSS 120B) - independent model family critique
-  critic: { provider: 'groq', model: 'openai/gpt-oss-120b' },
-
-  // Competitive Positioning (Google Gemini 3.8 Flash)
-  'competitor-analyst': { provider: 'google', model: 'gemini-3.8-flash' },
-
-  // Executive Synthesis & Briefing (Google Gemini 3.8 Flash) - polished owner briefing markdown
-  synthesizer: { provider: 'google', model: 'gemini-3.8-flash' },
+  strategist: { provider: 'groq', model: 'openai/gpt-oss-20b' },
+  critic: { provider: 'groq', model: 'openai/gpt-oss-20b' },
+  'competitor-analyst': { provider: 'groq', model: 'openai/gpt-oss-20b' },
+  synthesizer: { provider: 'groq', model: 'openai/gpt-oss-20b' },
 };
 
 function getApiKeys(): { googleApiKey?: string; groqApiKey?: string } {
@@ -93,9 +77,9 @@ function getApiKeys(): { googleApiKey?: string; groqApiKey?: string } {
 /**
  * Resolves active provider strategy:
  * - If MOCK_LLM='true' -> 'mock'
- * - If AI_PROVIDER explicitly set ('hybrid' | 'google' | 'groq') -> respects it
- * - If BOTH Google and Groq keys are valid -> defaults to 'hybrid'
- * - If only one provider key is valid -> uses that provider
+ * - If AI_PROVIDER explicitly set ('groq' | 'google' | 'hybrid') -> respects it
+ * - Defaults to 'groq' if GROQ_API_KEY is available for most generous limits
+ * - Otherwise falls back to 'google'
  */
 export function resolveProvider(preferred?: string): AIProvider {
   if (process.env.MOCK_LLM === 'true' || process.env.AI_PROVIDER === 'mock') {
@@ -105,39 +89,35 @@ export function resolveProvider(preferred?: string): AIProvider {
   const { googleApiKey, groqApiKey } = getApiKeys();
   const explicit = (preferred || process.env.AI_PROVIDER)?.toLowerCase();
 
-  if (explicit === 'hybrid' || explicit === 'google' || explicit === 'groq') {
+  if (explicit === 'groq' || explicit === 'google' || explicit === 'hybrid') {
     return explicit as AIProvider;
   }
 
-  // When both keys are available, hybrid is the optimal architecture
-  if (googleApiKey && groqApiKey) {
-    return 'hybrid';
-  }
-
-  if (googleApiKey) return 'google';
+  // Default to Groq when key is provided for maximum rate-limit generosity
   if (groqApiKey) return 'groq';
+  if (googleApiKey) return 'google';
 
-  return 'google';
+  return 'groq';
 }
 
 function createModelInstance(provider: 'google' | 'groq', modelName: string): LanguageModel {
   const { googleApiKey, groqApiKey } = getApiKeys();
 
-  if (provider === 'google') {
-    if (!googleApiKey) {
-      throw new Error(
-        'Google Gemini API key required but not found in GOOGLE_GENERATIVE_AI_API_KEY / GEMINI_API_KEY.'
-      );
+  if (provider === 'groq') {
+    if (!groqApiKey) {
+      throw new Error('Groq API key required but not found in GROQ_API_KEY.');
     }
-    const google = createGoogleGenerativeAI({ apiKey: googleApiKey });
-    return google(modelName) as unknown as LanguageModel;
+    const groq = createGroq({ apiKey: groqApiKey });
+    return groq(modelName) as unknown as LanguageModel;
   }
 
-  if (!groqApiKey) {
-    throw new Error('Groq API key required but not found in GROQ_API_KEY.');
+  if (!googleApiKey) {
+    throw new Error(
+      'Google Gemini API key required but not found in GOOGLE_GENERATIVE_AI_API_KEY / GEMINI_API_KEY.'
+    );
   }
-  const groq = createGroq({ apiKey: groqApiKey });
-  return groq(modelName) as unknown as LanguageModel;
+  const google = createGoogleGenerativeAI({ apiKey: googleApiKey });
+  return google(modelName) as unknown as LanguageModel;
 }
 
 export function getModel(agentName: AgentName): LanguageModel {
@@ -148,7 +128,7 @@ export function getModel(agentName: AgentName): LanguageModel {
   const { googleApiKey, groqApiKey } = getApiKeys();
   if (!googleApiKey && !groqApiKey) {
     throw new Error(
-      'No valid AI provider API key found. Please provide GOOGLE_GENERATIVE_AI_API_KEY (or GEMINI_API_KEY) or GROQ_API_KEY in your environment.'
+      'No valid AI provider API key found. Please provide GROQ_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY (or GEMINI_API_KEY) in your environment.'
     );
   }
 
@@ -156,11 +136,13 @@ export function getModel(agentName: AgentName): LanguageModel {
   const override =
     process.env[agentEnvKey] ||
     process.env.AI_MODEL_OVERRIDE ||
-    (agentName.includes('competitor') || agentName === 'menu-analyst' || agentName === 'weather-analyst'
-      ? process.env.GROQ_MODEL
-      : undefined);
+    process.env.GROQ_MODEL;
 
   const provider = resolveProvider();
+
+  if (provider === 'groq' && groqApiKey) {
+    return createModelInstance('groq', override || ROLE_MODELS.groq[agentName]);
+  }
 
   if (provider === 'hybrid') {
     const target = HYBRID_ROLE_ASSIGNMENTS[agentName];
@@ -170,7 +152,6 @@ export function getModel(agentName: AgentName): LanguageModel {
     if (target.provider === 'google' && googleApiKey) {
       return createModelInstance('google', override || target.model);
     }
-    // Fallback if one key is missing
     if (groqApiKey) return createModelInstance('groq', override || ROLE_MODELS.groq[agentName]);
     if (googleApiKey) return createModelInstance('google', override || ROLE_MODELS.google[agentName]);
   }
@@ -179,20 +160,16 @@ export function getModel(agentName: AgentName): LanguageModel {
     return createModelInstance('google', override || ROLE_MODELS.google[agentName]);
   }
 
-  if (provider === 'groq' && groqApiKey) {
-    return createModelInstance('groq', override || ROLE_MODELS.groq[agentName]);
-  }
-
   // Graceful fallback to whichever key exists
-  if (googleApiKey) return createModelInstance('google', override || ROLE_MODELS.google[agentName]);
   if (groqApiKey) return createModelInstance('groq', override || ROLE_MODELS.groq[agentName]);
+  if (googleApiKey) return createModelInstance('google', override || ROLE_MODELS.google[agentName]);
 
   throw new Error('No valid AI provider API key found.');
 }
 
 /**
- * Returns an alternative fallback model on the opposite provider (if available)
- * so that transient rate-limit or quota issues on one provider fail over cleanly.
+ * Returns an alternative fallback model (on Google if available, or alternate Groq model)
+ * to ensure that transient provider limits or network timeouts fail over cleanly.
  */
 export function getFallbackModel(agentName: AgentName): LanguageModel | undefined {
   if (process.env.MOCK_LLM === 'true' || process.env.AI_PROVIDER === 'mock') {
@@ -200,26 +177,17 @@ export function getFallbackModel(agentName: AgentName): LanguageModel | undefine
   }
 
   const { googleApiKey, groqApiKey } = getApiKeys();
-  // Failover is only possible when both keys are provisioned
-  if (!googleApiKey || !groqApiKey) {
-    return undefined;
-  }
 
-  const provider = resolveProvider();
-  if (provider === 'hybrid') {
-    const primary = HYBRID_ROLE_ASSIGNMENTS[agentName];
-    if (primary.provider === 'groq') {
-      return createModelInstance('google', ROLE_MODELS.google[agentName]);
-    }
-    return createModelInstance('groq', ROLE_MODELS.groq[agentName]);
-  }
-
-  if (provider === 'google') {
-    return createModelInstance('groq', ROLE_MODELS.groq[agentName]);
-  }
-
-  if (provider === 'groq') {
+  // If Google key is provisioned, use it as fallback provider
+  if (googleApiKey) {
     return createModelInstance('google', ROLE_MODELS.google[agentName]);
+  }
+
+  // If only Groq key is present, fallback to Groq 70b
+  if (groqApiKey) {
+    const currentModel = ROLE_MODELS.groq[agentName];
+    const altModel = currentModel === 'openai/gpt-oss-20b' ? 'llama-3.3-70b-versatile' : 'openai/gpt-oss-20b';
+    return createModelInstance('groq', altModel);
   }
 
   return undefined;
